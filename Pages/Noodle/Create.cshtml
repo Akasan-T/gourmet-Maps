@@ -1,0 +1,76 @@
+@page
+@model NoodleMaps.Pages.Noodle.CreateModel
+
+@{
+    ViewData["title"] = "ラーメン登録";
+}
+
+<h1>ラーメンを記録する</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="NoodleEntry.ShopName" class="control-label"></label>
+                <input asp-for="NoodleEntry.ShopName" class="form-control" />
+                <span asp-validation-for="NoodleEntry.ShopName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NoodleEntry.VisitData" class="control-label"></label>
+                <input asp-for="NoodleEntry.VisitData" class="form-control" />
+                <span asp-validation-for="NoodleEntry.VisitDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NoodleEntry.Genre" class="control-label"></label>
+                <input asp-for="NoodleEntry.Genre" class="form-control"/>
+                <span asp-validation-for="NoodleEntry.Genre" class="text-danger"></span>
+            </div>
+
+            <h4>要素別評価 (1-5点)</h4>
+            <div class="form-group">
+                <label asp-for="NoodleEntry.ScoreA_Soup" class="control-label"></label>
+                <input asp-for="NoodleEntry.ScoreA_Soup" class="form-control"/>
+                <span asp-validation-for="NoodleEntry.ScoreA_Soup" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NoodleEntry.ScoreB_Noodle" class="control-label"></label>
+                <input asp-for="NoodleEntry.ScoreB_Noodle" class="form-control" />
+                <span asp-validation-for="NoodleEntry.ScoreB_Noodle" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NoodleEntry.ScoreC_Topping" class="control-label"></label>
+                <input asp-for="NoodleEntry.ScoreC_Topping" class="form-control" />
+                <span asp-validation-for="NoodleEntry.ScoreC_Topping" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NoodleEntry.ScoreD_Atmosphere" class="control-label"></label>
+                <input asp-for="NoodleEntry.ScoreD_Atmosphere" class="form-control" />
+                <span asp-validation-for="NoodleEntry.ScoreD_Atmosphere" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NoodleEntry.ScoreE_CostPerf" class="control-label"></label>
+                <input asp-for="NoodleEntry.ScoreE_CostPerf" class="form-control" />
+                <span asp-validation-for="NoodleEntry.ScoreE_CostPerf" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="NoodleEntry.Notes" class="control-label"></label>
+                <textarea asp-for="NoodleEntry.Notes" class="form-control"></textarea>
+                <span asp-validation-for="NoodleEntry.Notes" class="text-danger"></span>
+            </div>
+            
+            <div class="mt-3">
+                <input type="submit" value="登録して評価する" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+<div class="mt-3">
+    <a asp-page="Index">一覧へ戻る</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

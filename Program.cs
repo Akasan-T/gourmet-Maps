@@ -7,8 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
 // DbContextをサービスとして登録し、SQLiteを使用するように設定
-builder.Services.AddDbContext<RamenDbContext>(options =>
-    options.useSqlite(builder.Configuration.GetConnectionString("NoodleMapsContext")));
+builder.Services.AddDbContext<NoodleDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("NoodleMapsContext")));
 
 var app = builder.Build();
 
