@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NoodleMaps")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7d9702226d33db6b4e3f5b1b3311e202f4bf90fd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3fdfd336be503d4c1d81da9b5cc1115e7ace2186")]
 [assembly: System.Reflection.AssemblyProductAttribute("NoodleMaps")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NoodleMaps")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
