@@ -6,17 +6,17 @@ namespace NoodleMaps.Models
     public class NoodleEntry
     {
         // データベースの主キー
-        [key]
-        public int id { get; set; }
+        [Key]
+        public int Id { get; set; }
 
         // 基本情報
         [Required]
         [Display(Name = "店名")]
         public string ShopName { get; set; }
         
-        [DataType(DataType.Data)]
+        [DataType(DataType.Date)]
         [Display(Name = "訪問日")]
-        public DataTime VisitData { get; set; } = DataTime.Now;
+        public DateTime VisitDate { get; set; } = DateTime.Now;
 
         [Display(Name = "ジャンル")]
         public string Genre { get; set; } //ラーメンのジャンル
@@ -40,7 +40,7 @@ namespace NoodleMaps.Models
 
         [Display(Name = "E: コストパフォーマンス")]
         [Range(1, 5)]
-        public int ScoreE_CostPert { get; set; } //重み:2
+        public int ScoreE_CostPerf { get; set; } //重み:2
 
         // 自動計算される総合評価点数（ランキングの基準）
         [DisplayFormat(DataFormatString = "{0:F2}")]
@@ -49,7 +49,6 @@ namespace NoodleMaps.Models
 
         // 地図情報
         public double? Latitude { get; set; } //経度 (?はNULL許容)
-        public double? Latitude { get; set; } //緯度 (?はNULL許容)
 
         [Display(Name = "感想・メモ")]
         public string Notes { get; set; }
