@@ -1,0 +1,54 @@
+@page
+@model NoodleMaps.Pages.Noodle.IndexModel
+
+@{
+    ViewData["Title"] = "ラーメンランキング";
+}
+
+<h1>ラーメンランキング</h1>
+
+<p>
+    <a asp-page="Create" class="btn btn-success">新しいラーメンを登録する</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.NoodleEntry[0].ShopName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NoodleEntry[0].Genre)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NoodleEntry[0].OverallScore)
+            </th>
+            <th>
+                評価
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int rank = 1;
+        }
+        @foreach (var item in Model.NoodleEntry)
+        {
+            <tr>
+                <td>
+                    <strong>#@rank</strong> (@item.ShopName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Genre)
+                </td>
+                <td>
+                    <span class="text-primary fs-5">@Html.DisplayFor(modelItem => item.OverallScore)点</span>
+                </td>
+                <td>
+                    <a asp-page="./Details" asp-route-id="@item.Id">詳細</a>
+                </td>
+            </tr>
+            rank++;
+        }
+    </tbody>
+</table>
