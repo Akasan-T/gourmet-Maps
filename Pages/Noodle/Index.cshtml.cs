@@ -1,12 +1,16 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims; 
 using NoodleMaps.Data;
 using NoodleMaps.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace NoodleMaps.Pages.Noodle
 {
+    [Authorize]
     public class IndexModel : PageModel
     {
+        
         private readonly NoodleDbContext _context;
 
         public IndexModel(NoodleDbContext context)

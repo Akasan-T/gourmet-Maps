@@ -1,0 +1,17 @@
+@using Microsoft.AspNetCoe.Identity
+@using Microsoft.AspNetCoreIdentity.EntityFrameworkCore
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<ul class="navbar-nav">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+            <a id="manage" class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @UserManagerManager.GetUserName(User)!</a>
+        </li>
+        <li class="nav-item">
+            <form action=""></form>
+        
+        </li>
+    }
+</ul>
