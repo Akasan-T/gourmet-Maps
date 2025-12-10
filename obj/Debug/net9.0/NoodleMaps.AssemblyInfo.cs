@@ -10,10 +10,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute("Bootstrap5")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("NoodleMaps")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3fdfd336be503d4c1d81da9b5cc1115e7ace2186")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3f9d81e9608c4472cce9a1d6864353605c1c073f")]
 [assembly: System.Reflection.AssemblyProductAttribute("NoodleMaps")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NoodleMaps")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

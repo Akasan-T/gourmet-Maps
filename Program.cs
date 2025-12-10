@@ -1,14 +1,26 @@
-using NoodleMaps.Data; //作成したDbContextを参照
-using Microsoft.EntityFrameworkCore; //EF Coreの名前空間
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using NoodleMaps.Data; 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddRazorPages();
+//SQLiteの接続文字列
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? "Data Source=noodlemaps.db";
+
+builder.Services.AddDbContext<NoodleDbContext>(options =>
+    options.UseSqlite(connectionString));
 
 // DbContextをサービスとして登録し、SQLiteを使用するように設定
-builder.Services.AddDbContext<NoodleDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("NoodleMapsContext")));
+builder.Services
+    .AddDefaultIdentity<IdentityUser>(options => 
+    {
+        options.SignIn.RequireConfirmedAccount = false;
+    })
+    .AddEntityFrameworkStores<NoodleDbContext>();
+
+// Add services to the container.
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
