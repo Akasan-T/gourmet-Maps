@@ -1,5 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace NoodleMaps.Models
 {
@@ -52,5 +54,11 @@ namespace NoodleMaps.Models
 
         [Display(Name = "感想・メモ")]
         public string Notes { get; set; }
+
+        // ↓↓↓ ユーザーIDとナビゲーションプロパティを追加 ↓↓↓
+        public string UserId { get; set; } = default!;
+
+        [ForeignKey("UserId")]
+        public IdentityUser? User { get; set; }
     }
 }

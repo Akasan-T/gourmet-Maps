@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NoodleMaps")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3f9d81e9608c4472cce9a1d6864353605c1c073f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b80d849151793fd609794e9f3f5f3d9dfe60ba2d")]
 [assembly: System.Reflection.AssemblyProductAttribute("NoodleMaps")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NoodleMaps")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

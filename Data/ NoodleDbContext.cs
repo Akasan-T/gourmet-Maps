@@ -10,7 +10,7 @@ using NoodleMaps.Models;
 namespace NoodleMaps.Data
 {
     // 3. IdentityDbContext<IdentityUser> を継承し、CS0311エラーを解消
-    public class NoodleDbContext : IdentityDbContext<IdentityUser>
+    public class NoodleDbContext : IdentityDbContext<ApplicationUser>
     {
         public NoodleDbContext(DbContextOptions<NoodleDbContext> options)
             : base(options)

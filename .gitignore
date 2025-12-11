@@ -1,1 +1,10 @@
 .env
+bin/
+obj/
+appsettings.Development.json
+Properties/launchSettings.json
+NoodleMaps.db
+
+.vscode/
+*.user
+/packages/

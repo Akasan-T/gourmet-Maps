@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NoodleMaps.Data;
 
@@ -10,9 +11,11 @@ using NoodleMaps.Data;
 namespace NoodleMaps.Migrations
 {
     [DbContext(typeof(NoodleDbContext))]
-    partial class NoodleDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251210051532_AddUserToNoodleEntry")]
+    partial class AddUserToNoodleEntry
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
