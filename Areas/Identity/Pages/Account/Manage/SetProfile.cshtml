@@ -1,0 +1,27 @@
+@page
+@model NoodleMaps.Areas.Identity.Pages.Account.Manage.SetProfileModel
+@{
+    ViewData["title"] = "プロフィール設定";
+    ViewData["ActivePage"] = "ManageNavPages.SetProfile";
+}
+
+<h3>ViewData["title"]</h3>
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+<div class="row">
+    <div class="col-md-6">
+        <form id="profile-form" method="post">
+            <div>
+                <div>
+                    <input type="text">
+                    <label for=""></label>
+                    <span></span>
+                </div>
+                <button type="button"></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

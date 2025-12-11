@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using NoodleMaps.Data; // DbContextの参照
 using NoodleMaps.Models; //  NoodleEntryモデルの参照
+using Microsoft.AspNetCore.Authorization;
 
 namespace NoodleMaps.Pages.Noodle
 {
+    [Authorize]
     public class CreateModel : PageModel
     {
         private readonly NoodleDbContext _context;

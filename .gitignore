@@ -2,6 +2,9 @@
 bin/
 obj/
 appsettings.Development.json
-Noodlemaps.csproj
 Properties/launchSettings.json
 NoodleMaps.db
+
+.vscode/
+*.user
+/packages/

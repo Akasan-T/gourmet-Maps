@@ -13,10 +13,7 @@ builder.Services.AddDbContext<NoodleDbContext>(options =>
 
 // DbContextをサービスとして登録し、SQLiteを使用するように設定
 builder.Services
-    .AddDefaultIdentity<IdentityUser>(options => 
-    {
-        options.SignIn.RequireConfirmedAccount = false;
-    })
+    .AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<NoodleDbContext>();
 
 // Add services to the container.
