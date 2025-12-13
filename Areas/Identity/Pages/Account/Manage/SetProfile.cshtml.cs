@@ -29,7 +29,7 @@ namespace NoodleMaps.Areas.Identity.Pages.Account.Manage
             public string? DisplayName{ get; set; }
         }
 
-        private async Task LoadAsync(ApplicationUser user)
+        private void Load(ApplicationUser user)
         {
             Input.DisplayName = user.DisplayName;
         }
@@ -44,7 +44,7 @@ namespace NoodleMaps.Areas.Identity.Pages.Account.Manage
 
             if (!ModelState.IsValid)
             {
-                await LoadAsync(user);
+                Load(user);
                 return Page();
             }
 
