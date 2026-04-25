@@ -1,0 +1,80 @@
+:root {
+  --page: #f4efe6;
+  --surface: rgba(255, 251, 246, 0.92);
+  --panel: #f7ead5;
+  --panel-warm: #f8dfd0;
+  --panel-cool: #ddebd7;
+  --input: #fffdfa;
+  --border: rgba(87, 72, 57, 0.12);
+  --heading: #271a12;
+  --text: #5b4b40;
+  --muted: #7d6d60;
+  --accent-strong: #eb6b4a;
+  --accent-soft: rgba(235, 107, 74, 0.14);
+  --shadow-soft: 0 18px 40px rgba(87, 62, 32, 0.08);
+  --shadow-strong: 0 24px 50px rgba(51, 38, 20, 0.15);
+  --sans: 'Avenir Next', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+
+  font-family: var(--sans);
+  line-height: 1.5;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--page);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--page);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1 {
+  color: var(--heading);
+  font-size: clamp(2rem, 8vw, 2.8rem);
+  line-height: 1;
+  letter-spacing: -0.06em;
+}
+
+h2 {
+  color: var(--heading);
+  font-size: 1.12rem;
+  line-height: 1.2;
+}
+
+h3 {
+  color: var(--heading);
+  font-size: 1rem;
+  line-height: 1.2;
+}
