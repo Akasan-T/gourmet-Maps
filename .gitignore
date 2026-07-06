@@ -8,3 +8,4 @@ NoodleMaps.db
 .vscode/
 *.user
 /packages/
+.claude
