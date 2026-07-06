@@ -2,6 +2,58 @@ import { useState } from 'react'
 import RatingSelector from './RatingSelector'
 
 const defaultApiBaseUrl = 'http://localhost:5001'
+const overpassUrl = 'https://overpass-api.de/api/interpreter'
+const nearbySearchRadiusMeters = 600
+
+function toRadians(degrees) {
+  return (degrees * Math.PI) / 180
+}
+
+function distanceInMeters(lat1, lon1, lat2, lon2) {
+  const earthRadiusMeters = 6371000
+  const dLat = toRadians(lat2 - lat1)
+  const dLon = toRadians(lon2 - lon1)
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLon / 2) ** 2
+
+  return 2 * earthRadiusMeters * Math.asin(Math.sqrt(a))
+}
+
+async function fetchNearbyPlaces(latitude, longitude) {
+  const query = `[out:json][timeout:15];`
+    + `(node["amenity"~"^(restaurant|cafe|fast_food|bar|pub|ice_cream)$"]`
+    + `(around:${nearbySearchRadiusMeters},${latitude},${longitude}););`
+    + `out center 20;`
+
+  const response = await fetch(overpassUrl, {
+    method: 'POST',
+    body: query,
+  })
+
+  if (!response.ok) {
+    throw new Error(`overpass-failed-${response.status}`)
+  }
+
+  const result = await response.json()
+
+  return result.elements
+    .filter((element) => element.tags?.name)
+    .map((element) => {
+      const lat = element.lat ?? element.center?.lat
+      const lon = element.lon ?? element.center?.lon
+
+      return {
+        id: element.id,
+        name: element.tags.name,
+        genre: element.tags.cuisine ?? element.tags.amenity,
+        latitude: lat,
+        longitude: lon,
+        distance: distanceInMeters(latitude, longitude, lat, lon),
+      }
+    })
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, 8)
+}
 
 function QuickComposer({ quickTags, visitTypes, onSaved }) {
   const [restaurantName, setRestaurantName] = useState('らぁ麺 すぎ本')
@@ -13,6 +65,9 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
   const [memo, setMemo] = useState('スープが軽くて、退店後すぐにもう一杯いけそう。')
   const [submitState, setSubmitState] = useState('idle')
   const [statusMessage, setStatusMessage] = useState('')
+  const [nearbyPlaces, setNearbyPlaces] = useState([])
+  const [nearbySearchState, setNearbySearchState] = useState('idle')
+  const [selectedPlace, setSelectedPlace] = useState(null)
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? defaultApiBaseUrl
 
   async function getCurrentPosition() {
@@ -29,6 +84,36 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
     })
   }
 
+  function handleRestaurantNameChange(event) {
+    setRestaurantName(event.target.value)
+    setSelectedPlace(null)
+  }
+
+  function handleSelectPlace(place) {
+    setRestaurantName(place.name)
+    setSelectedPlace(place)
+  }
+
+  async function handleSearchNearby() {
+    setNearbySearchState('loading')
+    setSelectedPlace(null)
+
+    try {
+      const position = await getCurrentPosition()
+      const places = await fetchNearbyPlaces(position.coords.latitude, position.coords.longitude)
+
+      setNearbyPlaces(places)
+      setNearbySearchState(places.length > 0 ? 'success' : 'empty')
+    } catch (error) {
+      setNearbyPlaces([])
+      if (error?.code === 1) {
+        setNearbySearchState('permission-denied')
+        return
+      }
+      setNearbySearchState('error')
+    }
+  }
+
   async function handleSubmit() {
     if (!restaurantName.trim()) {
       setSubmitState('error')
@@ -37,10 +122,21 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
     }
 
     setSubmitState('saving')
-    setStatusMessage('現在地を取得しています。')
 
     try {
-      const position = await getCurrentPosition()
+      let latitude
+      let longitude
+
+      if (selectedPlace) {
+        latitude = selectedPlace.latitude
+        longitude = selectedPlace.longitude
+      } else {
+        setStatusMessage('現在地を取得しています。')
+        const position = await getCurrentPosition()
+        latitude = position.coords.latitude
+        longitude = position.coords.longitude
+      }
+
       const taste = Number(tasteScore)
       const repeat = Number(repeatScore)
       const memoLines = [
@@ -64,8 +160,8 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
           tasteRating: taste,
           repeatRating: repeat,
           memo: memoLines.join('\n'),
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
+          latitude,
+          longitude,
         }),
       })
 
@@ -104,9 +200,46 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
 
       <div className="composer-card__fields">
         <label className="field">
-          <span className="field__label">お店</span>
-          <input value={restaurantName} onChange={(event) => setRestaurantName(event.target.value)} />
+          <div className="field__heading">
+            <span className="field__label">お店</span>
+            <button
+              type="button"
+              className="text-button"
+              onClick={handleSearchNearby}
+              disabled={nearbySearchState === 'loading'}
+            >
+              {nearbySearchState === 'loading' ? '検索中…' : '近くのお店を検索'}
+            </button>
+          </div>
+          <input value={restaurantName} onChange={handleRestaurantNameChange} />
         </label>
+
+        {nearbySearchState === 'success' && (
+          <div className="composer-card__nearby-list" role="list">
+            {nearbyPlaces.map((place) => (
+              <button
+                key={place.id}
+                type="button"
+                className={`composer-card__nearby-item${selectedPlace?.id === place.id ? ' composer-card__nearby-item--active' : ''}`}
+                onClick={() => handleSelectPlace(place)}
+              >
+                <span className="composer-card__nearby-name">{place.name}</span>
+                <span className="composer-card__nearby-meta">
+                  {place.genre || 'ジャンル未設定'} ・ {Math.round(place.distance)}m
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+        {nearbySearchState === 'empty' && (
+          <p className="composer-card__nearby-status">近くにお店が見つかりませんでした。</p>
+        )}
+        {nearbySearchState === 'permission-denied' && (
+          <p className="composer-card__nearby-status">位置情報の利用が拒否されました。ブラウザで許可してください。</p>
+        )}
+        {nearbySearchState === 'error' && (
+          <p className="composer-card__nearby-status">近くのお店を検索できませんでした。通信状況を確認してください。</p>
+        )}
 
         <label className="field">
           <span className="field__label">メニュー</span>
@@ -169,7 +302,9 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
 
       <div className="composer-card__footer">
         <div>
-          <p className="composer-card__hint">保存時に現在地を使って地図へピンを立てます。</p>
+          <p className="composer-card__hint">
+            {selectedPlace ? `${selectedPlace.name} の位置でピンを立てます。` : '保存時に現在地を使って地図へピンを立てます。'}
+          </p>
           {statusMessage && (
             <p className={`composer-card__status composer-card__status--${submitState}`}>{statusMessage}</p>
           )}

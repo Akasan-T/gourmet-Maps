@@ -1,7 +1,29 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
+import L from 'leaflet'
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
+import markerIcon from 'leaflet/dist/images/marker-icon.png'
+import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 
-const mapKitScriptUrl = 'https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.core.js'
 const defaultApiBaseUrl = 'http://localhost:5001'
+const defaultCenter = [35.6812, 139.7671]
+
+const entryMarkerIcon = L.icon({
+  iconUrl: markerIcon,
+  iconRetinaUrl: markerIcon2x,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+})
+
+const userLocationIcon = L.divIcon({
+  className: 'user-location-marker',
+  html: '<span></span>',
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
+})
 
 function normalizeEntry(entry) {
   return {
@@ -29,50 +51,39 @@ function formatVisitDate(value) {
   }).format(new Date(value))
 }
 
-function loadMapKitScript() {
-  if (globalThis.mapkit?.Map) {
-    return Promise.resolve(globalThis.mapkit)
-  }
+function FitToMarkers({ entries, userPosition }) {
+  const map = useMap()
 
-  return new Promise((resolve, reject) => {
-    const existingScript = document.querySelector(`script[src="${mapKitScriptUrl}"]`)
+  useEffect(() => {
+    const points = entries
+      .filter((entry) => typeof entry.latitude === 'number' && typeof entry.longitude === 'number')
+      .map((entry) => [entry.latitude, entry.longitude])
 
-    if (existingScript) {
-      existingScript.addEventListener('load', () => resolve(globalThis.mapkit), { once: true })
-      existingScript.addEventListener('error', () => reject(new Error('Apple MapKit JS の読み込みに失敗しました。')), { once: true })
+    if (userPosition) {
+      points.push([userPosition.lat, userPosition.lng])
+    }
+
+    if (points.length === 0) {
       return
     }
 
-    const script = document.createElement('script')
-    script.src = mapKitScriptUrl
-    script.async = true
-    script.onload = () => resolve(globalThis.mapkit)
-    script.onerror = () => reject(new Error('Apple MapKit JS の読み込みに失敗しました。'))
-    document.head.appendChild(script)
-  })
-}
+    if (points.length === 1) {
+      map.setView(points[0], 16)
+      return
+    }
 
-function ensureMapKitInitialized(mapkit, token) {
-  if (globalThis.__gourmetMapsMapKitInitialized) {
-    return
-  }
+    map.fitBounds(points, { padding: [32, 32] })
+  }, [entries, userPosition, map])
 
-  mapkit.init({
-    authorizationCallback(done) {
-      done(token)
-    },
-    language: 'ja',
-  })
-
-  globalThis.__gourmetMapsMapKitInitialized = true
+  return null
 }
 
 function TopMapSection({ refreshKey = 0 }) {
   const [entries, setEntries] = useState([])
   const [fetchState, setFetchState] = useState('loading')
   const [errorMessage, setErrorMessage] = useState('')
-  const mapContainerRef = useRef(null)
-  const appleMapToken = import.meta.env.VITE_APPLE_MAPKIT_TOKEN
+  const [userPosition, setUserPosition] = useState(null)
+  const [locateState, setLocateState] = useState('idle')
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? defaultApiBaseUrl
 
   useEffect(() => {
@@ -95,7 +106,7 @@ function TopMapSection({ refreshKey = 0 }) {
 
         setEntries(normalizedEntries)
         setFetchState('success')
-      } catch (error) {
+      } catch {
         if (!isMounted) {
           return
         }
@@ -122,61 +133,29 @@ function TopMapSection({ refreshKey = 0 }) {
     }))
   }, [entries])
 
-  useEffect(() => {
-    let cancelled = false
-
-    async function renderMap() {
-      if (!appleMapToken || !mapContainerRef.current || entries.length === 0) {
-        return
-      }
-
-      try {
-        const mapkit = await loadMapKitScript()
-
-        if (cancelled || !mapkit?.Map) {
-          return
-        }
-
-        ensureMapKitInitialized(mapkit, appleMapToken)
-
-        mapContainerRef.current.innerHTML = ''
-
-        const firstEntry = entries[0]
-        const center = new mapkit.Coordinate(firstEntry.latitude, firstEntry.longitude)
-        const map = new mapkit.Map(mapContainerRef.current, {
-          center,
-          showsCompass: mapkit.FeatureVisibility?.Hidden,
-          showsMapTypeControl: false,
-          isRotationEnabled: false,
-          isScrollEnabled: true,
-        })
-
-        const annotations = entries.map((entry) => new mapkit.MarkerAnnotation(
-          new mapkit.Coordinate(entry.latitude, entry.longitude),
-          {
-            title: entry.name,
-            subtitle: `${entry.genre || 'ジャンル未設定'} ・ ${formatVisitDate(entry.visitDate)}`,
-          },
-        ))
-
-        map.addAnnotations(annotations)
-
-        if (typeof map.showItems === 'function') {
-          map.showItems(annotations)
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setErrorMessage('Apple Map の初期化に失敗しました。トークンを確認してください。')
-        }
-      }
+  function handleLocateMe() {
+    if (!navigator.geolocation) {
+      setLocateState('error')
+      return
     }
 
-    renderMap()
+    setLocateState('loading')
 
-    return () => {
-      cancelled = true
-    }
-  }, [appleMapToken, entries])
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserPosition({ lat: position.coords.latitude, lng: position.coords.longitude })
+        setLocateState('success')
+      },
+      () => {
+        setLocateState('error')
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    )
+  }
+
+  const initialCenter = entries[0]
+    ? [entries[0].latitude, entries[0].longitude]
+    : defaultCenter
 
   return (
     <section className="map-card" aria-labelledby="map-title">
@@ -189,19 +168,45 @@ function TopMapSection({ refreshKey = 0 }) {
       </div>
 
       <div className="map-card__surface">
-        {appleMapToken ? (
-          <div ref={mapContainerRef} className="map-card__canvas" aria-label="Restaurant map"></div>
-        ) : (
-          <div className="map-card__empty">
-            <p className="map-card__empty-title">Apple MapKit トークン待ち</p>
-            <p className="map-card__empty-text">frontend の環境変数 VITE_APPLE_MAPKIT_TOKEN を設定すると、ここに投稿済み店舗のピンが表示されます。</p>
-          </div>
-        )}
+        <div className="map-card__canvas">
+          <MapContainer center={initialCenter} zoom={15} scrollWheelZoom style={{ height: '100%', width: '100%' }}>
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {entries.map((entry) => (
+              typeof entry.latitude === 'number' && typeof entry.longitude === 'number' ? (
+                <Marker key={entry.id} position={[entry.latitude, entry.longitude]} icon={entryMarkerIcon}>
+                  <Popup>
+                    <strong>{entry.name}</strong>
+                    <br />
+                    {entry.genre || 'ジャンル未設定'} ・ {formatVisitDate(entry.visitDate)}
+                  </Popup>
+                </Marker>
+              ) : null
+            ))}
+            {userPosition && (
+              <Marker position={[userPosition.lat, userPosition.lng]} icon={userLocationIcon}>
+                <Popup>現在地</Popup>
+              </Marker>
+            )}
+            <FitToMarkers entries={entries} userPosition={userPosition} />
+          </MapContainer>
+          <button
+            type="button"
+            className="map-card__locate-button"
+            onClick={handleLocateMe}
+            disabled={locateState === 'loading'}
+          >
+            {locateState === 'loading' ? '取得中…' : '現在地'}
+          </button>
+        </div>
       </div>
 
       <div className="map-card__status">
         {fetchState === 'loading' && <p>位置情報を読み込み中です。</p>}
         {fetchState === 'error' && <p>{errorMessage}</p>}
+        {locateState === 'error' && <p>現在地を取得できませんでした。位置情報の利用を許可してください。</p>}
         {fetchState === 'success' && entries.length === 0 && <p>位置情報付きの投稿がまだありません。</p>}
         {fetchState === 'success' && entries.length > 0 && (
           <div className="map-card__legend">
