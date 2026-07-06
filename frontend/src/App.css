@@ -21,6 +21,8 @@
 }
 
 .app-header,
+.map-card,
+.placeholder-card,
 .snapshot-card,
 .composer-card,
 .recent-section,
@@ -125,11 +127,26 @@
 }
 
 .snapshot-card,
+.map-card,
+.placeholder-card,
 .composer-card,
 .recent-section {
   padding: 18px;
 }
 
+.placeholder-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.placeholder-card__text {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+.map-card__header,
 .snapshot-card__header,
 .composer-card__header,
 .recent-section__header,
@@ -141,6 +158,65 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.map-card__count {
+  color: var(--accent-strong);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.map-card__surface {
+  margin-top: 16px;
+}
+
+.map-card__canvas,
+.map-card__empty {
+  min-height: 260px;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(238, 247, 240, 0.92) 100%);
+}
+
+.map-card__empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 22px;
+}
+
+.map-card__empty-title,
+.map-card__legend-name {
+  color: var(--heading);
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+.map-card__empty-text,
+.map-card__legend-meta,
+.map-card__status {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+.map-card__status {
+  margin-top: 14px;
+}
+
+.map-card__legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.map-card__legend-item {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--panel);
 }
 
 .snapshot-card__grid {
@@ -174,6 +250,7 @@
 .snapshot-metric__label,
 .field__helper,
 .composer-card__hint,
+.composer-card__status,
 .visit-card__menu,
 .visit-card__time,
 .visit-card__memo {
@@ -220,7 +297,7 @@
 
 .field input:focus,
 .field textarea:focus {
-  outline: 2px solid rgba(217, 103, 65, 0.18);
+  outline: 2px solid rgba(77, 155, 108, 0.18);
   border-color: var(--accent-strong);
 }
 
@@ -279,6 +356,22 @@
   background: var(--accent-strong);
   color: #fffaf5;
   font-weight: 800;
+}
+
+.primary-button:disabled {
+  opacity: 0.72;
+}
+
+.composer-card__status {
+  margin-top: 8px;
+}
+
+.composer-card__status--success {
+  color: var(--accent-strong);
+}
+
+.composer-card__status--error {
+  color: #c65a45;
 }
 
 .visit-card {
@@ -345,8 +438,8 @@
   gap: 8px;
   padding: 10px;
   border-radius: 24px;
-  background: rgba(255, 250, 245, 0.92);
-  border: 1px solid rgba(119, 92, 72, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(76, 122, 92, 0.12);
   backdrop-filter: blur(18px);
   box-shadow: var(--shadow-strong);
 }
