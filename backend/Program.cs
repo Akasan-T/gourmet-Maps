@@ -5,6 +5,21 @@ using GourmetMaps.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendClient", policy =>
+    {
+        policy
+            .WithOrigins(
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+                "http://localhost:5173",
+                "http://127.0.0.1:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 
 // SQLiteの接続文字列
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -29,6 +44,8 @@ var supportedCultures = new[] { "ja-JP" };
 var localizationOptions = new RequestLocalizationOptions().SetDefaultCulture(supportedCultures[0])
     .AddSupportedCultures(supportedCultures)
     .AddSupportedUICultures(supportedCultures);
+const string guestUserName = "guest-map";
+const string guestUserEmail = "guest-map@example.local";
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -40,6 +57,7 @@ if (!app.Environment.IsDevelopment())
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<GourmetDbContext>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
     dbContext.Database.EnsureCreated();
     using (var connection = dbContext.Database.GetDbConnection())
     {
@@ -121,6 +139,18 @@ using (var scope = app.Services.CreateScope())
         """
         CREATE INDEX IF NOT EXISTS "IX_ApplicationUserBadges_BadgeID" ON "ApplicationUserBadges" ("BadgeID");
         """);
+
+    var guestUser = await userManager.FindByNameAsync(guestUserName);
+    if (guestUser is null)
+    {
+        await userManager.CreateAsync(new ApplicationUser
+        {
+            UserName = guestUserName,
+            Email = guestUserEmail,
+            EmailConfirmed = true,
+            DisplayName = "Guest Map User"
+        });
+    }
 }
 
 // ★ ローカリゼーションをパイプラインに適用する (UseRouting の前)
@@ -130,6 +160,7 @@ app.UseHttpsRedirection();
 
 // ★ ルーティングと認証の順番は重要です
 app.UseRouting();
+app.UseCors("FrontendClient");
 app.UseAuthorization();
 
 // Identity のエンドポイントと Razor Pages エンドポイントのマッピング

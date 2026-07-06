@@ -1,18 +1,24 @@
 :root {
-  --page: #f4efe6;
-  --surface: rgba(255, 251, 246, 0.92);
-  --panel: #f7ead5;
-  --panel-warm: #f8dfd0;
-  --panel-cool: #ddebd7;
-  --input: #fffdfa;
-  --border: rgba(87, 72, 57, 0.12);
-  --heading: #271a12;
-  --text: #5b4b40;
-  --muted: #7d6d60;
-  --accent-strong: #eb6b4a;
-  --accent-soft: rgba(235, 107, 74, 0.14);
-  --shadow-soft: 0 18px 40px rgba(87, 62, 32, 0.08);
-  --shadow-strong: 0 24px 50px rgba(51, 38, 20, 0.15);
+  --page: #f7fbf7;
+  --surface: rgba(255, 255, 255, 0.92);
+  --panel: #eef7f0;
+  --panel-warm: #f4fbf5;
+  --panel-cool: #e4f3ea;
+  --input: #ffffff;
+  --border: rgba(76, 122, 92, 0.14);
+  --heading: #183225;
+  --text: #466353;
+  --muted: #728878;
+  --accent-strong: #4d9b6c;
+  --accent-soft: rgba(77, 155, 108, 0.14);
+  --shadow-soft: 0 18px 40px rgba(55, 95, 70, 0.08);
+  --shadow-strong: 0 24px 50px rgba(39, 77, 55, 0.14);
+  --backdrop-spot-a: rgba(149, 211, 171, 0.26);
+  --backdrop-spot-b: rgba(223, 245, 229, 0.95);
+  --backdrop-base-top: #ffffff;
+  --backdrop-base-middle: #fbfefb;
+  --backdrop-base-bottom: #edf7f0;
+  --header-glow: rgba(123, 197, 147, 0.18);
   --sans: 'Avenir Next', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
 
   font-family: var(--sans);
