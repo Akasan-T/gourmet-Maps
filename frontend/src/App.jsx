@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import './App.css'
 import BottomNavigation from './components/BottomNavigation'
 import DailySnapshot from './components/DailySnapshot'
 import HeaderBar from './components/HeaderBar'
 import QuickComposer from './components/QuickComposer'
 import RecentVisitList from './components/RecentVisitList'
+import TabPlaceholderSection from './components/TabPlaceholderSection'
+import TopMapSection from './components/TopMapSection'
 
 const dailyStats = [
   { label: '今日の記録', value: '3件' },
@@ -44,17 +47,86 @@ const navigationItems = [
   { key: 'profile', label: '自分', icon: '◆' },
 ]
 
+const themes = [
+  {
+    key: 'forest-mist',
+    label: 'Forest',
+    swatches: ['#ffffff', '#dff3e5', '#4d9b6c'],
+  },
+  {
+    key: 'mint-air',
+    label: 'Mint',
+    swatches: ['#ffffff', '#e5f7f5', '#59b8a5'],
+  },
+  {
+    key: 'olive-light',
+    label: 'Olive',
+    swatches: ['#ffffff', '#edf4df', '#7aa05c'],
+  },
+  {
+    key: 'sage-dawn',
+    label: 'Sage',
+    swatches: ['#ffffff', '#f0f5eb', '#7f9d86'],
+  },
+]
+
 function App() {
+  const [activeTheme, setActiveTheme] = useState(themes[0].key)
+  const [activeTab, setActiveTab] = useState('map')
+  const [mapRefreshKey, setMapRefreshKey] = useState(0)
+
+  function renderActiveTab() {
+    if (activeTab === 'map') {
+      return <TopMapSection refreshKey={mapRefreshKey} />
+    }
+
+    if (activeTab === 'capture') {
+      return (
+        <>
+          <DailySnapshot stats={dailyStats} />
+          <QuickComposer
+            quickTags={quickTags}
+            visitTypes={visitTypes}
+            onSaved={() => setMapRefreshKey((currentKey) => currentKey + 1)}
+          />
+          <RecentVisitList visits={recentVisits} />
+        </>
+      )
+    }
+
+    if (activeTab === 'rank') {
+      return (
+        <TabPlaceholderSection
+          eyebrow="Ranking"
+          title="ランキングはこれから接続します"
+          description="味や再訪率から自動で並び替える画面をここに載せます。今は地図と記録導線を優先しています。"
+        />
+      )
+    }
+
+    return (
+      <TabPlaceholderSection
+        eyebrow="Profile"
+        title="プロフィール画面は準備中です"
+        description="テーマ設定や記録傾向、訪問回数のまとめをここに集約する予定です。"
+      />
+    )
+  }
+
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-theme={activeTheme}>
       <div className="app-shell__backdrop" aria-hidden="true"></div>
       <main className="mobile-frame">
-        <HeaderBar todayLabel="4月26日 日曜日" placeLabel="中野駅から徒歩4分" />
-        <DailySnapshot stats={dailyStats} />
-        <QuickComposer quickTags={quickTags} visitTypes={visitTypes} />
-        <RecentVisitList visits={recentVisits} />
+        <HeaderBar
+          todayLabel="4月26日 日曜日"
+          placeLabel="中野駅から徒歩4分"
+          themes={themes}
+          activeTheme={activeTheme}
+          onThemeChange={setActiveTheme}
+        />
+        {renderActiveTab()}
       </main>
-      <BottomNavigation items={navigationItems} activeKey="capture" />
+      <BottomNavigation items={navigationItems} activeKey={activeTab} onChange={setActiveTab} />
     </div>
   )
 }
