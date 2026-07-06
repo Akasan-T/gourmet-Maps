@@ -3,6 +3,7 @@ import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { createPinIcon } from './mapPinIcon'
 import StoreDetailModal from './StoreDetailModal'
+import { participantNames, storeVisual } from '../data/visits'
 
 const medals = ['🥇', '🥈', '🥉']
 const fallbackCenter = [35.7075, 139.666]
@@ -10,10 +11,12 @@ const fallbackCenter = [35.7075, 139.666]
 function HomeView({ stores, ranking }) {
   const [selectedStore, setSelectedStore] = useState(null)
 
-  const center = stores.length
+  const locatedStores = stores.filter((store) => typeof store.lat === 'number' && typeof store.lng === 'number')
+
+  const center = locatedStores.length
     ? [
-        stores.reduce((sum, store) => sum + store.lat, 0) / stores.length,
-        stores.reduce((sum, store) => sum + store.lng, 0) / stores.length,
+        locatedStores.reduce((sum, store) => sum + store.lat, 0) / locatedStores.length,
+        locatedStores.reduce((sum, store) => sum + store.lng, 0) / locatedStores.length,
       ]
     : fallbackCenter
 
@@ -31,7 +34,7 @@ function HomeView({ stores, ranking }) {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            {stores.map((store) => (
+            {locatedStores.map((store) => (
               <Marker key={store.name} position={[store.lat, store.lng]} icon={createPinIcon(store.color)}>
                 <Popup>
                   <div className="map-popup">
@@ -41,7 +44,7 @@ function HomeView({ stores, ranking }) {
                     <div>
                       <strong>{store.name}</strong>
                       <p>
-                        味 {store.visits[0].taste.toFixed(1)}
+                        味 {store.visits[0].tasteRating.toFixed(1)}
                         {store.visits.length > 1 ? ` ・${store.visits.length}件の記録` : ''}
                       </p>
                     </div>
@@ -67,23 +70,25 @@ function HomeView({ stores, ranking }) {
         </div>
 
         <div className="rank-list">
-          {ranking.map((visit, index) => (
-            <article key={visit.id} className="rank-item">
-              <span className="rank-item__medal" aria-hidden="true">
-                {medals[index] ?? `${index + 1}`}
-              </span>
-              <span className="rank-item__thumb" style={{ background: visit.store.gradient }}>
-                {visit.store.emoji}
-              </span>
-              <div className="rank-item__body">
-                <h3>{visit.store.name}</h3>
-                <p className="visit-card__menu">
-                  {visit.member.name} ・ {visit.menu}
-                </p>
-              </div>
-              <span className="rank-item__score">{visit.taste.toFixed(1)}</span>
-            </article>
-          ))}
+          {ranking.map((entry, index) => {
+            const visual = storeVisual(entry.name)
+            const names = participantNames(entry)
+            return (
+              <article key={entry.id} className="rank-item">
+                <span className="rank-item__medal" aria-hidden="true">
+                  {medals[index] ?? `${index + 1}`}
+                </span>
+                <span className="rank-item__thumb" style={{ background: visual.gradient }}>
+                  {visual.emoji}
+                </span>
+                <div className="rank-item__body">
+                  <h3>{entry.name}</h3>
+                  <p className="visit-card__menu">{names.length > 0 ? names.join('・') : entry.genre}</p>
+                </div>
+                <span className="rank-item__score">{entry.tasteRating.toFixed(1)}</span>
+              </article>
+            )
+          })}
           {ranking.length === 0 && <p className="map-view__empty">まだ評価がありません。</p>}
         </div>
       </section>

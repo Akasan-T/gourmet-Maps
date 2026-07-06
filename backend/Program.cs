@@ -139,6 +139,20 @@ using (var scope = app.Services.CreateScope())
         """
         CREATE INDEX IF NOT EXISTS "IX_ApplicationUserBadges_BadgeID" ON "ApplicationUserBadges" ("BadgeID");
         """);
+    dbContext.Database.ExecuteSqlRaw(
+        """
+        CREATE TABLE IF NOT EXISTS "GourmetEntryParticipants" (
+            "GourmetEntryID" INTEGER NOT NULL,
+            "ApplicationUserId" TEXT NOT NULL,
+            CONSTRAINT "PK_GourmetEntryParticipants" PRIMARY KEY ("GourmetEntryID", "ApplicationUserId"),
+            CONSTRAINT "FK_GourmetEntryParticipants_GourmetEntries_GourmetEntryID" FOREIGN KEY ("GourmetEntryID") REFERENCES "GourmetEntries" ("GourmetEntryID") ON DELETE CASCADE,
+            CONSTRAINT "FK_GourmetEntryParticipants_AspNetUsers_ApplicationUserId" FOREIGN KEY ("ApplicationUserId") REFERENCES "AspNetUsers" ("Id") ON DELETE CASCADE
+        );
+        """);
+    dbContext.Database.ExecuteSqlRaw(
+        """
+        CREATE INDEX IF NOT EXISTS "IX_GourmetEntryParticipants_ApplicationUserId" ON "GourmetEntryParticipants" ("ApplicationUserId");
+        """);
 
     var guestUser = await userManager.FindByNameAsync(guestUserName);
     if (guestUser is null)
@@ -149,6 +163,32 @@ using (var scope = app.Services.CreateScope())
             Email = guestUserEmail,
             EmailConfirmed = true,
             DisplayName = "Guest Map User"
+        });
+    }
+
+    var memberNames = builder.Configuration.GetSection("Members").Get<string[]>() ?? [];
+    foreach (var memberName in memberNames)
+    {
+        var trimmedName = memberName.Trim();
+        if (trimmedName.Length == 0)
+        {
+            continue;
+        }
+
+        var existingMember = await userManager.Users
+            .SingleOrDefaultAsync(user => user.DisplayName == trimmedName);
+        if (existingMember is not null)
+        {
+            continue;
+        }
+
+        var memberUserName = $"member-{Guid.NewGuid():N}";
+        await userManager.CreateAsync(new ApplicationUser
+        {
+            UserName = memberUserName,
+            Email = $"{memberUserName}@example.local",
+            EmailConfirmed = true,
+            DisplayName = trimmedName
         });
     }
 }

@@ -16,15 +16,22 @@ function MapView({ stores, members }) {
     return stores
       .map((store) => ({
         ...store,
-        visits: store.visits.filter((visit) => visit.member.name === selectedMember),
+        visits: store.visits.filter((visit) =>
+          (visit.participants ?? []).some((participant) => participant.id === selectedMember),
+        ),
       }))
       .filter((store) => store.visits.length > 0)
   }, [stores, selectedMember])
 
-  const center = filteredStores.length
+  const locatedStores = useMemo(
+    () => filteredStores.filter((store) => typeof store.lat === 'number' && typeof store.lng === 'number'),
+    [filteredStores],
+  )
+
+  const center = locatedStores.length
     ? [
-        filteredStores.reduce((sum, store) => sum + store.lat, 0) / filteredStores.length,
-        filteredStores.reduce((sum, store) => sum + store.lng, 0) / filteredStores.length,
+        locatedStores.reduce((sum, store) => sum + store.lat, 0) / locatedStores.length,
+        locatedStores.reduce((sum, store) => sum + store.lng, 0) / locatedStores.length,
       ]
     : fallbackCenter
 
@@ -43,12 +50,12 @@ function MapView({ stores, members }) {
           </button>
           {members.map((member) => (
             <button
-              key={member.name}
+              key={member.id}
               type="button"
-              className={`chip${selectedMember === member.name ? ' chip--active' : ''}`}
-              onClick={() => setSelectedMember(member.name)}
+              className={`chip${selectedMember === member.id ? ' chip--active' : ''}`}
+              onClick={() => setSelectedMember(member.id)}
             >
-              {member.name}
+              {member.displayName}
             </button>
           ))}
         </div>
@@ -60,7 +67,7 @@ function MapView({ stores, members }) {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          {filteredStores.map((store) => (
+          {locatedStores.map((store) => (
             <Marker key={store.name} position={[store.lat, store.lng]} icon={createPinIcon(store.color)}>
               <Popup>
                 <div className="map-popup">
@@ -70,7 +77,7 @@ function MapView({ stores, members }) {
                   <div>
                     <strong>{store.name}</strong>
                     <p>
-                      味 {store.visits[0].taste.toFixed(1)}
+                      味 {store.visits[0].tasteRating.toFixed(1)}
                       {store.visits.length > 1 ? ` ・${store.visits.length}件の記録` : ''}
                     </p>
                   </div>

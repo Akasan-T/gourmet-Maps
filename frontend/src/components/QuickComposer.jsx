@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import RatingSelector from './RatingSelector'
+import { createGourmetEntry, fetchMembers } from '../api/client'
 
-const defaultApiBaseUrl = 'http://localhost:5001'
 const overpassUrl = 'https://overpass-api.de/api/interpreter'
 const nearbySearchRadiusMeters = 600
 
@@ -68,7 +68,20 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
   const [nearbyPlaces, setNearbyPlaces] = useState([])
   const [nearbySearchState, setNearbySearchState] = useState('idle')
   const [selectedPlace, setSelectedPlace] = useState(null)
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? defaultApiBaseUrl
+  const [members, setMembers] = useState([])
+  const [participantIds, setParticipantIds] = useState([])
+
+  useEffect(() => {
+    fetchMembers()
+      .then(setMembers)
+      .catch(() => setMembers([]))
+  }, [])
+
+  function toggleParticipant(memberId) {
+    setParticipantIds((current) =>
+      current.includes(memberId) ? current.filter((id) => id !== memberId) : [...current, memberId],
+    )
+  }
 
   async function getCurrentPosition() {
     return new Promise((resolve, reject) => {
@@ -148,29 +161,21 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
 
       setStatusMessage('保存しています。')
 
-      const response = await fetch(`${apiBaseUrl}/api/GourmetEntries`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: restaurantName.trim(),
-          genre: selectedTag,
-          overallRating: Number(((taste + repeat) / 2).toFixed(1)),
-          tasteRating: taste,
-          repeatRating: repeat,
-          memo: memoLines.join('\n'),
-          latitude,
-          longitude,
-        }),
+      await createGourmetEntry({
+        name: restaurantName.trim(),
+        genre: selectedTag,
+        overallRating: Number(((taste + repeat) / 2).toFixed(1)),
+        tasteRating: taste,
+        repeatRating: repeat,
+        memo: memoLines.join('\n'),
+        latitude,
+        longitude,
+        participantUserIds: participantIds,
       })
-
-      if (!response.ok) {
-        throw new Error(`save-failed-${response.status}`)
-      }
 
       setSubmitState('success')
       setStatusMessage('保存しました。地図のピンを更新しています。')
+      setParticipantIds([])
       onSaved?.()
     } catch (error) {
       setSubmitState('error')
@@ -275,6 +280,23 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
                 {tag}
               </button>
             ))}
+          </div>
+        </div>
+
+        <div className="field">
+          <span className="field__label">誰と行った?</span>
+          <div className="chip-row" role="list">
+            {members.map((member) => (
+              <button
+                key={member.id}
+                type="button"
+                className={`chip${participantIds.includes(member.id) ? ' chip--active' : ''}`}
+                onClick={() => toggleParticipant(member.id)}
+              >
+                {member.displayName}
+              </button>
+            ))}
+            {members.length === 0 && <span className="composer-card__nearby-status">メンバーを読み込み中…</span>}
           </div>
         </div>
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -25,5 +26,17 @@ namespace GourmetMaps.Models
         public string UserID { get; set; }
         [ForeignKey("UserID")]
         public ApplicationUser User { get; set; }
+
+        // 一緒に行ったメンバー (多対多)
+        public ICollection<GourmetEntryParticipant> Participants { get; set; }
+    }
+
+    // 中間テーブル: GourmetEntry <-> ApplicationUser (一緒に行ったメンバー)
+    public class GourmetEntryParticipant
+    {
+        public int GourmetEntryID { get; set; }
+        public GourmetEntry GourmetEntry { get; set; }
+        public string ApplicationUserId { get; set; }
+        public ApplicationUser ApplicationUser { get; set; }
     }
 }

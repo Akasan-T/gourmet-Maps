@@ -6,12 +6,12 @@ function MemberAvatars({ members, compact = false }) {
       <div className="member-avatars__stack">
         {members.map((member, index) => (
           <span
-            key={member.name}
+            key={member.id}
             className="member-avatars__badge"
             style={{ background: palette[index % palette.length] }}
-            title={member.name}
+            title={member.displayName}
           >
-            {member.initial}
+            {member.displayName.charAt(0)}
           </span>
         ))}
       </div>

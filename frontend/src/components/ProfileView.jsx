@@ -32,9 +32,8 @@ function ProfileView({ user, members }) {
         <MemberAvatars members={members} />
         <ul className="profile-share__list">
           {members.map((member) => (
-            <li key={member.name}>
-              <span>{member.name}</span>
-              <span className="visit-card__time">{member.role}</span>
+            <li key={member.id}>
+              <span>{member.displayName}</span>
             </li>
           ))}
         </ul>
