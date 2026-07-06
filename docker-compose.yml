@@ -1,0 +1,18 @@
+services:
+  backend:
+    build: ./backend
+    container_name: gourmet-backend
+    ports:
+      - "5001:5000"
+    volumes:
+      - ./backend/noodlemaps.db:/app/noodlemaps.db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - frontend
+  frontend:
+    build: ./frontend
+    container_name: gourmet-frontend
+    ports:
+      - "3000:80"
+    depends_on: []
