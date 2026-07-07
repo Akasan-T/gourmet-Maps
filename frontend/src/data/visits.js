@@ -34,6 +34,11 @@ export function participantNames(entry) {
   return (entry.participants ?? []).map((participant) => participant.displayName)
 }
 
+export function extractVisitType(memo) {
+  const match = (memo ?? '').match(/^訪問タイプ: (.+)$/m)
+  return match ? match[1].trim() : null
+}
+
 export function groupEntriesByStore(entries) {
   const map = new Map()
 

@@ -79,7 +79,7 @@ function HomeView({ stores, ranking }) {
                     <div>
                       <strong>{store.name}</strong>
                       <p>
-                        味 {store.visits[0].tasteRating.toFixed(1)}
+                        味 {Math.round(store.visits[0].tasteRating)}
                         {store.visits.length > 1 ? ` ・${store.visits.length}件の記録` : ''}
                       </p>
                     </div>
@@ -134,7 +134,7 @@ function HomeView({ stores, ranking }) {
                   <h3>{entry.name}</h3>
                   <p className="visit-card__menu">{names.length > 0 ? names.join('・') : entry.genre}</p>
                 </div>
-                <span className="rank-item__score">{entry.tasteRating.toFixed(1)}</span>
+                <span className="rank-item__score">{Math.round(entry.tasteRating)}</span>
               </article>
             )
           })}

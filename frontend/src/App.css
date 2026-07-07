@@ -600,9 +600,12 @@
   z-index: 1;
 }
 
-.map-page .leaflet-bottom.leaflet-left,
-.map-page .leaflet-bottom.leaflet-right {
+.map-page .leaflet-bottom.leaflet-left {
   margin-bottom: var(--map-bottom-offset);
+}
+
+.map-page .leaflet-bottom.leaflet-right {
+  margin-bottom: max(6px, env(safe-area-inset-bottom));
 }
 
 .map-page .leaflet-control-attribution {

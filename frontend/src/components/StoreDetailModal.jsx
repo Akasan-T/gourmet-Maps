@@ -23,9 +23,9 @@ function StoreDetailModal({ store, onClose }) {
             </div>
 
             <div className="visit-card__scores" aria-label="Scores">
-              <span>味 {visit.tasteRating.toFixed(1)}</span>
-              <span>再訪 {visit.repeatRating.toFixed(1)}</span>
-              <span>量 {visit.volumeRating.toFixed(1)}</span>
+              <span>味 {Math.round(visit.tasteRating)}</span>
+              <span>再訪 {Math.round(visit.repeatRating)}</span>
+              <span>量 {Math.round(visit.volumeRating)}</span>
             </div>
 
             <p className="visit-card__memo">{visit.memo}</p>

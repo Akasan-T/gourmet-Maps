@@ -60,8 +60,8 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
   const [menuName, setMenuName] = useState('特製塩らぁ麺')
   const [selectedVisitType, setSelectedVisitType] = useState(visitTypes[0])
   const [selectedTag, setSelectedTag] = useState(quickTags[0])
-  const [tasteScore, setTasteScore] = useState('4.5')
-  const [repeatScore, setRepeatScore] = useState('4.0')
+  const [tasteScore, setTasteScore] = useState('4')
+  const [repeatScore, setRepeatScore] = useState('4')
   const [memo, setMemo] = useState('スープが軽くて、退店後すぐにもう一杯いけそう。')
   const [submitState, setSubmitState] = useState('idle')
   const [statusMessage, setStatusMessage] = useState('')
@@ -257,7 +257,7 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
           helper="最初に残したい評価"
           value={tasteScore}
           onChange={setTasteScore}
-          options={['5.0', '4.5', '4.0', '3.5', '3.0']}
+          options={['5', '4', '3', '2', '1']}
         />
 
         <button
@@ -329,7 +329,7 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
               helper="次も行きたいか"
               value={repeatScore}
               onChange={setRepeatScore}
-              options={['5.0', '4.5', '4.0', '3.5', '3.0']}
+              options={['5', '4', '3', '2', '1']}
             />
 
             <label className="field">

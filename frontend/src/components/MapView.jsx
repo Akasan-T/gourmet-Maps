@@ -4,17 +4,35 @@ import 'leaflet/dist/leaflet.css'
 import { createCurrentLocationIcon, createPinIcon } from './mapPinIcon'
 import StoreDetailModal from './StoreDetailModal'
 import Modal from './Modal'
+import { extractVisitType } from '../data/visits'
 
 const fallbackCenter = [35.7075, 139.666]
 const currentLocationZoom = 16
+const ratingOptions = ['5', '4', '3', '2', '1']
 
-function MapView({ stores, members }) {
-  const [selectedMember, setSelectedMember] = useState('all')
+function MapView({ stores }) {
+  const [selectedGenre, setSelectedGenre] = useState('all')
+  const [selectedVisitType, setSelectedVisitType] = useState('all')
+  const [minTasteRating, setMinTasteRating] = useState('all')
   const [selectedStore, setSelectedStore] = useState(null)
   const [currentPosition, setCurrentPosition] = useState(null)
   const [locateState, setLocateState] = useState('idle')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const mapRef = useRef(null)
+
+  const genreOptions = useMemo(
+    () => [...new Set(stores.flatMap((store) => store.visits.map((visit) => visit.genre).filter(Boolean)))].sort(),
+    [stores],
+  )
+
+  const visitTypeOptions = useMemo(
+    () => [
+      ...new Set(
+        stores.flatMap((store) => store.visits.map((visit) => extractVisitType(visit.memo)).filter(Boolean)),
+      ),
+    ].sort(),
+    [stores],
+  )
 
   function handleLocate() {
     if (!navigator.geolocation) {
@@ -37,17 +55,22 @@ function MapView({ stores, members }) {
   }
 
   const filteredStores = useMemo(() => {
-    if (selectedMember === 'all') return stores
+    if (selectedGenre === 'all' && selectedVisitType === 'all' && minTasteRating === 'all') return stores
+
+    const minTaste = minTasteRating === 'all' ? null : Number(minTasteRating)
 
     return stores
       .map((store) => ({
         ...store,
-        visits: store.visits.filter((visit) =>
-          (visit.participants ?? []).some((participant) => participant.id === selectedMember),
-        ),
+        visits: store.visits.filter((visit) => {
+          if (selectedGenre !== 'all' && visit.genre !== selectedGenre) return false
+          if (selectedVisitType !== 'all' && extractVisitType(visit.memo) !== selectedVisitType) return false
+          if (minTaste !== null && visit.tasteRating < minTaste) return false
+          return true
+        }),
       }))
       .filter((store) => store.visits.length > 0)
-  }, [stores, selectedMember])
+  }, [stores, selectedGenre, selectedVisitType, minTasteRating])
 
   const locatedStores = useMemo(
     () => filteredStores.filter((store) => typeof store.lat === 'number' && typeof store.lng === 'number'),
@@ -94,7 +117,7 @@ function MapView({ stores, members }) {
                   <div>
                     <strong>{store.name}</strong>
                     <p>
-                      味 {store.visits[0].tasteRating.toFixed(1)}
+                      味 {Math.round(store.visits[0].tasteRating)}
                       {store.visits.length > 1 ? ` ・${store.visits.length}件の記録` : ''}
                     </p>
                   </div>
@@ -116,7 +139,24 @@ function MapView({ stores, members }) {
           aria-label="絞り込み"
           title="絞り込み"
         >
-          絞
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="20" y2="18" />
+            <circle cx="9" cy="6" r="2" fill="currentColor" stroke="none" />
+            <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none" />
+            <circle cx="11" cy="18" r="2" fill="currentColor" stroke="none" />
+          </svg>
         </button>
         <button
           type="button"
@@ -135,25 +175,78 @@ function MapView({ stores, members }) {
 
       {isFilterOpen && (
         <Modal title="絞り込み" onClose={() => setIsFilterOpen(false)}>
-          <div className="chip-row" role="list">
-            <button
-              type="button"
-              className={`chip${selectedMember === 'all' ? ' chip--active' : ''}`}
-              onClick={() => setSelectedMember('all')}
-            >
-              全員
-            </button>
-            {members.map((member) => (
+          {genreOptions.length > 0 && (
+            <div className="field">
+              <span className="field__label">ジャンル</span>
+              <div className="chip-row" role="list">
+                <button
+                  type="button"
+                  className={`chip${selectedGenre === 'all' ? ' chip--active' : ''}`}
+                  onClick={() => setSelectedGenre('all')}
+                >
+                  すべて
+                </button>
+                {genreOptions.map((genre) => (
+                  <button
+                    key={genre}
+                    type="button"
+                    className={`chip${selectedGenre === genre ? ' chip--active' : ''}`}
+                    onClick={() => setSelectedGenre(genre)}
+                  >
+                    {genre}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="field">
+            <span className="field__label">味の評価（この値以上）</span>
+            <div className="chip-row" role="list">
               <button
-                key={member.id}
                 type="button"
-                className={`chip${selectedMember === member.id ? ' chip--active' : ''}`}
-                onClick={() => setSelectedMember(member.id)}
+                className={`chip${minTasteRating === 'all' ? ' chip--active' : ''}`}
+                onClick={() => setMinTasteRating('all')}
               >
-                {member.displayName}
+                すべて
               </button>
-            ))}
+              {ratingOptions.map((rating) => (
+                <button
+                  key={rating}
+                  type="button"
+                  className={`chip${minTasteRating === rating ? ' chip--active' : ''}`}
+                  onClick={() => setMinTasteRating(rating)}
+                >
+                  {rating}
+                </button>
+              ))}
+            </div>
           </div>
+
+          {visitTypeOptions.length > 0 && (
+            <div className="field">
+              <span className="field__label">訪問タイプ</span>
+              <div className="chip-row" role="list">
+                <button
+                  type="button"
+                  className={`chip${selectedVisitType === 'all' ? ' chip--active' : ''}`}
+                  onClick={() => setSelectedVisitType('all')}
+                >
+                  すべて
+                </button>
+                {visitTypeOptions.map((visitType) => (
+                  <button
+                    key={visitType}
+                    type="button"
+                    className={`chip${selectedVisitType === visitType ? ' chip--active' : ''}`}
+                    onClick={() => setSelectedVisitType(visitType)}
+                  >
+                    {visitType}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="map-filter-list">
             <div className="recent-section__header">
