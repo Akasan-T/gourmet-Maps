@@ -1,14 +1,38 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { createPinIcon } from './mapPinIcon'
+import { createCurrentLocationIcon, createPinIcon } from './mapPinIcon'
 import StoreDetailModal from './StoreDetailModal'
 
 const fallbackCenter = [35.7075, 139.666]
+const currentLocationZoom = 16
 
 function MapView({ stores, members }) {
   const [selectedMember, setSelectedMember] = useState('all')
   const [selectedStore, setSelectedStore] = useState(null)
+  const [currentPosition, setCurrentPosition] = useState(null)
+  const [locateState, setLocateState] = useState('idle')
+  const mapRef = useRef(null)
+
+  function handleLocate() {
+    if (!navigator.geolocation) {
+      setLocateState('error')
+      return
+    }
+
+    setLocateState('locating')
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const nextPosition = [position.coords.latitude, position.coords.longitude]
+        setCurrentPosition(nextPosition)
+        setLocateState('idle')
+        mapRef.current?.flyTo(nextPosition, currentLocationZoom)
+      },
+      () => setLocateState('error'),
+      { enableHighAccuracy: true, timeout: 10000 },
+    )
+  }
 
   const filteredStores = useMemo(() => {
     if (selectedMember === 'all') return stores
@@ -62,11 +86,22 @@ function MapView({ stores, members }) {
       </div>
 
       <div className="map-view__canvas">
-        <MapContainer center={center} zoom={14} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
+        <MapContainer
+          ref={mapRef}
+          center={center}
+          zoom={14}
+          scrollWheelZoom={false}
+          style={{ height: '100%', width: '100%' }}
+        >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          {currentPosition && (
+            <Marker position={currentPosition} icon={createCurrentLocationIcon()}>
+              <Popup>現在地</Popup>
+            </Marker>
+          )}
           {locatedStores.map((store) => (
             <Marker key={store.name} position={[store.lat, store.lng]} icon={createPinIcon(store.color)}>
               <Popup>
@@ -89,7 +124,22 @@ function MapView({ stores, members }) {
             </Marker>
           ))}
         </MapContainer>
+
+        <button
+          type="button"
+          className="map-view__locate-button"
+          onClick={handleLocate}
+          disabled={locateState === 'locating'}
+          aria-label="現在地を表示"
+          title="現在地を表示"
+        >
+          {locateState === 'locating' ? '…' : '📍'}
+        </button>
       </div>
+
+      {locateState === 'error' && (
+        <p className="map-view__empty">現在地を取得できませんでした。位置情報の利用を許可してください。</p>
+      )}
 
       <div className="map-view__list">
         <div className="recent-section__header">
