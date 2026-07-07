@@ -29,8 +29,15 @@ const navigationItems = [
   { key: 'profile', label: '自分' },
 ]
 
+const validTabKeys = new Set(['home', 'capture', 'map', 'rank', 'profile'])
+
+function initialTabFromUrl() {
+  const requestedTab = new URLSearchParams(window.location.search).get('tab')
+  return validTabKeys.has(requestedTab) ? requestedTab : 'home'
+}
+
 function App() {
-  const [activeTab, setActiveTab] = useState('home')
+  const [activeTab, setActiveTab] = useState(initialTabFromUrl)
   const [entries, setEntries] = useState([])
   const [members, setMembers] = useState([])
   const [loadState, setLoadState] = useState('loading')
@@ -56,6 +63,18 @@ function App() {
   }, [reloadToken])
 
   const reloadData = () => setReloadToken((token) => token + 1)
+
+  useEffect(() => {
+    if (activeTab !== 'map') return undefined
+
+    const { style } = document.body
+    const previousOverflow = style.overflow
+    style.overflow = 'hidden'
+
+    return () => {
+      style.overflow = previousOverflow
+    }
+  }, [activeTab])
 
   const entries24h = useMemo(() => entries.filter((entry) => withinHours(entry, 24)), [entries])
   const storesToday = useMemo(() => groupEntriesByStore(entries24h), [entries24h])

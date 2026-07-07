@@ -60,8 +60,8 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
   const [menuName, setMenuName] = useState('特製塩らぁ麺')
   const [selectedVisitType, setSelectedVisitType] = useState(visitTypes[0])
   const [selectedTag, setSelectedTag] = useState(quickTags[0])
-  const [tasteScore, setTasteScore] = useState('4.5')
-  const [repeatScore, setRepeatScore] = useState('4.0')
+  const [tasteScore, setTasteScore] = useState('4')
+  const [repeatScore, setRepeatScore] = useState('4')
   const [memo, setMemo] = useState('スープが軽くて、退店後すぐにもう一杯いけそう。')
   const [submitState, setSubmitState] = useState('idle')
   const [statusMessage, setStatusMessage] = useState('')
@@ -70,11 +70,17 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
   const [selectedPlace, setSelectedPlace] = useState(null)
   const [members, setMembers] = useState([])
   const [participantIds, setParticipantIds] = useState([])
+  const [showDetails, setShowDetails] = useState(false)
 
   useEffect(() => {
     fetchMembers()
       .then(setMembers)
       .catch(() => setMembers([]))
+  }, [])
+
+  useEffect(() => {
+    handleSearchNearby()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function toggleParticipant(memberId) {
@@ -246,80 +252,92 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
           <p className="composer-card__nearby-status">近くのお店を検索できませんでした。通信状況を確認してください。</p>
         )}
 
-        <label className="field">
-          <span className="field__label">メニュー</span>
-          <input value={menuName} onChange={(event) => setMenuName(event.target.value)} />
-        </label>
-
-        <div className="field">
-          <span className="field__label">訪問タイプ</span>
-          <div className="chip-row" role="list">
-            {visitTypes.map((visitType) => (
-              <button
-                key={visitType}
-                type="button"
-                className={`chip${visitType === selectedVisitType ? ' chip--active' : ''}`}
-                onClick={() => setSelectedVisitType(visitType)}
-              >
-                {visitType}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="field">
-          <span className="field__label">ひとことタグ</span>
-          <div className="chip-row" role="list">
-            {quickTags.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                className={`chip${tag === selectedTag ? ' chip--active' : ''}`}
-                onClick={() => setSelectedTag(tag)}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="field">
-          <span className="field__label">誰と行った?</span>
-          <div className="chip-row" role="list">
-            {members.map((member) => (
-              <button
-                key={member.id}
-                type="button"
-                className={`chip${participantIds.includes(member.id) ? ' chip--active' : ''}`}
-                onClick={() => toggleParticipant(member.id)}
-              >
-                {member.displayName}
-              </button>
-            ))}
-            {members.length === 0 && <span className="composer-card__nearby-status">メンバーを読み込み中…</span>}
-          </div>
-        </div>
-
         <RatingSelector
           label="味"
           helper="最初に残したい評価"
           value={tasteScore}
           onChange={setTasteScore}
-          options={['5.0', '4.5', '4.0', '3.5', '3.0']}
+          options={['5', '4', '3', '2', '1']}
         />
 
-        <RatingSelector
-          label="再訪したさ"
-          helper="次も行きたいか"
-          value={repeatScore}
-          onChange={setRepeatScore}
-          options={['5.0', '4.5', '4.0', '3.5', '3.0']}
-        />
+        <button
+          type="button"
+          className="text-button composer-card__details-toggle"
+          onClick={() => setShowDetails((current) => !current)}
+        >
+          {showDetails ? '詳細を閉じる' : '詳細を追加'}
+        </button>
 
-        <label className="field">
-          <span className="field__label">メモ</span>
-          <textarea rows="3" value={memo} onChange={(event) => setMemo(event.target.value)} />
-        </label>
+        {showDetails && (
+          <>
+            <label className="field">
+              <span className="field__label">メニュー</span>
+              <input value={menuName} onChange={(event) => setMenuName(event.target.value)} />
+            </label>
+
+            <div className="field">
+              <span className="field__label">訪問タイプ</span>
+              <div className="chip-row" role="list">
+                {visitTypes.map((visitType) => (
+                  <button
+                    key={visitType}
+                    type="button"
+                    className={`chip${visitType === selectedVisitType ? ' chip--active' : ''}`}
+                    onClick={() => setSelectedVisitType(visitType)}
+                  >
+                    {visitType}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="field">
+              <span className="field__label">ひとことタグ</span>
+              <div className="chip-row" role="list">
+                {quickTags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    className={`chip${tag === selectedTag ? ' chip--active' : ''}`}
+                    onClick={() => setSelectedTag(tag)}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="field">
+              <span className="field__label">誰と行った?</span>
+              <div className="chip-row" role="list">
+                {members.map((member) => (
+                  <button
+                    key={member.id}
+                    type="button"
+                    className={`chip${participantIds.includes(member.id) ? ' chip--active' : ''}`}
+                    onClick={() => toggleParticipant(member.id)}
+                  >
+                    {member.displayName}
+                  </button>
+                ))}
+                {members.length === 0 && <span className="composer-card__nearby-status">メンバーを読み込み中…</span>}
+              </div>
+            </div>
+
+            <RatingSelector
+              label="再訪したさ"
+              helper="次も行きたいか"
+              value={repeatScore}
+              onChange={setRepeatScore}
+              options={['5', '4', '3', '2', '1']}
+            />
+
+            <label className="field">
+              <span className="field__label">メモ</span>
+              <textarea rows="3" value={memo} onChange={(event) => setMemo(event.target.value)} />
+            </label>
+          </>
+        )}
       </div>
 
       <div className="composer-card__footer">

@@ -1,15 +1,39 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { createPinIcon } from './mapPinIcon'
+import { createCurrentLocationIcon, createPinIcon } from './mapPinIcon'
 import StoreDetailModal from './StoreDetailModal'
 import { participantNames, storeVisual } from '../data/visits'
 
 const medals = ['🥇', '🥈', '🥉']
 const fallbackCenter = [35.7075, 139.666]
+const currentLocationZoom = 16
 
 function HomeView({ stores, ranking }) {
   const [selectedStore, setSelectedStore] = useState(null)
+  const [currentPosition, setCurrentPosition] = useState(null)
+  const [locateState, setLocateState] = useState('idle')
+  const mapRef = useRef(null)
+
+  function handleLocate() {
+    if (!navigator.geolocation) {
+      setLocateState('error')
+      return
+    }
+
+    setLocateState('locating')
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const nextPosition = [position.coords.latitude, position.coords.longitude]
+        setCurrentPosition(nextPosition)
+        setLocateState('idle')
+        mapRef.current?.flyTo(nextPosition, currentLocationZoom)
+      },
+      () => setLocateState('error'),
+      { enableHighAccuracy: true, timeout: 10000 },
+    )
+  }
 
   const locatedStores = stores.filter((store) => typeof store.lat === 'number' && typeof store.lng === 'number')
 
@@ -29,11 +53,22 @@ function HomeView({ stores, ranking }) {
         </div>
 
         <div className="map-view__canvas">
-          <MapContainer center={center} zoom={14} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
+          <MapContainer
+            ref={mapRef}
+            center={center}
+            zoom={14}
+            scrollWheelZoom={false}
+            style={{ height: '100%', width: '100%' }}
+          >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
+            {currentPosition && (
+              <Marker position={currentPosition} icon={createCurrentLocationIcon()}>
+                <Popup>現在地</Popup>
+              </Marker>
+            )}
             {locatedStores.map((store) => (
               <Marker key={store.name} position={[store.lat, store.lng]} icon={createPinIcon(store.color)}>
                 <Popup>
@@ -44,7 +79,7 @@ function HomeView({ stores, ranking }) {
                     <div>
                       <strong>{store.name}</strong>
                       <p>
-                        味 {store.visits[0].tasteRating.toFixed(1)}
+                        味 {Math.round(store.visits[0].tasteRating)}
                         {store.visits.length > 1 ? ` ・${store.visits.length}件の記録` : ''}
                       </p>
                     </div>
@@ -56,9 +91,23 @@ function HomeView({ stores, ranking }) {
               </Marker>
             ))}
           </MapContainer>
+
+          <button
+            type="button"
+            className="map-view__locate-button"
+            onClick={handleLocate}
+            disabled={locateState === 'locating'}
+            aria-label="現在地を表示"
+            title="現在地を表示"
+          >
+            {locateState === 'locating' ? '…' : '📍'}
+          </button>
         </div>
 
         {stores.length === 0 && <p className="map-view__empty">まだ直近24時間の記録がありません。</p>}
+        {locateState === 'error' && (
+          <p className="map-view__empty">現在地を取得できませんでした。位置情報の利用を許可してください。</p>
+        )}
       </section>
 
       <section className="recent-section" aria-labelledby="home-rank-title">
@@ -85,7 +134,7 @@ function HomeView({ stores, ranking }) {
                   <h3>{entry.name}</h3>
                   <p className="visit-card__menu">{names.length > 0 ? names.join('・') : entry.genre}</p>
                 </div>
-                <span className="rank-item__score">{entry.tasteRating.toFixed(1)}</span>
+                <span className="rank-item__score">{Math.round(entry.tasteRating)}</span>
               </article>
             )
           })}

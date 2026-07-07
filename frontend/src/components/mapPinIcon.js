@@ -16,3 +16,20 @@ export function createPinIcon(color) {
     popupAnchor: [0, -32],
   })
 }
+
+export function createCurrentLocationIcon() {
+  const svg = `
+    <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="10" cy="10" r="8" fill="#2563eb" fill-opacity="0.25"/>
+      <circle cx="10" cy="10" r="5" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+    </svg>
+  `
+
+  return L.divIcon({
+    html: svg,
+    className: 'map-current-location-icon',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -10],
+  })
+}
