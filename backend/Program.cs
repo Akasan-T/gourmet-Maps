@@ -93,6 +93,21 @@ using (var scope = app.Services.CreateScope())
 
     dbContext.Database.ExecuteSqlRaw(
         """
+        CREATE TABLE IF NOT EXISTS "Stores" (
+            "StoreID" INTEGER NOT NULL CONSTRAINT "PK_Stores" PRIMARY KEY AUTOINCREMENT,
+            "Name" TEXT NOT NULL,
+            "Genre" TEXT NOT NULL,
+            "Address" TEXT NULL,
+            "Latitude" REAL NULL,
+            "Longitude" REAL NULL,
+            "ExternalPlaceId" TEXT NULL,
+            "CreatedByUserId" TEXT NULL,
+            "CreatedAt" TEXT NOT NULL,
+            CONSTRAINT "FK_Stores_AspNetUsers_CreatedByUserId" FOREIGN KEY ("CreatedByUserId") REFERENCES "AspNetUsers" ("Id")
+        );
+        """);
+    dbContext.Database.ExecuteSqlRaw(
+        """
         CREATE TABLE IF NOT EXISTS "GourmetEntries" (
             "GourmetEntryID" INTEGER NOT NULL CONSTRAINT "PK_GourmetEntries" PRIMARY KEY AUTOINCREMENT,
             "Name" TEXT NOT NULL,
@@ -102,20 +117,105 @@ using (var scope = app.Services.CreateScope())
             "TasteRating" REAL NOT NULL,
             "AppearanceRating" REAL NOT NULL,
             "CostPerformanceRating" REAL NOT NULL,
+            "ServiceRating" REAL NOT NULL DEFAULT 0,
             "VolumeRating" REAL NOT NULL,
             "RepeatRating" REAL NOT NULL,
             "ReorderRating" REAL NOT NULL,
             "Memo" TEXT NOT NULL,
+            "SceneTag" TEXT NULL,
+            "PriceRange" TEXT NULL,
+            "PhotoUrl" TEXT NULL,
             "Latitude" REAL NULL,
             "Longitude" REAL NULL,
+            "StoreID" INTEGER NULL,
             "UserID" TEXT NOT NULL,
-            CONSTRAINT "FK_GourmetEntries_AspNetUsers_UserID" FOREIGN KEY ("UserID") REFERENCES "AspNetUsers" ("Id")
+            CONSTRAINT "FK_GourmetEntries_AspNetUsers_UserID" FOREIGN KEY ("UserID") REFERENCES "AspNetUsers" ("Id"),
+            CONSTRAINT "FK_GourmetEntries_Stores_StoreID" FOREIGN KEY ("StoreID") REFERENCES "Stores" ("StoreID")
         );
         """);
     dbContext.Database.ExecuteSqlRaw(
         """
         CREATE INDEX IF NOT EXISTS "IX_GourmetEntries_UserID" ON "GourmetEntries" ("UserID");
         """);
+    dbContext.Database.ExecuteSqlRaw(
+        """
+        CREATE INDEX IF NOT EXISTS "IX_GourmetEntries_StoreID" ON "GourmetEntries" ("StoreID");
+        """);
+
+    // 既存DB向け: 追加カラムが無ければ ALTER で追加する (冪等)
+    using (var connection = dbContext.Database.GetDbConnection())
+    {
+        connection.Open();
+
+        var existingColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        using (var command = connection.CreateCommand())
+        {
+            command.CommandText = "PRAGMA table_info(\"GourmetEntries\");";
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                existingColumns.Add(reader.GetString(1));
+            }
+        }
+
+        var columnsToAdd = new (string Name, string Definition)[]
+        {
+            ("ServiceRating", "REAL NOT NULL DEFAULT 0"),
+            ("SceneTag", "TEXT NULL"),
+            ("PriceRange", "TEXT NULL"),
+            ("PhotoUrl", "TEXT NULL"),
+            ("StoreID", "INTEGER NULL"),
+        };
+
+        foreach (var column in columnsToAdd)
+        {
+            if (existingColumns.Contains(column.Name))
+            {
+                continue;
+            }
+
+            using var alterCommand = connection.CreateCommand();
+            alterCommand.CommandText = $"ALTER TABLE \"GourmetEntries\" ADD COLUMN \"{column.Name}\" {column.Definition};";
+            alterCommand.ExecuteNonQuery();
+        }
+    }
+
+    // 既存エントリを店舗マスタへバックフィル (StoreID 未設定のものを店名で束ねる)
+    var unlinkedEntries = await dbContext.GourmetEntries
+        .Where(entry => entry.StoreID == null)
+        .ToListAsync();
+
+    if (unlinkedEntries.Count > 0)
+    {
+        var storesByName = await dbContext.Stores
+            .ToDictionaryAsync(store => store.Name, store => store, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var group in unlinkedEntries.GroupBy(entry => entry.Name))
+        {
+            if (!storesByName.TryGetValue(group.Key, out var store))
+            {
+                var located = group.FirstOrDefault(entry => entry.Latitude != null && entry.Longitude != null);
+                store = new Store
+                {
+                    Name = group.Key,
+                    Genre = group.OrderByDescending(entry => entry.VisitDate).First().Genre,
+                    Latitude = located?.Latitude,
+                    Longitude = located?.Longitude,
+                    CreatedAt = DateTime.UtcNow,
+                };
+                dbContext.Stores.Add(store);
+                await dbContext.SaveChangesAsync();
+                storesByName[group.Key] = store;
+            }
+
+            foreach (var entry in group)
+            {
+                entry.StoreID = store.StoreID;
+            }
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
     dbContext.Database.ExecuteSqlRaw(
         """
         CREATE TABLE IF NOT EXISTS "Badges" (

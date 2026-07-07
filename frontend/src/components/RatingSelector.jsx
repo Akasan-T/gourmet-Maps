@@ -1,4 +1,6 @@
-function RatingSelector({ label, helper, options, value, onChange }) {
+function RatingSelector({ label, helper, options, value, onChange, descriptions }) {
+  const activeDescription = descriptions?.[value]
+
   return (
     <div className="field">
       <div className="field__heading">
@@ -8,6 +10,7 @@ function RatingSelector({ label, helper, options, value, onChange }) {
       <div className="segment-control" role="radiogroup" aria-label={label}>
         {options.map((option) => {
           const checked = option === value
+          const description = descriptions?.[option]
 
           return (
             <button
@@ -15,6 +18,7 @@ function RatingSelector({ label, helper, options, value, onChange }) {
               type="button"
               className={`segment-control__option${checked ? ' segment-control__option--active' : ''}`}
               aria-pressed={checked}
+              title={description ? `★${option}: ${description}` : undefined}
               onClick={() => onChange(option)}
             >
               {option}
@@ -22,6 +26,9 @@ function RatingSelector({ label, helper, options, value, onChange }) {
           )
         })}
       </div>
+      {activeDescription && (
+        <p className="rating-description">★{value}: {activeDescription}</p>
+      )}
     </div>
   )
 }

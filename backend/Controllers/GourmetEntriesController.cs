@@ -47,25 +47,43 @@ namespace GourmetMaps.Controllers
                 return Problem("投稿用のゲストユーザーが見つかりませんでした。", statusCode: 500);
             }
 
-            var overallRating = request.OverallRating > 0
-                ? request.OverallRating
-                : MathF.Round((request.TasteRating + request.RepeatRating) / 2f, 1);
+            // 店舗マスタを解決する:
+            //  - StoreId 指定あり → その店舗へ蓄積 (位置検索で選択したケース)
+            //  - 指定なし → 店名で検索し、無ければ新規作成 (手入力のケース)
+            var store = await ResolveStoreAsync(request, guestUser.Id);
+
+            var storeName = store?.Name ?? request.Name.Trim();
+            var genre = store?.Genre ?? (string.IsNullOrWhiteSpace(request.Genre) ? "未設定" : request.Genre.Trim());
+
+            // ピンは店舗マスタの緯度経度を優先 (位置検索:その地点 / 手入力:登録地点)
+            var latitude = store?.Latitude ?? request.Latitude;
+            var longitude = store?.Longitude ?? request.Longitude;
+
+            // 総合スコアは「また行きたいか」を基準に採用する
+            var overallRating = request.RepeatRating > 0
+                ? request.RepeatRating
+                : (request.OverallRating > 0 ? request.OverallRating : request.TasteRating);
 
             var entry = new GourmetEntry
             {
-                Name = request.Name.Trim(),
-                Genre = string.IsNullOrWhiteSpace(request.Genre) ? "未設定" : request.Genre.Trim(),
+                Name = storeName,
+                Genre = genre,
                 VisitDate = request.VisitDate ?? DateTime.UtcNow,
                 OverallRating = overallRating,
                 TasteRating = request.TasteRating,
-                AppearanceRating = overallRating,
-                CostPerformanceRating = overallRating,
-                VolumeRating = overallRating,
+                CostPerformanceRating = request.CostRating > 0 ? request.CostRating : overallRating,
+                AppearanceRating = request.AtmosphereRating > 0 ? request.AtmosphereRating : overallRating,
+                ServiceRating = request.ServiceRating > 0 ? request.ServiceRating : overallRating,
                 RepeatRating = request.RepeatRating,
+                VolumeRating = overallRating,
                 ReorderRating = request.RepeatRating,
                 Memo = string.IsNullOrWhiteSpace(request.Memo) ? string.Empty : request.Memo.Trim(),
-                Latitude = request.Latitude,
-                Longitude = request.Longitude,
+                SceneTag = string.IsNullOrWhiteSpace(request.SceneTag) ? null : request.SceneTag.Trim(),
+                PriceRange = string.IsNullOrWhiteSpace(request.PriceRange) ? null : request.PriceRange.Trim(),
+                PhotoUrl = string.IsNullOrWhiteSpace(request.PhotoUrl) ? null : request.PhotoUrl.Trim(),
+                Latitude = latitude,
+                Longitude = longitude,
+                StoreID = store?.StoreID,
                 UserID = guestUser.Id,
             };
 
@@ -133,23 +151,95 @@ namespace GourmetMaps.Controllers
             return Ok(AggregateByStore(entries));
         }
 
+        // 評価者数が少ない店舗が上位に来すぎないよう平均方向へ補正する重み (最小信頼票数)
+        private const float BayesianConfidence = 3f;
+
+        // 店舗を解決する。StoreId 指定があればそれを、無ければ店名で検索し、
+        // 見つからなければ新規に店舗マスタへ登録する。
+        private async Task<Store?> ResolveStoreAsync(CreateGourmetEntryRequest request, string userId)
+        {
+            if (request.StoreId is int storeId)
+            {
+                var existing = await _context.Stores.FindAsync(storeId);
+                if (existing is not null)
+                {
+                    return existing;
+                }
+            }
+
+            var name = request.Name.Trim();
+            if (name.Length == 0)
+            {
+                return null;
+            }
+
+            var byName = await _context.Stores
+                .FirstOrDefaultAsync(store => store.Name == name);
+            if (byName is not null)
+            {
+                if (byName.Latitude == null && request.Latitude != null)
+                {
+                    byName.Latitude = request.Latitude;
+                    byName.Longitude = request.Longitude;
+                    await _context.SaveChangesAsync();
+                }
+
+                return byName;
+            }
+
+            var created = new Store
+            {
+                Name = name,
+                Genre = string.IsNullOrWhiteSpace(request.Genre) ? "未設定" : request.Genre.Trim(),
+                Latitude = request.Latitude,
+                Longitude = request.Longitude,
+                ExternalPlaceId = string.IsNullOrWhiteSpace(request.ExternalPlaceId) ? null : request.ExternalPlaceId.Trim(),
+                CreatedByUserId = userId,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            _context.Stores.Add(created);
+            await _context.SaveChangesAsync();
+
+            return created;
+        }
+
         private static IEnumerable<StoreRankingDto> AggregateByStore(IEnumerable<GourmetEntry> entries)
         {
-            return entries
-                .GroupBy(entry => entry.Name)
+            var materialized = entries.ToList();
+            if (materialized.Count == 0)
+            {
+                return new List<StoreRankingDto>();
+            }
+
+            // Bayesian 平均のための事前平均 m: 全評価の「また行きたいか」平均
+            var priorMean = (float)materialized.Average(entry => entry.RepeatRating);
+
+            return materialized
+                // レガシー行(StoreID=null)は店名で束ねる
+                .GroupBy(entry => entry.StoreID.HasValue ? $"id:{entry.StoreID.Value}" : $"name:{entry.Name}")
                 .Select(group =>
                 {
                     var latest = group.OrderByDescending(entry => entry.VisitDate).First();
+                    var count = group.Count();
+                    var average = (float)group.Average(entry => entry.RepeatRating);
+
+                    // Bayesian: (C * m + n * R) / (C + n)
+                    var bayesian = (BayesianConfidence * priorMean + count * average)
+                        / (BayesianConfidence + count);
+
                     return new StoreRankingDto(
-                        group.Key,
+                        latest.Name,
                         latest.Genre,
-                        (float)Math.Round(group.Average(entry => entry.OverallRating), 1),
-                        group.Count(),
+                        (float)Math.Round(average, 1),
+                        (float)Math.Round(bayesian, 2),
+                        count,
                         group.Max(entry => entry.VisitDate),
                         latest.Latitude,
                         latest.Longitude);
                 })
-                .OrderByDescending(store => store.AverageOverallRating)
+                .OrderByDescending(store => store.BayesianScore)
+                .ThenByDescending(store => store.AverageOverallRating)
                 .ToList();
         }
 
@@ -176,12 +266,17 @@ namespace GourmetMaps.Controllers
                 entry.TasteRating,
                 entry.AppearanceRating,
                 entry.CostPerformanceRating,
+                entry.ServiceRating,
                 entry.VolumeRating,
                 entry.RepeatRating,
                 entry.ReorderRating,
                 entry.Memo,
+                entry.SceneTag,
+                entry.PriceRange,
+                entry.PhotoUrl,
                 entry.Latitude,
                 entry.Longitude,
+                entry.StoreID,
                 participants);
         }
 
@@ -191,10 +286,18 @@ namespace GourmetMaps.Controllers
             DateTime? VisitDate,
             float OverallRating,
             float TasteRating,
+            float CostRating,
+            float AtmosphereRating,
+            float ServiceRating,
             float RepeatRating,
             string? Memo,
+            string? SceneTag,
+            string? PriceRange,
+            string? PhotoUrl,
             float Latitude,
             float Longitude,
+            int? StoreId,
+            string? ExternalPlaceId,
             IReadOnlyList<string>? ParticipantUserIds);
 
         public record ParticipantDto(string Id, string DisplayName);
@@ -208,18 +311,24 @@ namespace GourmetMaps.Controllers
             float TasteRating,
             float AppearanceRating,
             float CostPerformanceRating,
+            float ServiceRating,
             float VolumeRating,
             float RepeatRating,
             float ReorderRating,
             string Memo,
+            string? SceneTag,
+            string? PriceRange,
+            string? PhotoUrl,
             float? Latitude,
             float? Longitude,
+            int? StoreId,
             IReadOnlyList<ParticipantDto> Participants);
 
         public record StoreRankingDto(
             string Name,
             string Genre,
             float AverageOverallRating,
+            float BayesianScore,
             int VisitCount,
             DateTime LastVisitDate,
             float? Latitude,

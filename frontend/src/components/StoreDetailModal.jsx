@@ -24,9 +24,15 @@ function StoreDetailModal({ store, onClose }) {
 
             <div className="visit-card__scores" aria-label="Scores">
               <span>味 {Math.round(visit.tasteRating)}</span>
-              <span>再訪 {Math.round(visit.repeatRating)}</span>
-              <span>量 {Math.round(visit.volumeRating)}</span>
+              <span>コスパ {Math.round(visit.costPerformanceRating)}</span>
+              <span>雰囲気 {Math.round(visit.appearanceRating)}</span>
+              <span>接客 {Math.round(visit.serviceRating ?? visit.repeatRating)}</span>
+              <span>また行きたい {Math.round(visit.repeatRating)}</span>
             </div>
+
+            {visit.photoUrl && (
+              <img className="visit-card__photo" src={visit.photoUrl} alt={`${store.name}の写真`} />
+            )}
 
             <p className="visit-card__memo">{visit.memo}</p>
 
@@ -34,6 +40,8 @@ function StoreDetailModal({ store, onClose }) {
               <span className={`visit-card__tag${positiveTags.has(tag) ? ' visit-card__tag--positive' : ''}`}>
                 {tag}
               </span>
+              {visit.sceneTag && <span className="visit-card__tag">{visit.sceneTag}</span>}
+              {visit.priceRange && <span className="visit-card__tag">{visit.priceRange}</span>}
             </div>
           </article>
         )
