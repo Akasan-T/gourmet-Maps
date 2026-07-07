@@ -1,8 +1,9 @@
 import { useMemo, useRef, useState } from 'react'
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import { AttributionControl, MapContainer, Marker, Popup, TileLayer, ZoomControl } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { createCurrentLocationIcon, createPinIcon } from './mapPinIcon'
 import StoreDetailModal from './StoreDetailModal'
+import Modal from './Modal'
 
 const fallbackCenter = [35.7075, 139.666]
 const currentLocationZoom = 16
@@ -12,6 +13,7 @@ function MapView({ stores, members }) {
   const [selectedStore, setSelectedStore] = useState(null)
   const [currentPosition, setCurrentPosition] = useState(null)
   const [locateState, setLocateState] = useState('idle')
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
   const mapRef = useRef(null)
 
   function handleLocate() {
@@ -60,39 +62,19 @@ function MapView({ stores, members }) {
     : fallbackCenter
 
   return (
-    <section className="map-view" aria-labelledby="map-title">
-      <div className="map-view__toolbar">
-        <p className="eyebrow">All spots</p>
-        <h2 id="map-title">みんなが行ったお店</h2>
-        <div className="chip-row" role="list">
-          <button
-            type="button"
-            className={`chip${selectedMember === 'all' ? ' chip--active' : ''}`}
-            onClick={() => setSelectedMember('all')}
-          >
-            全員
-          </button>
-          {members.map((member) => (
-            <button
-              key={member.id}
-              type="button"
-              className={`chip${selectedMember === member.id ? ' chip--active' : ''}`}
-              onClick={() => setSelectedMember(member.id)}
-            >
-              {member.displayName}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="map-view__canvas">
+    <section className="map-page" aria-label="地図">
+      <div className="map-page__canvas">
         <MapContainer
           ref={mapRef}
           center={center}
           zoom={14}
           scrollWheelZoom={false}
+          zoomControl={false}
+          attributionControl={false}
           style={{ height: '100%', width: '100%' }}
         >
+          <ZoomControl position="bottomleft" />
+          <AttributionControl position="bottomright" prefix={false} />
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -124,10 +106,21 @@ function MapView({ stores, members }) {
             </Marker>
           ))}
         </MapContainer>
+      </div>
 
+      <div className="map-page__controls">
         <button
           type="button"
-          className="map-view__locate-button"
+          className="map-page__control-button"
+          onClick={() => setIsFilterOpen(true)}
+          aria-label="絞り込み"
+          title="絞り込み"
+        >
+          絞
+        </button>
+        <button
+          type="button"
+          className="map-page__control-button"
           onClick={handleLocate}
           disabled={locateState === 'locating'}
           aria-label="現在地を表示"
@@ -135,39 +128,68 @@ function MapView({ stores, members }) {
         >
           {locateState === 'locating' ? '…' : '📍'}
         </button>
+        {locateState === 'error' && (
+          <p className="map-page__control-error">現在地を取得できませんでした</p>
+        )}
       </div>
 
-      {locateState === 'error' && (
-        <p className="map-view__empty">現在地を取得できませんでした。位置情報の利用を許可してください。</p>
-      )}
-
-      <div className="map-view__list">
-        <div className="recent-section__header">
-          <div>
-            <p className="eyebrow">Saved spots</p>
-            <h2>保存したお店</h2>
+      {isFilterOpen && (
+        <Modal title="絞り込み" onClose={() => setIsFilterOpen(false)}>
+          <div className="chip-row" role="list">
+            <button
+              type="button"
+              className={`chip${selectedMember === 'all' ? ' chip--active' : ''}`}
+              onClick={() => setSelectedMember('all')}
+            >
+              全員
+            </button>
+            {members.map((member) => (
+              <button
+                key={member.id}
+                type="button"
+                className={`chip${selectedMember === member.id ? ' chip--active' : ''}`}
+                onClick={() => setSelectedMember(member.id)}
+              >
+                {member.displayName}
+              </button>
+            ))}
           </div>
-        </div>
-        {filteredStores.map((store) => (
-          <article
-            key={store.name}
-            className="map-spot"
-            role="button"
-            tabIndex={0}
-            onClick={() => setSelectedStore(store)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') setSelectedStore(store)
-            }}
-          >
-            <span className="map-spot__dot" style={{ background: store.color }}></span>
-            <div>
-              <h3>{store.name}</h3>
-              <p className="visit-card__menu">{store.visits.length}件の記録</p>
+
+          <div className="map-filter-list">
+            <div className="recent-section__header">
+              <div>
+                <p className="eyebrow">Saved spots</p>
+                <h2>保存したお店</h2>
+              </div>
             </div>
-          </article>
-        ))}
-        {filteredStores.length === 0 && <p className="map-view__empty">該当するお店がありません。</p>}
-      </div>
+            {filteredStores.map((store) => (
+              <article
+                key={store.name}
+                className="map-spot"
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  setSelectedStore(store)
+                  setIsFilterOpen(false)
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    setSelectedStore(store)
+                    setIsFilterOpen(false)
+                  }
+                }}
+              >
+                <span className="map-spot__dot" style={{ background: store.color }}></span>
+                <div>
+                  <h3>{store.name}</h3>
+                  <p className="visit-card__menu">{store.visits.length}件の記録</p>
+                </div>
+              </article>
+            ))}
+            {filteredStores.length === 0 && <p className="map-view__empty">該当するお店がありません。</p>}
+          </div>
+        </Modal>
+      )}
 
       {selectedStore && <StoreDetailModal store={selectedStore} onClose={() => setSelectedStore(null)} />}
     </section>

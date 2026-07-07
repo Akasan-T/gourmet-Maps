@@ -64,6 +64,18 @@ function App() {
 
   const reloadData = () => setReloadToken((token) => token + 1)
 
+  useEffect(() => {
+    if (activeTab !== 'map') return undefined
+
+    const { style } = document.body
+    const previousOverflow = style.overflow
+    style.overflow = 'hidden'
+
+    return () => {
+      style.overflow = previousOverflow
+    }
+  }, [activeTab])
+
   const entries24h = useMemo(() => entries.filter((entry) => withinHours(entry, 24)), [entries])
   const storesToday = useMemo(() => groupEntriesByStore(entries24h), [entries24h])
   const ranking24h = useMemo(
