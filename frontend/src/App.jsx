@@ -29,8 +29,15 @@ const navigationItems = [
   { key: 'profile', label: '自分' },
 ]
 
+const validTabKeys = new Set(['home', 'capture', 'map', 'rank', 'profile'])
+
+function initialTabFromUrl() {
+  const requestedTab = new URLSearchParams(window.location.search).get('tab')
+  return validTabKeys.has(requestedTab) ? requestedTab : 'home'
+}
+
 function App() {
-  const [activeTab, setActiveTab] = useState('home')
+  const [activeTab, setActiveTab] = useState(initialTabFromUrl)
   const [entries, setEntries] = useState([])
   const [members, setMembers] = useState([])
   const [loadState, setLoadState] = useState('loading')
