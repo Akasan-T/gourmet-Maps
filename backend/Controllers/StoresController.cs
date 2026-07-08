@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GourmetMaps.Data;
@@ -5,15 +6,16 @@ using GourmetMaps.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace GourmetMaps.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class StoresController : ControllerBase
     {
-        private const string GuestUserName = "guest-map";
         // 同じ店舗とみなす距離のしきい値 (メートル)
         private const double DuplicateDistanceMeters = 80;
 
@@ -119,10 +121,6 @@ namespace GourmetMaps.Controllers
                 return Ok(ToDto(match, null, null));
             }
 
-            var guestUser = await _context.Users
-                .AsNoTracking()
-                .SingleOrDefaultAsync(user => user.UserName == GuestUserName);
-
             var store = new Store
             {
                 Name = name,
@@ -131,7 +129,7 @@ namespace GourmetMaps.Controllers
                 Latitude = request.Latitude,
                 Longitude = request.Longitude,
                 ExternalPlaceId = string.IsNullOrWhiteSpace(request.ExternalPlaceId) ? null : request.ExternalPlaceId.Trim(),
-                CreatedByUserId = guestUser?.Id,
+                CreatedByUserId = User.FindFirstValue(ClaimTypes.NameIdentifier),
                 CreatedAt = DateTime.UtcNow,
             };
 

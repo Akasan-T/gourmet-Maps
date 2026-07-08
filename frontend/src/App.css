@@ -545,6 +545,16 @@
 
 .visit-card__footer {
   margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.visit-card__delete {
+  margin-left: auto;
+  color: #d64545;
+}
+
+.visit-card__delete:disabled {
+  opacity: 0.5;
 }
 
 .bottom-nav {
