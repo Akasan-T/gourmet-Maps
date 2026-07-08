@@ -9,7 +9,7 @@ const medals = ['🥇', '🥈', '🥉']
 const fallbackCenter = [35.7075, 139.666]
 const currentLocationZoom = 16
 
-function HomeView({ stores, ranking }) {
+function HomeView({ stores, ranking, onDataChange }) {
   const [selectedStore, setSelectedStore] = useState(null)
   const [currentPosition, setCurrentPosition] = useState(null)
   const [locateState, setLocateState] = useState('idle')
@@ -142,7 +142,13 @@ function HomeView({ stores, ranking }) {
         </div>
       </section>
 
-      {selectedStore && <StoreDetailModal store={selectedStore} onClose={() => setSelectedStore(null)} />}
+      {selectedStore && (
+        <StoreDetailModal
+          store={selectedStore}
+          onClose={() => setSelectedStore(null)}
+          onDeleted={onDataChange}
+        />
+      )}
     </>
   )
 }
