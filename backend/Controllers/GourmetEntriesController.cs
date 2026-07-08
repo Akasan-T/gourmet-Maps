@@ -116,6 +116,28 @@ namespace GourmetMaps.Controllers
             return CreatedAtAction(nameof(GetGourmetEntries), new { id = entry.GourmetEntryID }, ToDto(entry, participantDtos));
         }
 
+        // DELETE: api/gourmetentries/5
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteGourmetEntry(int id)
+        {
+            var entry = await _context.GourmetEntries.FindAsync(id);
+            if (entry is null)
+            {
+                return NotFound();
+            }
+
+            // 一緒に行ったメンバーの中間レコードを先に削除する
+            var participants = await _context.GourmetEntryParticipants
+                .Where(participant => participant.GourmetEntryID == id)
+                .ToListAsync();
+            _context.GourmetEntryParticipants.RemoveRange(participants);
+
+            _context.GourmetEntries.Remove(entry);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
         // GET: api/gourmetentries/rankings/overall
         [HttpGet("rankings/overall")]
         public async Task<ActionResult<IEnumerable<StoreRankingDto>>> GetOverallRanking()

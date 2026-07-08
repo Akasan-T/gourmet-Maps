@@ -64,6 +64,16 @@ export async function registerStore(payload) {
   return response.json()
 }
 
+export async function deleteGourmetEntry(id) {
+  const response = await fetch(`${apiBaseUrl}/api/GourmetEntries/${id}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    throw new Error(`delete-failed-${response.status}`)
+  }
+}
+
 export async function createGourmetEntry(payload) {
   const response = await fetch(`${apiBaseUrl}/api/GourmetEntries`, {
     method: 'POST',
