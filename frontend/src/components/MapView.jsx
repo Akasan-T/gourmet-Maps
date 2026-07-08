@@ -10,7 +10,7 @@ const fallbackCenter = [35.7075, 139.666]
 const currentLocationZoom = 16
 const ratingOptions = ['5', '4', '3', '2', '1']
 
-function MapView({ stores }) {
+function MapView({ stores, onDataChange }) {
   const [selectedGenre, setSelectedGenre] = useState('all')
   const [selectedVisitType, setSelectedVisitType] = useState('all')
   const [minTasteRating, setMinTasteRating] = useState('all')
@@ -284,7 +284,13 @@ function MapView({ stores }) {
         </Modal>
       )}
 
-      {selectedStore && <StoreDetailModal store={selectedStore} onClose={() => setSelectedStore(null)} />}
+      {selectedStore && (
+        <StoreDetailModal
+          store={selectedStore}
+          onClose={() => setSelectedStore(null)}
+          onDeleted={onDataChange}
+        />
+      )}
     </section>
   )
 }
