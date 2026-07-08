@@ -67,6 +67,14 @@ function StoreDetailModal({ store, onClose, onDeleted }) {
               </span>
               {visit.sceneTag && <span className="visit-card__tag">{visit.sceneTag}</span>}
               {visit.priceRange && <span className="visit-card__tag">{visit.priceRange}</span>}
+              <button
+                type="button"
+                className="text-button visit-card__delete"
+                onClick={() => handleDelete(visit)}
+                disabled={deletingId === visit.id}
+              >
+                {deletingId === visit.id ? '削除中…' : '削除'}
+              </button>
             </div>
           </article>
         )

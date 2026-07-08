@@ -27,9 +27,16 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? "Data Source=gourmetmaps.db";
 builder.Services.AddDbContext<GourmetDbContext>(options => options.UseSqlite(connectionString));
 
+// SPA から利用する Bearer トークン / Cookie ベースの認証 API エンドポイント
 builder.Services
-    .AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddIdentityApiEndpoints<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<GourmetDbContext>();
+
+builder.Services.AddAuthorization();
+
+// 開発用のメール送信: 確認リンク等をサーバーのコンソールへ出力する。
+// 本番では SMTP / SendGrid 等を使う IEmailSender<ApplicationUser> に差し替える。
+builder.Services.AddTransient<IEmailSender<ApplicationUser>, ConsoleEmailSender>();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -302,11 +309,15 @@ app.UseHttpsRedirection();
 // ★ ルーティングと認証の順番は重要です
 app.UseRouting();
 app.UseCors("FrontendClient");
+app.UseAuthentication();
 app.UseAuthorization();
+
+// Identity API (register / login / refresh / confirmEmail など) を /api/auth 配下に公開
+app.MapGroup("/api/auth").MapIdentityApi<ApplicationUser>();
 
 // Identity のエンドポイントと Razor Pages エンドポイントのマッピング
 app.MapControllers();
-app.MapRazorPages(); 
+app.MapRazorPages();
 
 // 静的ファイルのパイプライン処理 (通常は UseRouting の後、Map... の前)
 app.MapStaticAssets();

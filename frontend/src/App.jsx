@@ -120,7 +120,7 @@ function App() {
           <p className="map-view__empty">バックエンドに接続できませんでした。backend が起動しているか確認してください。</p>
         )}
 
-        {activeTab === 'home' && <HomeView stores={storesToday} ranking={ranking24h} />}
+        {activeTab === 'home' && <HomeView stores={storesToday} ranking={ranking24h} onDataChange={reloadData} />}
 
         {activeTab === 'capture' && (
           <>
