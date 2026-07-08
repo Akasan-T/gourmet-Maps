@@ -1,10 +1,35 @@
+import { useState } from 'react'
 import Modal from './Modal'
+import { deleteGourmetEntry } from '../api/client'
 import { deriveTag, formatRelativeTime, participantNames, positiveTags } from '../data/visits'
 
-function StoreDetailModal({ store, onClose }) {
+function StoreDetailModal({ store, onClose, onDeleted }) {
+  const [deletingId, setDeletingId] = useState(null)
+  const [error, setError] = useState('')
+
+  async function handleDelete(visit) {
+    if (!window.confirm(`「${store.name}」のこの記録を削除しますか？`)) return
+
+    setDeletingId(visit.id)
+    setError('')
+    try {
+      await deleteGourmetEntry(visit.id)
+      onDeleted?.()
+      // 表示中の店舗の記録がこれ1件だけなら、モーダルを閉じる
+      if (store.visits.length <= 1) {
+        onClose()
+      }
+    } catch {
+      setError('削除に失敗しました。もう一度お試しください。')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   return (
     <Modal title={store.name} onClose={onClose}>
       <p className="visit-card__menu">{store.visits.length}件の記録</p>
+      {error && <p className="map-view__empty">{error}</p>}
 
       {store.visits.map((visit) => {
         const tag = deriveTag(visit)

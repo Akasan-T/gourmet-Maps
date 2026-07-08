@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using GourmetMaps.Data;
 using GourmetMaps.Models;
+using GourmetMaps.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
