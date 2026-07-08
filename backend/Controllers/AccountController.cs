@@ -59,10 +59,11 @@ namespace GourmetMaps.Controllers
 
         private static AccountDto ToDto(ApplicationUser user)
         {
+            // UserName / Email はメールのハッシュ値なので、外部にはそのまま返さない。
             return new AccountDto(
                 user.Id,
-                user.UserName,
-                user.Email,
+                null,
+                null,
                 user.DisplayName);
         }
 

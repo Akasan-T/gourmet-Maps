@@ -387,6 +387,15 @@ app.Use(async (context, next) =>
     var result = await userManager.CreateAsync(newUser, payload.Password);
     if (!result.Succeeded)
     {
+        // ハッシュ化により UserName はメールのハッシュ値になるため、
+        // 重複エラーは生の(ハッシュ入り)文言を出さず、分かりやすい日本語に置き換える。
+        if (result.Errors.Any(error => error.Code is "DuplicateUserName" or "DuplicateEmail"))
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsJsonAsync(new { detail = "このメールアドレスは既に登録されています。" });
+            return;
+        }
+
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
         await context.Response.WriteAsJsonAsync(new
         {
@@ -398,6 +407,65 @@ app.Use(async (context, next) =>
     }
 
     context.Response.StatusCode = StatusCodes.Status200OK;
+});
+
+// ログイン時もメールをハッシュ化してから照合する。
+// 既定の Identity login (/api/auth/login) を横取りし、ハッシュ化ユーザー名で認証して
+// Bearer トークンを発行する (成功時はトークン JSON をハンドラが自動で書き込む)。
+app.Use(async (context, next) =>
+{
+    if (!HttpMethods.IsPost(context.Request.Method)
+        || !context.Request.Path.Equals("/api/auth/login", StringComparison.OrdinalIgnoreCase))
+    {
+        await next();
+        return;
+    }
+
+    LoginRequestBody? login;
+    try
+    {
+        login = await context.Request.ReadFromJsonAsync<LoginRequestBody>();
+    }
+    catch (System.Text.Json.JsonException)
+    {
+        login = null;
+    }
+
+    if (login is null || string.IsNullOrWhiteSpace(login.Email) || string.IsNullOrWhiteSpace(login.Password))
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        await context.Response.WriteAsJsonAsync(new { detail = "メールアドレスまたはパスワードが正しくありません。" });
+        return;
+    }
+
+    var hashKey = context.RequestServices.GetRequiredService<IConfiguration>()["Auth:EmailHashKey"];
+    if (string.IsNullOrWhiteSpace(hashKey))
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        await context.Response.WriteAsJsonAsync(new { detail = "サーバー設定 (Auth:EmailHashKey) が未設定です。" });
+        return;
+    }
+
+    var userManager = context.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+    var signInManager = context.RequestServices.GetRequiredService<SignInManager<ApplicationUser>>();
+
+    var user = await userManager.FindByNameAsync(HashEmail(login.Email, hashKey));
+    if (user is null)
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        await context.Response.WriteAsJsonAsync(new { detail = "メールアドレスまたはパスワードが正しくありません。" });
+        return;
+    }
+
+    // Bearer スキームでサインインすると、成功時にアクセス/リフレッシュトークンが
+    // レスポンス本文へ書き込まれる (MapIdentityApi の login と同じ挙動)。
+    signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
+    var result = await signInManager.PasswordSignInAsync(user, login.Password, isPersistent: false, lockoutOnFailure: true);
+    if (!result.Succeeded)
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        await context.Response.WriteAsJsonAsync(new { detail = "メールアドレスまたはパスワードが正しくありません。" });
+    }
 });
 
 // Identity API (register / login / refresh / confirmEmail など) を /api/auth 配下に公開
@@ -415,3 +483,6 @@ app.Run();
 
 // 招待コード制の新規登録リクエスト本文
 record RegisterWithInviteRequest(string? Email, string? Password, string? InviteCode, string? DisplayName);
+
+// ログインリクエスト本文
+record LoginRequestBody(string? Email, string? Password);
