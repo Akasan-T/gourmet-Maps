@@ -40,19 +40,17 @@ namespace GourmetMaps.Controllers
         [HttpPost]
         public async Task<ActionResult<GourmetEntryMapItemDto>> CreateGourmetEntry(CreateGourmetEntryRequest request)
         {
-            var guestUser = await _context.Users
-                .AsNoTracking()
-                .SingleOrDefaultAsync(user => user.UserName == GuestUserName);
-
-            if (guestUser is null)
+            // 記録はログイン中のユーザーに紐付ける。
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
             {
-                return Problem("投稿用のゲストユーザーが見つかりませんでした。", statusCode: 500);
+                return Unauthorized();
             }
 
             // 店舗マスタを解決する:
             //  - StoreId 指定あり → その店舗へ蓄積 (位置検索で選択したケース)
             //  - 指定なし → 店名で検索し、無ければ新規作成 (手入力のケース)
-            var store = await ResolveStoreAsync(request, guestUser.Id);
+            var store = await ResolveStoreAsync(request, userId);
 
             var storeName = store?.Name ?? request.Name.Trim();
             var genre = store?.Genre ?? (string.IsNullOrWhiteSpace(request.Genre) ? "未設定" : request.Genre.Trim());
@@ -86,7 +84,7 @@ namespace GourmetMaps.Controllers
                 Latitude = latitude,
                 Longitude = longitude,
                 StoreID = store?.StoreID,
-                UserID = guestUser.Id,
+                UserID = userId,
             };
 
             _context.GourmetEntries.Add(entry);
