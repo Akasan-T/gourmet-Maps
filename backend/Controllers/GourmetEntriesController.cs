@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GourmetMaps.Data;
@@ -5,15 +6,16 @@ using GourmetMaps.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace GourmetMaps.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class GourmetEntriesController : ControllerBase
     {
-        private const string GuestUserName = "guest-map";
         private readonly GourmetDbContext _context;
 
         public GourmetEntriesController(GourmetDbContext context)

@@ -14,11 +14,9 @@ function StoreDetailModal({ store, onClose, onDeleted }) {
     setError('')
     try {
       await deleteGourmetEntry(visit.id)
+      // データ再取得後は store が古くなるため、モーダルを閉じてから反映する
+      onClose()
       onDeleted?.()
-      // 表示中の店舗の記録がこれ1件だけなら、モーダルを閉じる
-      if (store.visits.length <= 1) {
-        onClose()
-      }
     } catch {
       setError('削除に失敗しました。もう一度お試しください。')
     } finally {
