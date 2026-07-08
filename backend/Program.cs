@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using GourmetMaps.Data;
@@ -312,6 +314,92 @@ app.UseCors("FrontendClient");
 app.UseAuthentication();
 app.UseAuthorization();
 
+// メールアドレスは平文で保存せず、サーバー秘密鍵による HMAC-SHA256 ハッシュに変換して扱う。
+// (ログイン時も同じ関数でハッシュ化して照合するため、DB には友達の生メールが一切残らない)
+static string HashEmail(string email, string key)
+{
+    var normalized = email.Trim().ToUpperInvariant();
+    using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key));
+    var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(normalized));
+    return Convert.ToHexString(hash);
+}
+
+// 招待コード制の新規登録:
+// 既定の Identity register (/api/auth/register) を横取りし、appsettings の
+// 招待コードと一致した場合のみ「確認済み」ユーザーを作成する (身内利用のため確認メールは省略)。
+app.Use(async (context, next) =>
+{
+    if (!HttpMethods.IsPost(context.Request.Method)
+        || !context.Request.Path.Equals("/api/auth/register", StringComparison.OrdinalIgnoreCase))
+    {
+        await next();
+        return;
+    }
+
+    RegisterWithInviteRequest? payload;
+    try
+    {
+        payload = await context.Request.ReadFromJsonAsync<RegisterWithInviteRequest>();
+    }
+    catch (System.Text.Json.JsonException)
+    {
+        payload = null;
+    }
+
+    if (payload is null || string.IsNullOrWhiteSpace(payload.Email) || string.IsNullOrWhiteSpace(payload.Password))
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(new { detail = "メールアドレスとパスワードを入力してください。" });
+        return;
+    }
+
+    var configuration = context.RequestServices.GetRequiredService<IConfiguration>();
+
+    var configuredCode = configuration["Auth:InviteCode"];
+    if (string.IsNullOrWhiteSpace(configuredCode)
+        || !string.Equals(payload.InviteCode?.Trim(), configuredCode.Trim(), StringComparison.Ordinal))
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(new { detail = "招待コードが正しくありません。" });
+        return;
+    }
+
+    var hashKey = configuration["Auth:EmailHashKey"];
+    if (string.IsNullOrWhiteSpace(hashKey))
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        await context.Response.WriteAsJsonAsync(new { detail = "サーバー設定 (Auth:EmailHashKey) が未設定です。" });
+        return;
+    }
+
+    // メールはハッシュ化した値を UserName / Email として保存する (平文は保持しない)
+    var hashedEmail = HashEmail(payload.Email, hashKey);
+
+    var userManager = context.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+    var newUser = new ApplicationUser
+    {
+        UserName = hashedEmail,
+        Email = hashedEmail,
+        EmailConfirmed = true, // 身内利用のため確認メールは省略し、登録直後にログインできるようにする
+        DisplayName = string.IsNullOrWhiteSpace(payload.DisplayName) ? null : payload.DisplayName.Trim(),
+    };
+
+    var result = await userManager.CreateAsync(newUser, payload.Password);
+    if (!result.Succeeded)
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(new
+        {
+            errors = result.Errors
+                .GroupBy(error => error.Code)
+                .ToDictionary(group => group.Key, group => group.Select(error => error.Description).ToArray()),
+        });
+        return;
+    }
+
+    context.Response.StatusCode = StatusCodes.Status200OK;
+});
+
 // Identity API (register / login / refresh / confirmEmail など) を /api/auth 配下に公開
 app.MapGroup("/api/auth").MapIdentityApi<ApplicationUser>();
 
@@ -324,3 +412,6 @@ app.MapStaticAssets();
 app.MapRazorPages().WithStaticAssets(); // この行は冗長な可能性が高いですが、残しておきます。
 
 app.Run();
+
+// 招待コード制の新規登録リクエスト本文
+record RegisterWithInviteRequest(string? Email, string? Password, string? InviteCode, string? DisplayName);

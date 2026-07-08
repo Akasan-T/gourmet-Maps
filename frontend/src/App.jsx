@@ -9,7 +9,9 @@ import ProfileView from './components/ProfileView'
 import QuickComposer from './components/QuickComposer'
 import RankView from './components/RankView'
 import RecentVisitList from './components/RecentVisitList'
+import AuthView from './components/AuthView'
 import { fetchGourmetEntries, fetchMembers } from './api/client'
+import { useAuth } from './auth/useAuth'
 import { deriveTag, formatRelativeTime, groupEntriesByStore, participantNames, withinHours } from './data/visits'
 
 const dailyStats = [
@@ -37,6 +39,7 @@ function initialTabFromUrl() {
 }
 
 function App() {
+  const { user, status: authStatus, signOut, setDisplayName } = useAuth()
   const [activeTab, setActiveTab] = useState(initialTabFromUrl)
   const [entries, setEntries] = useState([])
   const [members, setMembers] = useState([])
@@ -44,6 +47,9 @@ function App() {
   const [reloadToken, setReloadToken] = useState(0)
 
   useEffect(() => {
+    // ログイン済みのときだけデータを取得する
+    if (authStatus !== 'authenticated') return undefined
+
     let ignore = false
 
     Promise.all([fetchGourmetEntries(), fetchMembers()])
@@ -60,7 +66,7 @@ function App() {
     return () => {
       ignore = true
     }
-  }, [reloadToken])
+  }, [reloadToken, authStatus])
 
   const reloadData = () => setReloadToken((token) => token + 1)
 
@@ -108,7 +114,29 @@ function App() {
     [entries],
   )
 
-  const currentUser = { name: members[0]?.displayName ?? 'ゲスト', entryCount: entries.length, favoriteCount: allStores.length }
+  const currentUser = {
+    name: user?.displayName ?? user?.email ?? 'ゲスト',
+    email: user?.email ?? '',
+    displayName: user?.displayName ?? '',
+    entryCount: entries.length,
+    favoriteCount: allStores.length,
+  }
+
+  // 認証状態の確認中はスプラッシュ、未ログインならログイン画面を表示する
+  if (authStatus === 'loading') {
+    return (
+      <div className="app-shell">
+        <div className="app-shell__backdrop" aria-hidden="true"></div>
+        <main className="mobile-frame auth-screen">
+          <p className="map-view__empty">読み込み中…</p>
+        </main>
+      </div>
+    )
+  }
+
+  if (authStatus !== 'authenticated') {
+    return <AuthView />
+  }
 
   return (
     <div className="app-shell">
@@ -134,7 +162,14 @@ function App() {
 
         {activeTab === 'rank' && <RankView stores={allStores} members={members} />}
 
-        {activeTab === 'profile' && <ProfileView user={currentUser} members={members} />}
+        {activeTab === 'profile' && (
+          <ProfileView
+            user={currentUser}
+            members={members}
+            onSignOut={signOut}
+            onUpdateDisplayName={setDisplayName}
+          />
+        )}
       </main>
       <BottomNavigation items={navigationItems} activeKey={activeTab} onSelect={setActiveTab} />
     </div>

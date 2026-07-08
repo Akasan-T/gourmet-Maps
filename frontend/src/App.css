@@ -987,3 +987,58 @@
     padding-inline: 0;
   }
 }
+
+/* --- ログイン / 新規登録画面 --- */
+.auth-screen {
+  justify-content: center;
+  gap: 24px;
+}
+
+.auth-brand {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.auth-card {
+  align-self: stretch;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.auth-form .primary-button {
+  margin-top: 4px;
+  width: 100%;
+}
+
+.auth-switch {
+  margin-top: 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.auth-switch .text-button {
+  padding: 0 6px;
+  min-height: auto;
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
+.profile-email {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.profile-displayname {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
