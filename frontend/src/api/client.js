@@ -146,6 +146,25 @@ export function fetchMe() {
   return getJson('/api/account/me')
 }
 
+// --- ワンタイム招待コード (「初代タベマップ」称号保有者のみ) ---
+
+export async function issueInvite() {
+  const response = await authFetch('/api/invites', { method: 'POST' })
+
+  if (response.status === 403) {
+    throw new Error('招待コードを発行する権限がありません。')
+  }
+  if (!response.ok) {
+    throw new Error('招待コードの発行に失敗しました。')
+  }
+
+  return response.json()
+}
+
+export function fetchInvites() {
+  return getJson('/api/invites')
+}
+
 export async function updateDisplayName(displayName) {
   const response = await authFetch('/api/account/me', {
     method: 'PUT',

@@ -120,6 +120,8 @@ function App() {
     displayName: user?.displayName ?? '',
     entryCount: entries.length,
     favoriteCount: allStores.length,
+    titles: user?.titles ?? [],
+    canIssueInvites: user?.canIssueInvites ?? false,
   }
 
   // 認証状態の確認中はスプラッシュ、未ログインならログイン画面を表示する

@@ -1,10 +1,25 @@
 import { useState } from 'react'
 import MemberAvatars from './MemberAvatars'
+import { issueInvite } from '../api/client'
+
+function formatExpiry(expiresAt) {
+  const date = new Date(expiresAt)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleString('ja-JP', { hour: '2-digit', minute: '2-digit', month: 'numeric', day: 'numeric' })
+}
 
 function ProfileView({ user, members, onSignOut, onUpdateDisplayName }) {
   const [displayName, setDisplayName] = useState(user.displayName ?? '')
   const [status, setStatus] = useState(null) // { type, message }
   const [saving, setSaving] = useState(false)
+
+  const titles = user.titles ?? []
+  const canIssueInvites = user.canIssueInvites ?? false
+
+  const [invite, setInvite] = useState(null) // { code, expiresAt }
+  const [inviteError, setInviteError] = useState(null)
+  const [issuing, setIssuing] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   async function handleSaveDisplayName(event) {
     event.preventDefault()
@@ -22,6 +37,31 @@ function ProfileView({ user, members, onSignOut, onUpdateDisplayName }) {
     }
   }
 
+  async function handleIssueInvite() {
+    if (issuing) return
+    setIssuing(true)
+    setInviteError(null)
+    setCopied(false)
+    try {
+      const result = await issueInvite()
+      setInvite(result)
+    } catch (error) {
+      setInviteError(error.message)
+    } finally {
+      setIssuing(false)
+    }
+  }
+
+  async function handleCopy() {
+    if (!invite?.code) return
+    try {
+      await navigator.clipboard.writeText(invite.code)
+      setCopied(true)
+    } catch {
+      setCopied(false)
+    }
+  }
+
   return (
     <section className="composer-card" aria-labelledby="profile-title">
       <div className="composer-card__header">
@@ -34,6 +74,19 @@ function ProfileView({ user, members, onSignOut, onUpdateDisplayName }) {
           ログアウト
         </button>
       </div>
+
+      {titles.length > 0 && (
+        <div className="profile-titles">
+          <span className="field__label">称号</span>
+          <div className="chip-row" role="list">
+            {titles.map((title) => (
+              <span key={title} className="chip chip--active" role="listitem">
+                {title}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="profile-stats">
         <article className="snapshot-metric">
@@ -74,10 +127,42 @@ function ProfileView({ user, members, onSignOut, onUpdateDisplayName }) {
         </button>
       </form>
 
+      {canIssueInvites && (
+        <div className="profile-invite">
+          <div className="field__heading">
+            <span className="field__label">ワンタイム合言葉を発行</span>
+          </div>
+          <p className="field__helper">
+            発行した合言葉は<strong>1時間・1回きり</strong>で有効。新しく招待したい人にこの合言葉を伝えると、その人だけが新規登録できます。
+          </p>
+
+          {invite && (
+            <div className="profile-invite__result">
+              <code className="profile-invite__code">{invite.code}</code>
+              <button type="button" className="text-button" onClick={handleCopy}>
+                {copied ? 'コピーしました' : 'コピー'}
+              </button>
+              {invite.expiresAt && (
+                <p className="composer-card__nearby-status">有効期限: {formatExpiry(invite.expiresAt)} まで</p>
+              )}
+            </div>
+          )}
+
+          {inviteError && (
+            <p className="composer-card__status composer-card__status--error" role="alert">
+              {inviteError}
+            </p>
+          )}
+
+          <button type="button" className="primary-button" onClick={handleIssueInvite} disabled={issuing}>
+            {issuing ? '発行中…' : invite ? 'もう1つ発行' : 'ワンタイム合言葉を発行'}
+          </button>
+        </div>
+      )}
+
       <div className="profile-share">
         <div className="field__heading">
-          <span className="field__label">身内だけで共有</span>
-          <button type="button" className="text-button">招待する</button>
+          <span className="field__label">身内メンバー</span>
         </div>
         <MemberAvatars members={members} />
         <ul className="profile-share__list">

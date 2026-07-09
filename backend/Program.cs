@@ -263,6 +263,22 @@ using (var scope = app.Services.CreateScope())
         """
         CREATE INDEX IF NOT EXISTS "IX_GourmetEntryParticipants_ApplicationUserId" ON "GourmetEntryParticipants" ("ApplicationUserId");
         """);
+    dbContext.Database.ExecuteSqlRaw(
+        """
+        CREATE TABLE IF NOT EXISTS "InviteCodes" (
+            "InviteCodeID" INTEGER NOT NULL CONSTRAINT "PK_InviteCodes" PRIMARY KEY AUTOINCREMENT,
+            "Code" TEXT NOT NULL,
+            "CreatedByUserId" TEXT NOT NULL,
+            "CreatedAt" TEXT NOT NULL,
+            "ExpiresAt" TEXT NOT NULL,
+            "UsedAt" TEXT NULL,
+            "UsedByUserId" TEXT NULL
+        );
+        """);
+    dbContext.Database.ExecuteSqlRaw(
+        """
+        CREATE UNIQUE INDEX IF NOT EXISTS "IX_InviteCodes_Code" ON "InviteCodes" ("Code");
+        """);
 
     var guestUser = await userManager.FindByNameAsync(guestUserName);
     if (guestUser is null)
@@ -300,6 +316,42 @@ using (var scope = app.Services.CreateScope())
             EmailConfirmed = true,
             DisplayName = trimmedName
         });
+    }
+
+    // 特別称号「初代タベマップ」をシードし、設定のオーナーへ付与する (冪等)。
+    var ownerBadgeTitle = GourmetMaps.Controllers.InvitesController.OwnerBadgeTitle;
+    var ownerBadge = await dbContext.Badges.FirstOrDefaultAsync(badge => badge.Title == ownerBadgeTitle);
+    if (ownerBadge is null)
+    {
+        ownerBadge = new Badge
+        {
+            Title = ownerBadgeTitle,
+            Description = "このグルメマップを最初に始めた人に贈られる称号。ワンタイム招待コードを発行できる。",
+            IconUrl = string.Empty,
+        };
+        dbContext.Badges.Add(ownerBadge);
+        await dbContext.SaveChangesAsync();
+    }
+
+    var ownerEmailForSeed = builder.Configuration["Auth:OwnerEmail"];
+    var ownerHashKeyForSeed = builder.Configuration["Auth:EmailHashKey"];
+    if (!string.IsNullOrWhiteSpace(ownerEmailForSeed) && !string.IsNullOrWhiteSpace(ownerHashKeyForSeed))
+    {
+        var ownerUser = await userManager.FindByNameAsync(HashEmail(ownerEmailForSeed, ownerHashKeyForSeed));
+        if (ownerUser is not null)
+        {
+            var alreadyGranted = await dbContext.ApplicationUserBadges
+                .AnyAsync(link => link.ApplicationUserId == ownerUser.Id && link.BadgeID == ownerBadge.BadgeID);
+            if (!alreadyGranted)
+            {
+                dbContext.ApplicationUserBadges.Add(new ApplicationUserBadge
+                {
+                    ApplicationUserId = ownerUser.Id,
+                    BadgeID = ownerBadge.BadgeID,
+                });
+                await dbContext.SaveChangesAsync();
+            }
+        }
     }
 }
 
@@ -355,20 +407,39 @@ app.Use(async (context, next) =>
 
     var configuration = context.RequestServices.GetRequiredService<IConfiguration>();
 
-    var configuredCode = configuration["Auth:InviteCode"];
-    if (string.IsNullOrWhiteSpace(configuredCode)
-        || !string.Equals(payload.InviteCode?.Trim(), configuredCode.Trim(), StringComparison.Ordinal))
-    {
-        context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        await context.Response.WriteAsJsonAsync(new { detail = "招待コードが正しくありません。" });
-        return;
-    }
-
     var hashKey = configuration["Auth:EmailHashKey"];
     if (string.IsNullOrWhiteSpace(hashKey))
     {
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
         await context.Response.WriteAsJsonAsync(new { detail = "サーバー設定 (Auth:EmailHashKey) が未設定です。" });
+        return;
+    }
+
+    var db = context.RequestServices.GetRequiredService<GourmetDbContext>();
+    var ownerBadgeTitle = GourmetMaps.Controllers.InvitesController.OwnerBadgeTitle;
+    var now = DateTime.UtcNow;
+
+    var submittedCode = payload.InviteCode?.Trim() ?? string.Empty;
+    var normalizedCode = submittedCode.ToUpperInvariant();
+
+    // ワンタイム招待コード (未使用・未失効) を照合する
+    var invite = await db.InviteCodes.FirstOrDefaultAsync(code => code.Code == normalizedCode);
+    var oneTimeValid = invite is not null && invite.UsedAt is null && invite.ExpiresAt > now;
+
+    // ブートストラップ: オーナー (初代タベマップ称号保有者) がまだ存在しない場合に限り、
+    // 設定の固定合言葉での登録を許可する。オーナーが生まれた後は固定合言葉は無効になる。
+    var ownerExists = await db.ApplicationUserBadges
+        .Include(link => link.Badge)
+        .AnyAsync(link => link.Badge.Title == ownerBadgeTitle);
+    var fixedCode = configuration["Auth:InviteCode"];
+    var bootstrapValid = !ownerExists
+        && !string.IsNullOrWhiteSpace(fixedCode)
+        && string.Equals(submittedCode, fixedCode.Trim(), StringComparison.Ordinal);
+
+    if (!oneTimeValid && !bootstrapValid)
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(new { detail = "招待コードが正しくないか、有効期限が切れています。発行者に新しいコードを依頼してください。" });
         return;
     }
 
@@ -405,6 +476,45 @@ app.Use(async (context, next) =>
         });
         return;
     }
+
+    // 使用したワンタイムコードを使用済みにする
+    if (oneTimeValid && invite is not null)
+    {
+        invite.UsedAt = now;
+        invite.UsedByUserId = newUser.Id;
+    }
+
+    // 設定のオーナーのメールで登録された場合は「初代タベマップ」称号を付与する
+    var ownerEmail = configuration["Auth:OwnerEmail"];
+    if (!string.IsNullOrWhiteSpace(ownerEmail)
+        && string.Equals(HashEmail(ownerEmail, hashKey), hashedEmail, StringComparison.Ordinal))
+    {
+        var ownerBadge = await db.Badges.FirstOrDefaultAsync(badge => badge.Title == ownerBadgeTitle);
+        if (ownerBadge is null)
+        {
+            ownerBadge = new Badge
+            {
+                Title = ownerBadgeTitle,
+                Description = "このグルメマップを最初に始めた人に贈られる称号。ワンタイム招待コードを発行できる。",
+                IconUrl = string.Empty,
+            };
+            db.Badges.Add(ownerBadge);
+            await db.SaveChangesAsync();
+        }
+
+        var linked = await db.ApplicationUserBadges
+            .AnyAsync(link => link.ApplicationUserId == newUser.Id && link.BadgeID == ownerBadge.BadgeID);
+        if (!linked)
+        {
+            db.ApplicationUserBadges.Add(new ApplicationUserBadge
+            {
+                ApplicationUserId = newUser.Id,
+                BadgeID = ownerBadge.BadgeID,
+            });
+        }
+    }
+
+    await db.SaveChangesAsync();
 
     context.Response.StatusCode = StatusCodes.Status200OK;
 });

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using GourmetMaps.Data;
 using GourmetMaps.Models;
 using System.Threading.Tasks;
 
@@ -14,10 +16,12 @@ namespace GourmetMaps.Controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly GourmetDbContext _dbContext;
 
-        public AccountController(UserManager<ApplicationUser> userManager)
+        public AccountController(UserManager<ApplicationUser> userManager, GourmetDbContext dbContext)
         {
             _userManager = userManager;
+            _dbContext = dbContext;
         }
 
         // GET: api/account/me
@@ -31,7 +35,12 @@ namespace GourmetMaps.Controllers
                 return Unauthorized();
             }
 
-            return Ok(ToDto(user));
+            var titles = await _dbContext.ApplicationUserBadges
+                .Where(link => link.ApplicationUserId == user.Id)
+                .Select(link => link.Badge.Title)
+                .ToListAsync();
+
+            return Ok(ToDto(user, titles));
         }
 
         // PUT: api/account/me
@@ -54,20 +63,33 @@ namespace GourmetMaps.Controllers
                 return ValidationProblem(string.Join(" ", result.Errors.Select(error => error.Description)));
             }
 
-            return Ok(ToDto(user));
+            var titles = await _dbContext.ApplicationUserBadges
+                .Where(link => link.ApplicationUserId == user.Id)
+                .Select(link => link.Badge.Title)
+                .ToListAsync();
+
+            return Ok(ToDto(user, titles));
         }
 
-        private static AccountDto ToDto(ApplicationUser user)
+        private static AccountDto ToDto(ApplicationUser user, IReadOnlyList<string> titles)
         {
             // UserName / Email はメールのハッシュ値なので、外部にはそのまま返さない。
             return new AccountDto(
                 user.Id,
                 null,
                 null,
-                user.DisplayName);
+                user.DisplayName,
+                titles,
+                titles.Contains(InvitesController.OwnerBadgeTitle));
         }
 
-        public record AccountDto(string Id, string? UserName, string? Email, string? DisplayName);
+        public record AccountDto(
+            string Id,
+            string? UserName,
+            string? Email,
+            string? DisplayName,
+            IReadOnlyList<string> Titles,
+            bool CanIssueInvites);
 
         public record UpdateAccountRequest(string? DisplayName);
     }

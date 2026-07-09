@@ -90,16 +90,18 @@ function AuthView() {
 
             {isRegister && (
               <label className="field">
-                <span className="field__label">招待コード</span>
+                <span className="field__label">ワンタイム合言葉</span>
                 <input
                   type="text"
                   autoComplete="off"
                   required
                   value={inviteCode}
                   onChange={(event) => setInviteCode(event.target.value)}
-                  placeholder="身内で共有している合言葉"
+                  placeholder="例: ABCD-2345"
                 />
-                <span className="field__helper">登録には管理者から共有された招待コードが必要です。</span>
+                <span className="field__helper">
+                  既存メンバーから受け取ったワンタイム合言葉を入力してください。1時間・1回きりで有効です。
+                </span>
               </label>
             )}
 
