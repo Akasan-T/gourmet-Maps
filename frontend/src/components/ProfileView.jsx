@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import MemberAvatars from './MemberAvatars'
+import TitlesModal from './TitlesModal'
 import { issueInvite } from '../api/client'
 
 function formatExpiry(expiresAt) {
@@ -20,6 +21,8 @@ function ProfileView({ user, members, onSignOut, onUpdateDisplayName }) {
   const [inviteError, setInviteError] = useState(null)
   const [issuing, setIssuing] = useState(false)
   const [copied, setCopied] = useState(false)
+
+  const [showTitles, setShowTitles] = useState(false)
 
   async function handleSaveDisplayName(event) {
     event.preventDefault()
@@ -87,6 +90,13 @@ function ProfileView({ user, members, onSignOut, onUpdateDisplayName }) {
           </div>
         </div>
       )}
+
+      <button type="button" className="titles-open-button" onClick={() => setShowTitles(true)}>
+        <span>称号図鑑を見る</span>
+        <span className="titles-open-button__meta">全200種</span>
+      </button>
+
+      {showTitles && <TitlesModal onClose={() => setShowTitles(false)} />}
 
       <div className="profile-stats">
         <article className="snapshot-metric">

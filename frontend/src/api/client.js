@@ -165,6 +165,12 @@ export function fetchInvites() {
   return getJson('/api/invites')
 }
 
+// --- 称号図鑑 ---
+
+export function fetchTitles() {
+  return getJson('/api/titles')
+}
+
 export async function updateDisplayName(displayName) {
   const response = await authFetch('/api/account/me', {
     method: 'PUT',

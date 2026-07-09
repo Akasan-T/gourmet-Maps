@@ -1075,3 +1075,181 @@
   font-weight: 700;
   letter-spacing: 0.08em;
 }
+
+/* 称号図鑑 */
+.titles-open-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 20px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  color: var(--heading);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.titles-open-button:hover {
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-1px);
+}
+
+.titles-open-button__meta {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.titles-collection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.titles-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: var(--accent-soft);
+}
+
+.titles-progress__headline {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.titles-progress__count {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--accent-strong);
+  line-height: 1;
+}
+
+.titles-progress__total {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.titles-progress__label {
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.titles-progress__bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(87, 72, 57, 0.14);
+  overflow: hidden;
+}
+
+.titles-progress__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent-strong);
+  transition: width 0.3s ease;
+}
+
+.titles-category {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.titles-category__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.titles-category__label {
+  margin: 0;
+  font-size: 0.98rem;
+  color: var(--heading);
+}
+
+.titles-category__count {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.titles-category__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title-card {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--input);
+}
+
+.title-card--earned {
+  border-color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+
+.title-card--locked {
+  opacity: 0.62;
+}
+
+.title-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.title-card__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--heading);
+  font-size: 0.95rem;
+}
+
+.title-card__mark {
+  font-size: 0.9rem;
+}
+
+.title-card__badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.title-tier {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(87, 72, 57, 0.1);
+}
+
+.title-humor {
+  font-size: 0.85rem;
+}
+
+.title-card__desc {
+  margin: 6px 0 0;
+  font-size: 0.82rem;
+  color: var(--text);
+  line-height: 1.4;
+}

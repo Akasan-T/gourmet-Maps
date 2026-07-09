@@ -20,4 +20,9 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- 称号図鑑用の定義データ。発行/公開時も参照するため出力へコピーする。 -->
+    <Content Update="Data/titles.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
