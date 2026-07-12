@@ -29,12 +29,12 @@ namespace GourmetMaps.Controllers
                 .AsNoTracking()
                 .Where(user => user.DisplayName != null && user.DisplayName != "" && user.UserName != GuestUserName)
                 .OrderBy(user => user.DisplayName)
-                .Select(user => new MemberDto(user.Id, user.DisplayName!))
+                .Select(user => new MemberDto(user.Id, user.DisplayName!, user.AvatarUrl))
                 .ToListAsync();
 
             return Ok(members);
         }
 
-        public record MemberDto(string Id, string DisplayName);
+        public record MemberDto(string Id, string DisplayName, string? AvatarUrl);
     }
 }

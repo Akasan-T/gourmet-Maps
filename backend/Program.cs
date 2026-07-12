@@ -113,6 +113,33 @@ using (var scope = app.Services.CreateScope())
                 """;
             alterTableCommand.ExecuteNonQuery();
         }
+
+        var hasAvatarUrlColumn = false;
+        using (var command = connection.CreateCommand())
+        {
+            command.CommandText = """
+                PRAGMA table_info("AspNetUsers");
+                """;
+
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                if (string.Equals(reader.GetString(1), "AvatarUrl", StringComparison.OrdinalIgnoreCase))
+                {
+                    hasAvatarUrlColumn = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasAvatarUrlColumn)
+        {
+            using var alterTableCommand = connection.CreateCommand();
+            alterTableCommand.CommandText = """
+                ALTER TABLE "AspNetUsers" ADD COLUMN "AvatarUrl" TEXT NULL;
+                """;
+            alterTableCommand.ExecuteNonQuery();
+        }
     }
 
     dbContext.Database.ExecuteSqlRaw(
@@ -332,8 +359,17 @@ using (var scope = app.Services.CreateScope())
         });
     }
 
-    // 特別称号「初代タベマップ」をシードし、設定のオーナーへ付与する (冪等)。
+    // 特別称号「初代食べる王」をシードし、設定のオーナーへ付与する (冪等)。
     var ownerBadgeTitle = GourmetMaps.Controllers.InvitesController.OwnerBadgeTitle;
+
+    // 旧称号名「初代タベマップ」からの改名 (冪等: 既存の保有者リンクは BadgeID 経由なので維持される)
+    var legacyOwnerBadge = await dbContext.Badges.FirstOrDefaultAsync(badge => badge.Title == "初代タベマップ");
+    if (legacyOwnerBadge is not null && legacyOwnerBadge.Title != ownerBadgeTitle)
+    {
+        legacyOwnerBadge.Title = ownerBadgeTitle;
+        await dbContext.SaveChangesAsync();
+    }
+
     var ownerBadge = await dbContext.Badges.FirstOrDefaultAsync(badge => badge.Title == ownerBadgeTitle);
     if (ownerBadge is null)
     {
@@ -440,7 +476,7 @@ app.Use(async (context, next) =>
     var invite = await db.InviteCodes.FirstOrDefaultAsync(code => code.Code == normalizedCode);
     var oneTimeValid = invite is not null && invite.UsedAt is null && invite.ExpiresAt > now;
 
-    // ブートストラップ: オーナー (初代タベマップ称号保有者) がまだ存在しない場合に限り、
+    // ブートストラップ: オーナー (初代食べる王称号保有者) がまだ存在しない場合に限り、
     // 設定の固定合言葉での登録を許可する。オーナーが生まれた後は固定合言葉は無効になる。
     var ownerExists = await db.ApplicationUserBadges
         .Include(link => link.Badge)
@@ -498,7 +534,7 @@ app.Use(async (context, next) =>
         invite.UsedByUserId = newUser.Id;
     }
 
-    // 設定のオーナーのメールで登録された場合は「初代タベマップ」称号を付与する
+    // 設定のオーナーのメールで登録された場合は「初代食べる王」称号を付与する
     var ownerEmail = configuration["Auth:OwnerEmail"];
     if (!string.IsNullOrWhiteSpace(ownerEmail)
         && string.Equals(HashEmail(ownerEmail, hashKey), hashedEmail, StringComparison.Ordinal))

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import Modal from './Modal'
+import { BadgeCheckIcon, LockIcon, SparkleIcon, TrophyIcon } from './icons'
 import { fetchTitles } from '../api/client'
 
 // 19カテゴリの表示名と並び順（titles.json の category に対応）
@@ -66,15 +67,20 @@ function TitlesModal({ onClose }) {
       {state === 'success' && (
         <div className="titles-collection">
           <div className="titles-progress">
-            <div className="titles-progress__headline">
-              <span className="titles-progress__count">
-                {earnedCount}
-                <span className="titles-progress__total"> / {titles.length}</span>
-              </span>
-              <span className="titles-progress__label">称号を獲得</span>
-            </div>
-            <div className="titles-progress__bar" aria-hidden="true">
-              <div className="titles-progress__fill" style={{ width: `${progressPercent}%` }} />
+            <span className="titles-progress__icon" aria-hidden="true">
+              <TrophyIcon size={26} strokeWidth={2} />
+            </span>
+            <div className="titles-progress__main">
+              <div className="titles-progress__headline">
+                <span className="titles-progress__count">
+                  {earnedCount}
+                  <span className="titles-progress__total"> / {titles.length}</span>
+                </span>
+                <span className="titles-progress__label">称号を獲得</span>
+              </div>
+              <div className="titles-progress__bar" aria-hidden="true">
+                <div className="titles-progress__fill" style={{ width: `${progressPercent}%` }} />
+              </div>
             </div>
           </div>
 
@@ -82,11 +88,12 @@ function TitlesModal({ onClose }) {
             const list = grouped.get(key)
             if (!list || list.length === 0) return null
             const gained = list.filter((title) => title.earned).length
+            const complete = gained === list.length
             return (
               <section key={key} className="titles-category">
-                <div className="titles-category__head">
+                <div className={`titles-category__head${complete ? ' titles-category__head--complete' : ''}`}>
                   <h3 className="titles-category__label">{label}</h3>
-                  <span className="titles-category__count">
+                  <span className={`titles-category__count${complete ? ' titles-category__count--complete' : ''}`}>
                     {gained}/{list.length}
                   </span>
                 </div>
@@ -96,21 +103,23 @@ function TitlesModal({ onClose }) {
                       key={title.id}
                       className={`title-card ${title.earned ? 'title-card--earned' : 'title-card--locked'}`}
                     >
-                      <div className="title-card__top">
-                        <span className="title-card__name">
-                          <span className="title-card__mark" aria-hidden="true">
-                            {title.earned ? '🏅' : '🔒'}
+                      <span className="title-card__medallion" aria-hidden="true">
+                        {title.earned ? <BadgeCheckIcon size={17} strokeWidth={2.4} /> : <LockIcon size={15} strokeWidth={2.3} />}
+                      </span>
+                      <div className="title-card__body">
+                        <div className="title-card__top">
+                          <span className="title-card__name">{title.name}</span>
+                          <span className="title-card__badges">
+                            {title.humor && (
+                              <span className="title-humor" title="ユーモア枠">
+                                <SparkleIcon size={13} strokeWidth={2} />
+                              </span>
+                            )}
+                            <span className="title-tier">Lv.{title.tier}</span>
                           </span>
-                          {title.name}
-                        </span>
-                        <span className="title-card__badges">
-                          {title.humor && (
-                            <span className="title-humor" title="ユーモア枠">🎭</span>
-                          )}
-                          <span className="title-tier">Lv.{title.tier}</span>
-                        </span>
+                        </div>
+                        <p className="title-card__desc">{title.description}</p>
                       </div>
-                      <p className="title-card__desc">{title.description}</p>
                     </li>
                   ))}
                 </ul>

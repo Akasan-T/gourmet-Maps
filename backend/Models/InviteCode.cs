@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GourmetMaps.Models
 {
-    // 称号「初代タベマップ」保有者が発行するワンタイム招待コード。
+    // 称号「初代食べる王」保有者が発行するワンタイム招待コード。
     // 1回使うと使用済みになり、発行から一定時間で失効する。
     public class InviteCode
     {

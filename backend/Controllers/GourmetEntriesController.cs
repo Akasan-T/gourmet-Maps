@@ -113,7 +113,10 @@ namespace GourmetMaps.Controllers
             }
 
             var participantDtos = participants
-                .Select(participant => new ParticipantDto(participant.Id, participant.DisplayName ?? participant.UserName!))
+                .Select(participant => new ParticipantDto(
+                    participant.Id,
+                    participant.DisplayName ?? participant.UserName!,
+                    participant.AvatarUrl))
                 .ToList();
 
             await _titleEvaluationService.SyncAsync(userId);
@@ -276,7 +279,8 @@ namespace GourmetMaps.Controllers
                 .Where(participant => participant.ApplicationUser is not null)
                 .Select(participant => new ParticipantDto(
                     participant.ApplicationUser.Id,
-                    participant.ApplicationUser.DisplayName ?? participant.ApplicationUser.UserName!))
+                    participant.ApplicationUser.DisplayName ?? participant.ApplicationUser.UserName!,
+                    participant.ApplicationUser.AvatarUrl))
                 .ToList();
 
             return ToDto(entry, participants);
@@ -327,7 +331,7 @@ namespace GourmetMaps.Controllers
             string? ExternalPlaceId,
             IReadOnlyList<string>? ParticipantUserIds);
 
-        public record ParticipantDto(string Id, string DisplayName);
+        public record ParticipantDto(string Id, string DisplayName, string? AvatarUrl);
 
         public record GourmetEntryMapItemDto(
             int Id,

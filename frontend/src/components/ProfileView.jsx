@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import MemberAvatars from './MemberAvatars'
 import TitlesModal from './TitlesModal'
+import { CameraIcon, CheckIcon, CrownIcon, PencilIcon } from './icons'
 import { issueInvite } from '../api/client'
 
 function formatExpiry(expiresAt) {
@@ -9,10 +10,37 @@ function formatExpiry(expiresAt) {
   return date.toLocaleString('ja-JP', { hour: '2-digit', minute: '2-digit', month: 'numeric', day: 'numeric' })
 }
 
-function ProfileView({ user, members, onSignOut, onUpdateDisplayName }) {
+// アイコン画像を縮小して data URL 化する（ヘッダーやメンバー一覧など随所に表示するため小さめに圧縮）
+function readAndCompressAvatar(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('read-failed'))
+    reader.onload = () => {
+      const image = new Image()
+      image.onerror = () => reject(new Error('decode-failed'))
+      image.onload = () => {
+        const maxSize = 320
+        const scale = Math.min(1, maxSize / Math.max(image.width, image.height))
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.round(image.width * scale)
+        canvas.height = Math.round(image.height * scale)
+        const context = canvas.getContext('2d')
+        context.drawImage(image, 0, 0, canvas.width, canvas.height)
+        resolve(canvas.toDataURL('image/jpeg', 0.85))
+      }
+      image.src = reader.result
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
+function ProfileView({ user, members, onSignOut, onUpdateDisplayName, onUpdateAvatar }) {
   const [displayName, setDisplayName] = useState(user.displayName ?? '')
+  const [editingName, setEditingName] = useState(false)
   const [status, setStatus] = useState(null) // { type, message }
   const [saving, setSaving] = useState(false)
+  const [avatarSaving, setAvatarSaving] = useState(false)
+  const avatarInputRef = useRef(null)
 
   const titles = user.titles ?? []
   const canIssueInvites = user.canIssueInvites ?? false
@@ -24,6 +52,12 @@ function ProfileView({ user, members, onSignOut, onUpdateDisplayName }) {
 
   const [showTitles, setShowTitles] = useState(false)
 
+  function handleStartEditName() {
+    setDisplayName(user.displayName ?? '')
+    setStatus(null)
+    setEditingName(true)
+  }
+
   async function handleSaveDisplayName(event) {
     event.preventDefault()
     if (saving) return
@@ -33,10 +67,29 @@ function ProfileView({ user, members, onSignOut, onUpdateDisplayName }) {
     try {
       await onUpdateDisplayName(displayName.trim())
       setStatus({ type: 'success', message: '表示名を更新しました。' })
+      setEditingName(false)
     } catch (error) {
       setStatus({ type: 'error', message: error.message })
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleAvatarChange(event) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || avatarSaving) return
+
+    setAvatarSaving(true)
+    setStatus(null)
+    try {
+      const dataUrl = await readAndCompressAvatar(file)
+      await onUpdateAvatar(dataUrl)
+      setStatus({ type: 'success', message: 'アイコン画像を更新しました。' })
+    } catch (error) {
+      setStatus({ type: 'error', message: error.message ?? 'アイコン画像の更新に失敗しました。' })
+    } finally {
+      setAvatarSaving(false)
     }
   }
 
@@ -66,79 +119,130 @@ function ProfileView({ user, members, onSignOut, onUpdateDisplayName }) {
   }
 
   return (
-    <section className="composer-card" aria-labelledby="profile-title">
-      <div className="composer-card__header">
-        <div>
-          <p className="eyebrow">Your account</p>
-          <h2 id="profile-title">{user.name}</h2>
-          {user.email && <p className="profile-email">{user.email}</p>}
-        </div>
-        <button type="button" className="ghost-button" onClick={onSignOut}>
-          ログアウト
-        </button>
-      </div>
-
-      {titles.length > 0 && (
-        <div className="profile-titles">
-          <span className="field__label">称号</span>
-          <div className="chip-row" role="list">
-            {titles.map((title) => (
-              <span key={title} className="chip chip--active" role="listitem">
-                {title}
+    <>
+      <section className="composer-card" aria-labelledby="profile-title">
+        <div className="composer-card__header">
+          <button
+            type="button"
+            className="profile-avatar-button"
+            aria-label="アイコン画像を変更"
+            onClick={() => avatarInputRef.current?.click()}
+            disabled={avatarSaving}
+          >
+            {user.avatarUrl ? (
+              <img className="profile-avatar-button__image" src={user.avatarUrl} alt="" />
+            ) : (
+              <span className="profile-avatar-button__placeholder">
+                {(user.displayName || user.name || '?').charAt(0)}
               </span>
-            ))}
+            )}
+            <span className="profile-avatar-button__badge" aria-hidden="true">
+              {avatarSaving ? '…' : <CameraIcon size={12} strokeWidth={2.2} />}
+            </span>
+          </button>
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/*"
+            className="profile-avatar-input"
+            onChange={handleAvatarChange}
+          />
+
+          <div className="profile-header">
+            <p className="eyebrow">Your account</p>
+
+            {editingName ? (
+              <form className="profile-name-edit" onSubmit={handleSaveDisplayName}>
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(event) => setDisplayName(event.target.value)}
+                  placeholder="ランキングやメンバーに表示される名前"
+                  maxLength={40}
+                  autoFocus
+                />
+                <button type="submit" className="icon-button" aria-label="表示名を保存" disabled={saving}>
+                  {saving ? '…' : <CheckIcon size={16} />}
+                </button>
+              </form>
+            ) : (
+              <div className="profile-name-row">
+                <h2 id="profile-title">{user.name}</h2>
+                <button type="button" className="icon-button" aria-label="表示名を編集" onClick={handleStartEditName}>
+                  <PencilIcon size={15} />
+                </button>
+              </div>
+            )}
+
+            {user.email && <p className="profile-email">{user.email}</p>}
+
+            {status && (
+              <p
+                className={`composer-card__status ${
+                  status.type === 'success'
+                    ? 'composer-card__status--success'
+                    : 'composer-card__status--error'
+                }`}
+                role={status.type === 'error' ? 'alert' : 'status'}
+              >
+                {status.message}
+              </p>
+            )}
           </div>
         </div>
-      )}
 
-      <button type="button" className="titles-open-button" onClick={() => setShowTitles(true)}>
-        <span>称号図鑑を見る</span>
-        <span className="titles-open-button__meta">全200種</span>
-      </button>
+        <div className="profile-stats">
+          <article className="snapshot-metric">
+            <p className="snapshot-metric__value">{user.entryCount}件</p>
+            <p className="snapshot-metric__label">総記録数</p>
+          </article>
+          <article className="snapshot-metric">
+            <p className="snapshot-metric__value">{user.favoriteCount}店</p>
+            <p className="snapshot-metric__label">また行くリスト</p>
+          </article>
+        </div>
+      </section>
+
+      <section className="composer-card" aria-labelledby="profile-badges-title">
+        <div className="composer-card__header">
+          <div>
+            <p className="eyebrow">Badges</p>
+            <h3 id="profile-badges-title">獲得ずみのバッジ</h3>
+          </div>
+        </div>
+
+        {titles.length > 0 ? (
+          <div className="chip-row" role="list">
+            {titles.map((title) =>
+              canIssueInvites ? (
+                <span key={title} className="chip chip--owner" role="listitem">
+                  <CrownIcon size={14} strokeWidth={2.2} />
+                  {title}
+                </span>
+              ) : (
+                <span key={title} className="chip chip--active" role="listitem">
+                  {title}
+                </span>
+              ),
+            )}
+          </div>
+        ) : (
+          <p className="profile-empty-hint">まだ特別なバッジはありません。称号図鑑で目指す称号を確認しよう。</p>
+        )}
+
+        <button type="button" className="titles-open-button" onClick={() => setShowTitles(true)}>
+          <span>称号図鑑を見る</span>
+          <span className="titles-open-button__meta">全200種</span>
+        </button>
+        <p className="profile-badges-hint">
+          上のバッジは特別な実績。称号図鑑は投稿数などに応じて増えていく称号レベルの一覧です。
+        </p>
+      </section>
 
       {showTitles && <TitlesModal onClose={() => setShowTitles(false)} />}
 
-      <div className="profile-stats">
-        <article className="snapshot-metric">
-          <p className="snapshot-metric__value">{user.entryCount}件</p>
-          <p className="snapshot-metric__label">総記録数</p>
-        </article>
-        <article className="snapshot-metric">
-          <p className="snapshot-metric__value">{user.favoriteCount}店</p>
-          <p className="snapshot-metric__label">また行くリスト</p>
-        </article>
-      </div>
-
-      <form className="profile-displayname" onSubmit={handleSaveDisplayName}>
-        <label className="field">
-          <span className="field__label">表示名</span>
-          <input
-            type="text"
-            value={displayName}
-            onChange={(event) => setDisplayName(event.target.value)}
-            placeholder="ランキングやメンバーに表示される名前"
-            maxLength={40}
-          />
-        </label>
-        {status && (
-          <p
-            className={`composer-card__status ${
-              status.type === 'success'
-                ? 'composer-card__status--success'
-                : 'composer-card__status--error'
-            }`}
-            role={status.type === 'error' ? 'alert' : 'status'}
-          >
-            {status.message}
-          </p>
-        )}
-        <button type="submit" className="primary-button" disabled={saving}>
-          {saving ? '保存中…' : '表示名を保存'}
-        </button>
-      </form>
-
       {canIssueInvites && (
-        <div className="profile-invite">
+        <section className="composer-card profile-invite">
           <div className="field__heading">
             <span className="field__label">ワンタイム合言葉を発行</span>
           </div>
@@ -167,10 +271,10 @@ function ProfileView({ user, members, onSignOut, onUpdateDisplayName }) {
           <button type="button" className="primary-button" onClick={handleIssueInvite} disabled={issuing}>
             {issuing ? '発行中…' : invite ? 'もう1つ発行' : 'ワンタイム合言葉を発行'}
           </button>
-        </div>
+        </section>
       )}
 
-      <div className="profile-share">
+      <section className="composer-card profile-share">
         <div className="field__heading">
           <span className="field__label">身内メンバー</span>
         </div>
@@ -182,8 +286,14 @@ function ProfileView({ user, members, onSignOut, onUpdateDisplayName }) {
             </li>
           ))}
         </ul>
-      </div>
-    </section>
+      </section>
+
+      <section className="composer-card profile-signout">
+        <button type="button" className="ghost-button" onClick={onSignOut}>
+          ログアウト
+        </button>
+      </section>
+    </>
   )
 }
 

@@ -6,6 +6,7 @@ import {
   login as apiLogin,
   logout as apiLogout,
   register as apiRegister,
+  updateAvatar as apiUpdateAvatar,
   updateDisplayName as apiUpdateDisplayName,
 } from '../api/client'
 
@@ -65,9 +66,15 @@ export function AuthProvider({ children }) {
     return updated
   }, [])
 
+  const setAvatar = useCallback(async (avatarUrl) => {
+    const updated = await apiUpdateAvatar(avatarUrl)
+    setUser(updated)
+    return updated
+  }, [])
+
   const value = useMemo(
-    () => ({ user, status, signIn, signUp, signOut, setDisplayName }),
-    [user, status, signIn, signUp, signOut, setDisplayName],
+    () => ({ user, status, signIn, signUp, signOut, setDisplayName, setAvatar }),
+    [user, status, signIn, signUp, signOut, setDisplayName, setAvatar],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

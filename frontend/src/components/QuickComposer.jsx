@@ -772,14 +772,14 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
           <p className="composer-card__hint">
             {selectedPlace
               ? `${selectedPlace.name} の位置でピンを立てます。`
-              : '保存時に現在地を使って地図へピンを立てます。'}
+              : '投稿時に現在地を使って地図へピンを立てます。'}
           </p>
           {statusMessage && (
             <p className={`composer-card__status composer-card__status--${submitState}`}>{statusMessage}</p>
           )}
         </div>
         <button type="button" className="primary-button" onClick={handleSubmit} disabled={submitState === 'saving'}>
-          この内容で保存
+          投稿
         </button>
       </div>
     </section>

@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import { createCurrentLocationIcon, createPinIcon } from './mapPinIcon'
 import StoreDetailModal from './StoreDetailModal'
 import Modal from './Modal'
+import { LocateIcon } from './icons'
 import { extractVisitType } from '../data/visits'
 
 const fallbackCenter = [35.6812, 139.7671] // 東京駅
@@ -166,7 +167,7 @@ function MapView({ stores, onDataChange }) {
           aria-label="現在地を表示"
           title="現在地を表示"
         >
-          {locateState === 'locating' ? '…' : '📍'}
+          {locateState === 'locating' ? '…' : <LocateIcon size={18} />}
         </button>
         {locateState === 'error' && (
           <p className="map-page__control-error">現在地を取得できませんでした</p>

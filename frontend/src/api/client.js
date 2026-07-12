@@ -146,7 +146,7 @@ export function fetchMe() {
   return getJson('/api/account/me')
 }
 
-// --- ワンタイム招待コード (「初代タベマップ」称号保有者のみ) ---
+// --- ワンタイム招待コード (「初代食べる王」称号保有者のみ) ---
 
 export async function issueInvite() {
   const response = await authFetch('/api/invites', { method: 'POST' })
@@ -180,6 +180,20 @@ export async function updateDisplayName(displayName) {
 
   if (!response.ok) {
     throw new Error('表示名の更新に失敗しました。')
+  }
+
+  return response.json()
+}
+
+export async function updateAvatar(avatarUrl) {
+  const response = await authFetch('/api/account/me', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ avatarUrl: avatarUrl ?? '' }),
+  })
+
+  if (!response.ok) {
+    throw new Error('アイコン画像の更新に失敗しました。')
   }
 
   return response.json()
