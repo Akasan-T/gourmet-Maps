@@ -167,6 +167,13 @@
   font-weight: 800;
 }
 
+.composer-card__draft-status {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
 .map-card__surface {
   margin-top: 16px;
 }
@@ -367,6 +374,33 @@
   min-height: 38px;
   padding: 0 12px;
   border-radius: 999px;
+}
+
+.star-rating {
+  display: flex;
+  gap: 4px;
+}
+
+.star-rating__star {
+  border: none;
+  background: transparent;
+  padding: 2px;
+  font-size: 1.7rem;
+  line-height: 1;
+  color: var(--muted);
+  opacity: 0.45;
+  cursor: pointer;
+  transition: color 0.12s ease, transform 0.12s ease;
+}
+
+.star-rating__star--filled {
+  color: #f5a623;
+  opacity: 1;
+}
+
+.star-rating__star:hover,
+.star-rating__star:focus-visible {
+  transform: scale(1.12);
 }
 
 .primary-button {

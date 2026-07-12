@@ -7,6 +7,10 @@ const nearbySearchRadiusMeters = 600
 
 const ratingOptions = ['5', '4', '3', '2', '1']
 
+// 下書きの自動保存: 手動ボタンではなく、無操作が続いた場合とページ離脱時に保存する
+const draftStorageKey = 'tabemap.quickComposerDraft'
+const draftInactivityMs = 10000
+
 // 5段階の評価基準（ブレ防止のためツールチップ/補足で表示）
 const ratingAxes = [
   {
@@ -156,17 +160,30 @@ function readAndCompressImage(file) {
   })
 }
 
+// 前回保存された下書きを読み込む（初期状態の遅延初期化で1度だけ呼ばれる）
+function loadStoredDraft() {
+  try {
+    const saved = localStorage.getItem(draftStorageKey)
+    return saved ? JSON.parse(saved) : null
+  } catch {
+    return null
+  }
+}
+
 function QuickComposer({ quickTags, visitTypes, onSaved }) {
-  const [restaurantName, setRestaurantName] = useState('')
-  const [menuName, setMenuName] = useState('')
-  const [genre, setGenre] = useState(genreOptions[0])
-  const [selectedVisitType, setSelectedVisitType] = useState(visitTypes[0])
-  const [selectedTag, setSelectedTag] = useState(quickTags[0])
-  const [sceneTag, setSceneTag] = useState('')
-  const [priceRange, setPriceRange] = useState('')
-  const [scores, setScores] = useState({ taste: '4', cost: '4', atmosphere: '4', service: '4', repeat: '4' })
-  const [memo, setMemo] = useState('')
-  const [photoDataUrl, setPhotoDataUrl] = useState('')
+  const [initialDraft] = useState(loadStoredDraft)
+  const [restaurantName, setRestaurantName] = useState(() => initialDraft?.restaurantName ?? '')
+  const [menuName, setMenuName] = useState(() => initialDraft?.menuName ?? '')
+  const [genre, setGenre] = useState(() => initialDraft?.genre ?? genreOptions[0])
+  const [selectedVisitType, setSelectedVisitType] = useState(() => initialDraft?.selectedVisitType ?? visitTypes[0])
+  const [selectedTag, setSelectedTag] = useState(() => initialDraft?.selectedTag ?? quickTags[0])
+  const [sceneTag, setSceneTag] = useState(() => initialDraft?.sceneTag ?? '')
+  const [priceRange, setPriceRange] = useState(() => initialDraft?.priceRange ?? '')
+  const [scores, setScores] = useState(
+    () => initialDraft?.scores ?? { taste: '4', cost: '4', atmosphere: '4', service: '4', repeat: '4' },
+  )
+  const [memo, setMemo] = useState(() => initialDraft?.memo ?? '')
+  const [photoDataUrl, setPhotoDataUrl] = useState(() => initialDraft?.photoDataUrl ?? '')
   const [submitState, setSubmitState] = useState('idle')
   const [statusMessage, setStatusMessage] = useState('')
   const [position, setPosition] = useState(null)
@@ -175,9 +192,91 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
   const [selectedPlace, setSelectedPlace] = useState(null)
   const [isListOpen, setIsListOpen] = useState(false)
   const [members, setMembers] = useState([])
-  const [participantIds, setParticipantIds] = useState([])
-  const [showDetails, setShowDetails] = useState(false)
+  const [participantIds, setParticipantIds] = useState(() => initialDraft?.participantIds ?? [])
+  const [showDetails, setShowDetails] = useState(() => Boolean(initialDraft?.showDetails))
+  const [draftStatus, setDraftStatus] = useState(initialDraft ? 'restored' : 'idle') // idle | restored | saved
   const fileInputRef = useRef(null)
+  const draftTimeoutRef = useRef(null)
+  const submittedDraftSnapshotRef = useRef(null)
+
+  // 直近の入力内容を常に最新化しておく（アンマウント/離脱時のクロージャ問題を避けるため）
+  const draftFieldsRef = useRef(null)
+  draftFieldsRef.current = {
+    restaurantName,
+    menuName,
+    genre,
+    selectedVisitType,
+    selectedTag,
+    sceneTag,
+    priceRange,
+    scores,
+    memo,
+    photoDataUrl,
+    participantIds,
+    showDetails,
+  }
+
+  function persistDraft(fields) {
+    if (!fields || !fields.restaurantName.trim()) {
+      return
+    }
+    const snapshot = JSON.stringify(fields)
+    if (snapshot === submittedDraftSnapshotRef.current) {
+      return
+    }
+    try {
+      localStorage.setItem(draftStorageKey, snapshot)
+      setDraftStatus('saved')
+    } catch {
+      // 保存容量オーバー等は下書き機能が補助的なため無視する
+    }
+  }
+
+  // 10秒操作がなければ自動で下書き保存する
+  useEffect(() => {
+    if (draftTimeoutRef.current) clearTimeout(draftTimeoutRef.current)
+    draftTimeoutRef.current = setTimeout(() => {
+      persistDraft(draftFieldsRef.current)
+    }, draftInactivityMs)
+    return () => clearTimeout(draftTimeoutRef.current)
+  }, [
+    restaurantName,
+    menuName,
+    genre,
+    selectedVisitType,
+    selectedTag,
+    sceneTag,
+    priceRange,
+    scores,
+    memo,
+    photoDataUrl,
+    participantIds,
+    showDetails,
+  ])
+
+  // ページ離脱 (タブ切替・リロード・ブラウザを閉じる) 時にも即座に保存する
+  useEffect(() => {
+    function handleLeave() {
+      if (draftTimeoutRef.current) clearTimeout(draftTimeoutRef.current)
+      persistDraft(draftFieldsRef.current)
+    }
+
+    window.addEventListener('beforeunload', handleLeave)
+    window.addEventListener('pagehide', handleLeave)
+
+    return () => {
+      window.removeEventListener('beforeunload', handleLeave)
+      window.removeEventListener('pagehide', handleLeave)
+      handleLeave() // SPA内でタブを切り替えてアンマウントされる場合もここで保存する
+    }
+  }, [])
+
+  // 保存済みの下書き表示は少し経ったら消す
+  useEffect(() => {
+    if (draftStatus !== 'saved') return
+    const timer = setTimeout(() => setDraftStatus('idle'), 4000)
+    return () => clearTimeout(timer)
+  }, [draftStatus])
 
   useEffect(() => {
     fetchMembers()
@@ -355,6 +454,20 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
       setStatusMessage('保存しました。地図のピンを更新しています。')
       setParticipantIds([])
       setPhotoDataUrl('')
+
+      // 保存済みの内容を「送信済みスナップショット」として記録し、下書きとして再保存されないようにする
+      submittedDraftSnapshotRef.current = JSON.stringify({
+        ...draftFieldsRef.current,
+        participantIds: [],
+        photoDataUrl: '',
+      })
+      try {
+        localStorage.removeItem(draftStorageKey)
+      } catch {
+        // 無視する
+      }
+      setDraftStatus('idle')
+
       onSaved?.()
     } catch (error) {
       setSubmitState('error')
@@ -377,9 +490,12 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
           <p className="eyebrow">One-hand entry</p>
           <h2 id="composer-title">来店直後に記録</h2>
         </div>
-        <button type="button" className="ghost-button">
-          下書き保存
-        </button>
+        {draftStatus === 'saved' && (
+          <span className="composer-card__draft-status">下書きを自動保存しました</span>
+        )}
+        {draftStatus === 'restored' && (
+          <span className="composer-card__draft-status">前回の下書きを復元しました</span>
+        )}
       </div>
 
       <div className="composer-card__fields">
