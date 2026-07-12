@@ -6,6 +6,11 @@ using GourmetMaps.Data;
 using GourmetMaps.Models;
 using GourmetMaps.Services;
 
+// backend/.env (gitignored) から開発用の秘密情報を読み込む。存在しなければ何もしない。
+// Places__GoogleApiKey のように "__" 区切りにしておくと、ASP.NET Core の環境変数プロバイダが
+// 自動で "Places:GoogleApiKey" として設定に反映してくれる。
+LoadDotEnvFile(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
@@ -42,6 +47,12 @@ builder.Services.AddTransient<IEmailSender<ApplicationUser>, ConsoleEmailSender>
 
 // 称号 (titles.json) の達成判定・自動付与
 builder.Services.AddScoped<TitleEvaluationService>();
+
+// Google Places API (New) 呼び出し用 (APIキーはバックエンドのみが保持する)
+builder.Services.AddHttpClient("GooglePlaces", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -593,6 +604,39 @@ app.MapStaticAssets();
 app.MapRazorPages().WithStaticAssets(); // この行は冗長な可能性が高いですが、残しておきます。
 
 app.Run();
+
+// .env ファイル (KEY=VALUE 形式、# はコメント) を読み、プロセスの環境変数として設定する。
+// 実際の環境変数がすでに設定されている場合はそちらを優先し、上書きしない。
+static void LoadDotEnvFile(string path)
+{
+    if (!File.Exists(path))
+    {
+        return;
+    }
+
+    foreach (var line in File.ReadAllLines(path))
+    {
+        var trimmed = line.Trim();
+        if (trimmed.Length == 0 || trimmed.StartsWith('#'))
+        {
+            continue;
+        }
+
+        var separatorIndex = trimmed.IndexOf('=');
+        if (separatorIndex <= 0)
+        {
+            continue;
+        }
+
+        var key = trimmed[..separatorIndex].Trim();
+        var value = trimmed[(separatorIndex + 1)..].Trim().Trim('"');
+
+        if (Environment.GetEnvironmentVariable(key) is null)
+        {
+            Environment.SetEnvironmentVariable(key, value);
+        }
+    }
+}
 
 // 招待コード制の新規登録リクエスト本文
 record RegisterWithInviteRequest(string? Email, string? Password, string? InviteCode, string? DisplayName);

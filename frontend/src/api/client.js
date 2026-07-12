@@ -222,6 +222,16 @@ export function fetchStoreSuggestions(name) {
   return getJson(`/api/Stores/suggest?name=${encodeURIComponent(name)}`)
 }
 
+// Google Places API (New) 経由の周辺・キーワード検索 (バックエンドが代理でGoogleに問い合わせる)
+export function fetchGooglePlaces({ lat, lng, q, radiusMeters } = {}) {
+  const params = new URLSearchParams()
+  if (typeof lat === 'number') params.set('lat', lat)
+  if (typeof lng === 'number') params.set('lng', lng)
+  if (q) params.set('q', q)
+  if (typeof radiusMeters === 'number') params.set('radiusMeters', radiusMeters)
+  return getJson(`/api/places/search?${params.toString()}`)
+}
+
 // 位置検索での選択 or 手入力から店舗を登録し、店舗マスタのレコードを得る
 export async function registerStore(payload) {
   const response = await authFetch(`/api/Stores`, {

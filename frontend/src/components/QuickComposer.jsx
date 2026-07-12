@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import RatingSelector from './RatingSelector'
-import { createGourmetEntry, fetchMembers, fetchStores } from '../api/client'
+import { createGourmetEntry, fetchGooglePlaces, fetchMembers, fetchStores } from '../api/client'
 
 const overpassUrl = 'https://overpass-api.de/api/interpreter'
 const nearbySearchRadiusMeters = 600
+// 店名で検索するときは、ただの周辺検索より広く探す
+const nameSearchRadiusMeters = 3000
+const nameSearchDebounceMs = 400
 
 const ratingOptions = ['5', '4', '3', '2', '1']
 
@@ -99,10 +102,17 @@ function formatDistance(distance) {
   return `${(distance / 1000).toFixed(1)}km`
 }
 
-async function fetchNearbyPlaces(latitude, longitude) {
+// Overpass QL の正規表現リテラルに埋め込むための最低限のエスケープ
+function escapeOverpassRegex(text) {
+  return text.replace(/["\\]/g, '\\$&').replace(/[.*+?^${}()|[\]]/g, '\\$&')
+}
+
+async function fetchNearbyPlaces(latitude, longitude, options = {}) {
+  const { radiusMeters = nearbySearchRadiusMeters, nameFilter } = options
+  const nameClause = nameFilter ? `["name"~"${escapeOverpassRegex(nameFilter)}",i]` : ''
   const query = `[out:json][timeout:15];`
-    + `(node["amenity"~"^(restaurant|cafe|fast_food|bar|pub|ice_cream)$"]`
-    + `(around:${nearbySearchRadiusMeters},${latitude},${longitude}););`
+    + `(node["amenity"~"^(restaurant|cafe|fast_food|bar|pub|ice_cream)$"]${nameClause}`
+    + `(around:${radiusMeters},${latitude},${longitude}););`
     + `out center 30;`
 
   const response = await fetch(overpassUrl, {
@@ -198,6 +208,9 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
   const fileInputRef = useRef(null)
   const draftTimeoutRef = useRef(null)
   const submittedDraftSnapshotRef = useRef(null)
+  const positionRef = useRef(null)
+  positionRef.current = position
+  const isFirstKeywordRunRef = useRef(true)
 
   // 直近の入力内容を常に最新化しておく（アンマウント/離脱時のクロージャ問題を避けるため）
   const draftFieldsRef = useRef(null)
@@ -328,7 +341,44 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
     }
   }
 
-  // 自店DB + 現在地周辺(Overpass) をマージして距離順の候補を作る
+  // 自店DB + 現在地周辺(Overpass) をマージして候補を作る。
+  // keyword があれば店名で絞り込み、より広い範囲まで探す。
+  async function runSearch(coords, keyword) {
+    setNearbySearchState('loading')
+
+    const trimmedKeyword = keyword.trim()
+    const radiusMeters = trimmedKeyword ? nameSearchRadiusMeters : nearbySearchRadiusMeters
+
+    try {
+      const [savedStores, nearbyPlaces, googlePlaces] = await Promise.all([
+        fetchStores({ lat: coords.latitude, lng: coords.longitude, q: trimmedKeyword || undefined }).catch(() => []),
+        fetchNearbyPlaces(coords.latitude, coords.longitude, {
+          radiusMeters,
+          nameFilter: trimmedKeyword || undefined,
+        }).catch(() => []),
+        fetchGooglePlaces({
+          lat: coords.latitude,
+          lng: coords.longitude,
+          q: trimmedKeyword || undefined,
+          radiusMeters,
+        }).catch(() => []),
+      ])
+
+      const merged = mergeCandidates(
+        savedStores.map(toSavedCandidate),
+        nearbyPlaces,
+        googlePlaces.map(toGoogleCandidate),
+      )
+      setCandidates(merged)
+      setNearbySearchState(merged.length > 0 ? 'success' : 'empty')
+      setIsListOpen(merged.length > 0)
+    } catch {
+      setCandidates([])
+      setNearbySearchState('error')
+    }
+  }
+
+  // 現在地を取得して検索する（初回マウント・「近くのお店を検索」ボタン用）
   async function handleSearchNearby() {
     setNearbySearchState('loading')
     setSelectedPlace(null)
@@ -339,9 +389,9 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
       coords = { latitude: currentPosition.coords.latitude, longitude: currentPosition.coords.longitude }
       setPosition(coords)
     } catch (error) {
-      // 位置情報が取れなくても自店DBだけは読み込む（手入力にフォールバック）
+      // 位置情報が取れなくても自店DBだけは(入力中の店名があればそれで)読み込む
       try {
-        const savedStores = await fetchStores()
+        const savedStores = await fetchStores({ q: restaurantName.trim() || undefined })
         setCandidates(mergeCandidates(savedStores.map(toSavedCandidate), []))
       } catch {
         setCandidates([])
@@ -350,21 +400,26 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
       return
     }
 
-    try {
-      const [savedStores, nearbyPlaces] = await Promise.all([
-        fetchStores({ lat: coords.latitude, lng: coords.longitude }).catch(() => []),
-        fetchNearbyPlaces(coords.latitude, coords.longitude).catch(() => []),
-      ])
-
-      const merged = mergeCandidates(savedStores.map(toSavedCandidate), nearbyPlaces)
-      setCandidates(merged)
-      setNearbySearchState(merged.length > 0 ? 'success' : 'empty')
-      setIsListOpen(merged.length > 0)
-    } catch {
-      setCandidates([])
-      setNearbySearchState('error')
-    }
+    await runSearch(coords, restaurantName)
   }
+
+  // 店名を入力したら、その文字で近くのお店を再検索する（デバウンス）
+  useEffect(() => {
+    if (isFirstKeywordRunRef.current) {
+      // 初回マウント時の検索は handleSearchNearby 側にまかせる
+      isFirstKeywordRunRef.current = false
+      return
+    }
+
+    const coords = positionRef.current
+    if (!coords) return
+
+    const timer = setTimeout(() => {
+      runSearch(coords, restaurantName)
+    }, nameSearchDebounceMs)
+
+    return () => clearTimeout(timer)
+  }, [restaurantName])
 
   const filteredCandidates = useMemo(() => {
     const keyword = restaurantName.trim().toLowerCase()
@@ -746,14 +801,34 @@ function toSavedCandidate(store) {
   }
 }
 
-// 自店DBとOverpassの候補を、店名一致で重複排除（自店DB優先）してマージ
-function mergeCandidates(savedCandidates, overpassPlaces) {
+// Google Places の候補を候補形式に変換
+function toGoogleCandidate(place) {
+  return {
+    source: 'google',
+    storeId: null,
+    externalPlaceId: place.externalPlaceId,
+    name: place.name,
+    genre: place.genre,
+    latitude: place.latitude,
+    longitude: place.longitude,
+    distance: typeof place.distance === 'number' ? place.distance : null,
+  }
+}
+
+// 自店DB・OSM(Overpass)・Google Places の候補を、店名一致で重複排除（自店DB優先）してマージ
+function mergeCandidates(savedCandidates, overpassPlaces, googlePlaces = []) {
   const seen = new Set(savedCandidates.map((candidate) => candidate.name.toLowerCase()))
-  const overpassCandidates = overpassPlaces
-    .filter((place) => !seen.has(place.name.toLowerCase()))
+
+  const externalCandidates = [...overpassPlaces, ...googlePlaces]
+    .filter((place) => {
+      const key = place.name.toLowerCase()
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
     .map((place) => ({ ...place, key: place.externalPlaceId }))
 
-  return [...savedCandidates, ...overpassCandidates].sort((a, b) => {
+  return [...savedCandidates, ...externalCandidates].sort((a, b) => {
     if (a.distance == null) return 1
     if (b.distance == null) return -1
     return a.distance - b.distance
