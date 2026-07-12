@@ -1,202 +1,3591 @@
 [
-  { "id": "title_001", "name": "はじめの一皿", "description": "はじめてお店を登録した", "category": "post_count", "condition": { "type": "post_count_gte", "value": 1 }, "tier": 1, "humor": false },
-  { "id": "title_002", "name": "グルメの卵", "description": "お店を3軒登録した", "category": "post_count", "condition": { "type": "post_count_gte", "value": 3 }, "tier": 2, "humor": false },
-  { "id": "title_003", "name": "食べ歩き見習い", "description": "お店を5軒登録した", "category": "post_count", "condition": { "type": "post_count_gte", "value": 5 }, "tier": 3, "humor": false },
-  { "id": "title_004", "name": "町の探検家", "description": "お店を10軒登録した", "category": "post_count", "condition": { "type": "post_count_gte", "value": 10 }, "tier": 4, "humor": false },
-  { "id": "title_005", "name": "味覚のパトロール", "description": "お店を20軒登録した", "category": "post_count", "condition": { "type": "post_count_gte", "value": 20 }, "tier": 5, "humor": false },
-  { "id": "title_006", "name": "グルメマップ常連", "description": "お店を30軒登録した", "category": "post_count", "condition": { "type": "post_count_gte", "value": 30 }, "tier": 6, "humor": false },
-  { "id": "title_007", "name": "食通の入り口", "description": "お店を50軒登録した", "category": "post_count", "condition": { "type": "post_count_gte", "value": 50 }, "tier": 7, "humor": false },
-  { "id": "title_008", "name": "舌の賢者(見習い)", "description": "お店を75軒登録した", "category": "post_count", "condition": { "type": "post_count_gte", "value": 75 }, "tier": 8, "humor": false },
-  { "id": "title_009", "name": "百軒突破の猛者", "description": "お店を100軒登録した", "category": "post_count", "condition": { "type": "post_count_gte", "value": 100 }, "tier": 9, "humor": false },
-  { "id": "title_010", "name": "食い倒れ予備軍", "description": "お店を150軒登録した", "category": "post_count", "condition": { "type": "post_count_gte", "value": 150 }, "tier": 10, "humor": false },
-  { "id": "title_011", "name": "グルメ番付・小結", "description": "お店を250軒登録した", "category": "post_count", "condition": { "type": "post_count_gte", "value": 250 }, "tier": 11, "humor": false },
-  { "id": "title_012", "name": "伝説の食べ歩き人", "description": "お店を500軒登録した", "category": "post_count", "condition": { "type": "post_count_gte", "value": 500 }, "tier": 12, "humor": false },
-  { "id": "title_013", "name": "初めてのひとこと", "description": "はじめてレビューを書いた", "category": "review_count", "condition": { "type": "review_count_gte", "value": 1 }, "tier": 1, "humor": false },
-  { "id": "title_014", "name": "レビュー見習い", "description": "レビューを5件書いた", "category": "review_count", "condition": { "type": "review_count_gte", "value": 5 }, "tier": 2, "humor": false },
-  { "id": "title_015", "name": "コメント職人", "description": "レビューを10件書いた", "category": "review_count", "condition": { "type": "review_count_gte", "value": 10 }, "tier": 3, "humor": false },
-  { "id": "title_016", "name": "言葉の調味料", "description": "レビューを20件書いた", "category": "review_count", "condition": { "type": "review_count_gte", "value": 20 }, "tier": 4, "humor": false },
-  { "id": "title_017", "name": "レビュアー覚醒", "description": "レビューを40件書いた", "category": "review_count", "condition": { "type": "review_count_gte", "value": 40 }, "tier": 5, "humor": false },
-  { "id": "title_018", "name": "評論家気取り", "description": "レビューを60件書いた", "category": "review_count", "condition": { "type": "review_count_gte", "value": 60 }, "tier": 6, "humor": false },
-  { "id": "title_019", "name": "百件レビューの主", "description": "レビューを100件書いた", "category": "review_count", "condition": { "type": "review_count_gte", "value": 100 }, "tier": 7, "humor": false },
-  { "id": "title_020", "name": "文字数モンスター", "description": "レビューを150件書いた", "category": "review_count", "condition": { "type": "review_count_gte", "value": 150 }, "tier": 8, "humor": false },
-  { "id": "title_021", "name": "グルメ評論家", "description": "レビューを250件書いた", "category": "review_count", "condition": { "type": "review_count_gte", "value": 250 }, "tier": 9, "humor": false },
-  { "id": "title_022", "name": "レビュー仙人", "description": "レビューを400件書いた", "category": "review_count", "condition": { "type": "review_count_gte", "value": 400 }, "tier": 10, "humor": false },
-  { "id": "title_023", "name": "ラーメン一杯目のあなた", "description": "「ラーメン」ジャンルの店に5軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "ラーメン", "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_024", "name": "スープの深淵を覗く者", "description": "「ラーメン」ジャンルの店に15軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "ラーメン", "count": 15 } }, "tier": 2, "humor": false },
-  { "id": "title_025", "name": "麺帝国の支配者", "description": "「ラーメン」ジャンルの店に30軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "ラーメン", "count": 30 } }, "tier": 3, "humor": false },
-  { "id": "title_026", "name": "シャリ初心者", "description": "「寿司」ジャンルの店に5軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "寿司", "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_027", "name": "寿司通のたまご", "description": "「寿司」ジャンルの店に15軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "寿司", "count": 15 } }, "tier": 2, "humor": false },
-  { "id": "title_028", "name": "大将も一目置く常連", "description": "「寿司」ジャンルの店に30軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "寿司", "count": 30 } }, "tier": 3, "humor": false },
-  { "id": "title_029", "name": "網の見習い", "description": "「焼肉」ジャンルの店に5軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "焼肉", "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_030", "name": "カルビ道を極める者", "description": "「焼肉」ジャンルの店に15軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "焼肉", "count": 15 } }, "tier": 2, "humor": false },
-  { "id": "title_031", "name": "焼肉界のMVP", "description": "「焼肉」ジャンルの店に30軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "焼肉", "count": 30 } }, "tier": 3, "humor": false },
-  { "id": "title_032", "name": "カフェ巡りビギナー", "description": "「カフェ」ジャンルの店に5軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "カフェ", "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_033", "name": "コーヒー片手の放浪者", "description": "「カフェ」ジャンルの店に15軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "カフェ", "count": 15 } }, "tier": 2, "humor": false },
-  { "id": "title_034", "name": "カフェハンターの真髄", "description": "「カフェ」ジャンルの店に30軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "カフェ", "count": 30 } }, "tier": 3, "humor": false },
-  { "id": "title_035", "name": "パスタ入門者", "description": "「イタリアン」ジャンルの店に5軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "イタリアン", "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_036", "name": "トラットリア常連", "description": "「イタリアン」ジャンルの店に15軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "イタリアン", "count": 15 } }, "tier": 2, "humor": false },
-  { "id": "title_037", "name": "イタリアンの伊達者", "description": "「イタリアン」ジャンルの店に30軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "イタリアン", "count": 30 } }, "tier": 3, "humor": false },
-  { "id": "title_038", "name": "町中華デビュー", "description": "「中華」ジャンルの店に5軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "中華", "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_039", "name": "円卓の常連", "description": "「中華」ジャンルの店に15軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "中華", "count": 15 } }, "tier": 2, "humor": false },
-  { "id": "title_040", "name": "中華街の顔役", "description": "「中華」ジャンルの店に30軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "中華", "count": 30 } }, "tier": 3, "humor": false },
-  { "id": "title_041", "name": "一軒目の勇者", "description": "「居酒屋」ジャンルの店に5軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "居酒屋", "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_042", "name": "はしご酒の名手", "description": "「居酒屋」ジャンルの店に15軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "居酒屋", "count": 15 } }, "tier": 2, "humor": false },
-  { "id": "title_043", "name": "飲み歩き界の生ける伝説", "description": "「居酒屋」ジャンルの店に30軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "居酒屋", "count": 30 } }, "tier": 3, "humor": false },
-  { "id": "title_044", "name": "甘党見習い", "description": "「スイーツ」ジャンルの店に5軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "スイーツ", "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_045", "name": "スイーツハンター", "description": "「スイーツ」ジャンルの店に15軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "スイーツ", "count": 15 } }, "tier": 2, "humor": false },
-  { "id": "title_046", "name": "糖分の帝王", "description": "「スイーツ」ジャンルの店に30軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "スイーツ", "count": 30 } }, "tier": 3, "humor": false },
-  { "id": "title_047", "name": "スパイス初体験", "description": "「カレー」ジャンルの店に5軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "カレー", "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_048", "name": "辛さと友達になった人", "description": "「カレー」ジャンルの店に15軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "カレー", "count": 15 } }, "tier": 2, "humor": false },
-  { "id": "title_049", "name": "カレー番付・横綱", "description": "「カレー」ジャンルの店に30軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "カレー", "count": 30 } }, "tier": 3, "humor": false },
-  { "id": "title_050", "name": "麺つゆデビュー", "description": "「うどん・そば」ジャンルの店に5軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "うどん・そば", "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_051", "name": "手繰りの達人", "description": "「うどん・そば」ジャンルの店に15軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "うどん・そば", "count": 15 } }, "tier": 2, "humor": false },
-  { "id": "title_052", "name": "蕎麦道の求道者", "description": "「うどん・そば」ジャンルの店に30軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "うどん・そば", "count": 30 } }, "tier": 3, "humor": false },
-  { "id": "title_053", "name": "洋食屋さん巡り初心者", "description": "「洋食」ジャンルの店に5軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "洋食", "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_054", "name": "オムライス評論家", "description": "「洋食」ジャンルの店に15軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "洋食", "count": 15 } }, "tier": 2, "humor": false },
-  { "id": "title_055", "name": "洋食界のレジェンド", "description": "「洋食」ジャンルの店に30軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "洋食", "count": 30 } }, "tier": 3, "humor": false },
-  { "id": "title_056", "name": "和の心・入門", "description": "「和食」ジャンルの店に5軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "和食", "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_057", "name": "だしの魔術師", "description": "「和食」ジャンルの店に15軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "和食", "count": 15 } }, "tier": 2, "humor": false },
-  { "id": "title_058", "name": "和食道の継承者", "description": "「和食」ジャンルの店に30軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "和食", "count": 30 } }, "tier": 3, "humor": false },
-  { "id": "title_059", "name": "エスニック探検隊", "description": "「エスニック」ジャンルの店に5軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "エスニック", "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_060", "name": "スパイスの旅人", "description": "「エスニック」ジャンルの店に15軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "エスニック", "count": 15 } }, "tier": 2, "humor": false },
-  { "id": "title_061", "name": "世界の台所マスター", "description": "「エスニック」ジャンルの店に30軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "エスニック", "count": 30 } }, "tier": 3, "humor": false },
-  { "id": "title_062", "name": "サクッと派デビュー", "description": "「ファストフード」ジャンルの店に5軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "ファストフード", "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_063", "name": "スピード飯の達人", "description": "「ファストフード」ジャンルの店に15軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "ファストフード", "count": 15 } }, "tier": 2, "humor": false },
-  { "id": "title_064", "name": "ファストフード帝国の住人", "description": "「ファストフード」ジャンルの店に30軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "ファストフード", "count": 30 } }, "tier": 3, "humor": false },
-  { "id": "title_065", "name": "一杯目の夜", "description": "「バー」ジャンルの店に5軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "バー", "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_066", "name": "カウンターの常連", "description": "「バー」ジャンルの店に15軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "バー", "count": 15 } }, "tier": 2, "humor": false },
-  { "id": "title_067", "name": "バーテンダーと呼び合う仲", "description": "「バー」ジャンルの店に30軒訪問した", "category": "genre_explore", "condition": { "type": "genre_visit_count_gte", "value": { "genre": "バー", "count": 30 } }, "tier": 3, "humor": false },
-  { "id": "title_068", "name": "浮気性グルメ", "description": "3種類のジャンルを訪れた", "category": "genre_diversity", "condition": { "type": "genre_type_count_gte", "value": 3 }, "tier": 1, "humor": false },
-  { "id": "title_069", "name": "ジャンル横断者", "description": "5種類のジャンルを訪れた", "category": "genre_diversity", "condition": { "type": "genre_type_count_gte", "value": 5 }, "tier": 2, "humor": false },
-  { "id": "title_070", "name": "何でも食べる人", "description": "8種類のジャンルを訪れた", "category": "genre_diversity", "condition": { "type": "genre_type_count_gte", "value": 8 }, "tier": 3, "humor": false },
-  { "id": "title_071", "name": "雑食系グルメマスター", "description": "10種類のジャンルを訪れた", "category": "genre_diversity", "condition": { "type": "genre_type_count_gte", "value": 10 }, "tier": 4, "humor": false },
-  { "id": "title_072", "name": "食のオールラウンダー", "description": "12種類のジャンルを訪れた", "category": "genre_diversity", "condition": { "type": "genre_type_count_gte", "value": 12 }, "tier": 5, "humor": false },
-  { "id": "title_073", "name": "グルメ界のコンプリートマスター", "description": "全15種類のジャンルを制覇した", "category": "genre_diversity", "condition": { "type": "genre_type_count_gte", "value": 15 }, "tier": 6, "humor": false },
-  { "id": "title_074", "name": "ご近所グルメ", "description": "3つの市区町村で食べ歩いた", "category": "area_conquest", "condition": { "type": "city_count_gte", "value": 3 }, "tier": 1, "humor": false },
-  { "id": "title_075", "name": "町内グルメパトロール", "description": "5つの市区町村で食べ歩いた", "category": "area_conquest", "condition": { "type": "city_count_gte", "value": 5 }, "tier": 2, "humor": false },
-  { "id": "title_076", "name": "隣町まで遠征隊", "description": "10の市区町村で食べ歩いた", "category": "area_conquest", "condition": { "type": "city_count_gte", "value": 10 }, "tier": 3, "humor": false },
-  { "id": "title_077", "name": "県内食べ歩き隊", "description": "15の市区町村で食べ歩いた", "category": "area_conquest", "condition": { "type": "city_count_gte", "value": 15 }, "tier": 4, "humor": false },
-  { "id": "title_078", "name": "グルメ移動距離ヤバい人", "description": "20の市区町村で食べ歩いた", "category": "area_conquest", "condition": { "type": "city_count_gte", "value": 20 }, "tier": 5, "humor": false },
-  { "id": "title_079", "name": "市区町村コレクター", "description": "30の市区町村で食べ歩いた", "category": "area_conquest", "condition": { "type": "city_count_gte", "value": 30 }, "tier": 6, "humor": false },
-  { "id": "title_080", "name": "地図が埋まってきた人", "description": "40の市区町村で食べ歩いた", "category": "area_conquest", "condition": { "type": "city_count_gte", "value": 40 }, "tier": 7, "humor": false },
-  { "id": "title_081", "name": "半分制覇の猛者", "description": "50の市区町村で食べ歩いた", "category": "area_conquest", "condition": { "type": "city_count_gte", "value": 50 }, "tier": 8, "humor": false },
-  { "id": "title_082", "name": "グルメ地理マスター", "description": "70の市区町村で食べ歩いた", "category": "area_conquest", "condition": { "type": "city_count_gte", "value": 70 }, "tier": 9, "humor": false },
-  { "id": "title_083", "name": "全国区の食べ歩き人", "description": "100の市区町村で食べ歩いた", "category": "area_conquest", "condition": { "type": "city_count_gte", "value": 100 }, "tier": 10, "humor": false },
-  { "id": "title_084", "name": "地元グルメ", "description": "1都道府県で食べ歩いた", "category": "prefecture_conquest", "condition": { "type": "prefecture_count_gte", "value": 1 }, "tier": 1, "humor": false },
-  { "id": "title_085", "name": "県境越えの第一歩", "description": "3都道府県で食べ歩いた", "category": "prefecture_conquest", "condition": { "type": "prefecture_count_gte", "value": 3 }, "tier": 2, "humor": false },
-  { "id": "title_086", "name": "5県制覇の旅人", "description": "5都道府県で食べ歩いた", "category": "prefecture_conquest", "condition": { "type": "prefecture_count_gte", "value": 5 }, "tier": 3, "humor": false },
-  { "id": "title_087", "name": "10都道府県踏破", "description": "10都道府県で食べ歩いた", "category": "prefecture_conquest", "condition": { "type": "prefecture_count_gte", "value": 10 }, "tier": 4, "humor": false },
-  { "id": "title_088", "name": "西へ東へグルメ紀行", "description": "15都道府県で食べ歩いた", "category": "prefecture_conquest", "condition": { "type": "prefecture_count_gte", "value": 15 }, "tier": 5, "humor": false },
-  { "id": "title_089", "name": "日本半分グルメマップ", "description": "20都道府県で食べ歩いた", "category": "prefecture_conquest", "condition": { "type": "prefecture_count_gte", "value": 20 }, "tier": 6, "humor": false },
-  { "id": "title_090", "name": "グルメ日本縦断中", "description": "25都道府県で食べ歩いた", "category": "prefecture_conquest", "condition": { "type": "prefecture_count_gte", "value": 25 }, "tier": 7, "humor": false },
-  { "id": "title_091", "name": "あと少しで全国制覇", "description": "35都道府県で食べ歩いた", "category": "prefecture_conquest", "condition": { "type": "prefecture_count_gte", "value": 35 }, "tier": 8, "humor": false },
-  { "id": "title_092", "name": "日本全国グルメ制覇王", "description": "全47都道府県を制覇した", "category": "prefecture_conquest", "condition": { "type": "prefecture_count_gte", "value": 47 }, "tier": 9, "humor": false },
-  { "id": "title_093", "name": "グルメパスポート・ワールドツアー", "description": "海外のお店も登録した", "category": "prefecture_conquest", "condition": { "type": "overseas_registered", "value": "海外" }, "tier": 10, "humor": false },
-  { "id": "title_094", "name": "推し店発掘家", "description": "★5評価を5件つけた", "category": "high_rating_count", "condition": { "type": "five_star_count_gte", "value": 5 }, "tier": 1, "humor": false },
-  { "id": "title_095", "name": "星5ハンター", "description": "★5評価を10件つけた", "category": "high_rating_count", "condition": { "type": "five_star_count_gte", "value": 10 }, "tier": 2, "humor": false },
-  { "id": "title_096", "name": "満点評価の使徒", "description": "★5評価を20件つけた", "category": "high_rating_count", "condition": { "type": "five_star_count_gte", "value": 20 }, "tier": 3, "humor": false },
-  { "id": "title_097", "name": "神席探索者", "description": "★5評価を30件つけた", "category": "high_rating_count", "condition": { "type": "five_star_count_gte", "value": 30 }, "tier": 4, "humor": false },
-  { "id": "title_098", "name": "星5マイスター", "description": "★5評価を50件つけた", "category": "high_rating_count", "condition": { "type": "five_star_count_gte", "value": 50 }, "tier": 5, "humor": false },
-  { "id": "title_099", "name": "満点しか勝たん勢", "description": "★5評価を75件つけた", "category": "high_rating_count", "condition": { "type": "five_star_count_gte", "value": 75 }, "tier": 6, "humor": false },
-  { "id": "title_100", "name": "殿堂入り店コレクター", "description": "★5評価を100件つけた", "category": "high_rating_count", "condition": { "type": "five_star_count_gte", "value": 100 }, "tier": 7, "humor": false },
-  { "id": "title_101", "name": "星5伝説", "description": "★5評価を150件つけた", "category": "high_rating_count", "condition": { "type": "five_star_count_gte", "value": 150 }, "tier": 8, "humor": false },
-  { "id": "title_102", "name": "辛口デビュー", "description": "★1〜2評価を5件つけた", "category": "low_rating_count", "condition": { "type": "low_star_count_gte", "value": 5 }, "tier": 1, "humor": true },
-  { "id": "title_103", "name": "正直者のレビュアー", "description": "★1〜2評価を10件つけた", "category": "low_rating_count", "condition": { "type": "low_star_count_gte", "value": 10 }, "tier": 2, "humor": true },
-  { "id": "title_104", "name": "厳しめ評論家", "description": "★1〜2評価を20件つけた", "category": "low_rating_count", "condition": { "type": "low_star_count_gte", "value": 20 }, "tier": 3, "humor": true },
-  { "id": "title_105", "name": "採点基準は世界一厳しい人", "description": "★1〜2評価を30件つけた", "category": "low_rating_count", "condition": { "type": "low_star_count_gte", "value": 30 }, "tier": 4, "humor": true },
-  { "id": "title_106", "name": "辛口の鬼", "description": "★1〜2評価を50件つけた", "category": "low_rating_count", "condition": { "type": "low_star_count_gte", "value": 50 }, "tier": 5, "humor": true },
-  { "id": "title_107", "name": "採点ハードモード", "description": "★1〜2評価を75件つけた", "category": "low_rating_count", "condition": { "type": "low_star_count_gte", "value": 75 }, "tier": 6, "humor": true },
-  { "id": "title_108", "name": "グルメ界の閻魔様", "description": "★1〜2評価を100件つけた", "category": "low_rating_count", "condition": { "type": "low_star_count_gte", "value": 100 }, "tier": 7, "humor": true },
-  { "id": "title_109", "name": "伝説の激辛評論家", "description": "★1〜2評価を150件つけた", "category": "low_rating_count", "condition": { "type": "low_star_count_gte", "value": 150 }, "tier": 8, "humor": true },
-  { "id": "title_110", "name": "みんな大好き甘口さん", "description": "評価20件以上で「甘口」傾向が継続している", "category": "rating_tendency", "condition": { "type": "tendency_streak_gte", "value": { "kind": "甘口", "count": 20 } }, "tier": 1, "humor": true },
-  { "id": "title_111", "name": "褒め上手グルメ", "description": "評価50件以上で「甘口」傾向が継続している", "category": "rating_tendency", "condition": { "type": "tendency_streak_gte", "value": { "kind": "甘口", "count": 50 } }, "tier": 2, "humor": true },
-  { "id": "title_112", "name": "星空一面(オール星5に近い人)", "description": "評価100件以上で「甘口」傾向が継続している", "category": "rating_tendency", "condition": { "type": "tendency_streak_gte", "value": { "kind": "甘口", "count": 100 } }, "tier": 3, "humor": true },
-  { "id": "title_113", "name": "求道者の舌", "description": "評価20件以上で「辛口」傾向が継続している", "category": "rating_tendency", "condition": { "type": "tendency_streak_gte", "value": { "kind": "辛口", "count": 20 } }, "tier": 1, "humor": true },
-  { "id": "title_114", "name": "妥協なき採点官", "description": "評価50件以上で「辛口」傾向が継続している", "category": "rating_tendency", "condition": { "type": "tendency_streak_gte", "value": { "kind": "辛口", "count": 50 } }, "tier": 2, "humor": true },
-  { "id": "title_115", "name": "採点は減点方式の鬼", "description": "評価100件以上で「辛口」傾向が継続している", "category": "rating_tendency", "condition": { "type": "tendency_streak_gte", "value": { "kind": "辛口", "count": 100 } }, "tier": 3, "humor": true },
-  { "id": "title_116", "name": "バランス評価の達人", "description": "評価20件以上で「中庸」傾向が継続している", "category": "rating_tendency", "condition": { "type": "tendency_streak_gte", "value": { "kind": "中庸", "count": 20 } }, "tier": 1, "humor": false },
-  { "id": "title_117", "name": "公平無私のレビュアー", "description": "評価50件以上で「中庸」傾向が継続している", "category": "rating_tendency", "condition": { "type": "tendency_streak_gte", "value": { "kind": "中庸", "count": 50 } }, "tier": 2, "humor": false },
-  { "id": "title_118", "name": "採点AIかと思うほどブレない人", "description": "評価100件以上で「中庸」傾向が継続している", "category": "rating_tendency", "condition": { "type": "tendency_streak_gte", "value": { "kind": "中庸", "count": 100 } }, "tier": 3, "humor": false },
-  { "id": "title_119", "name": "写真は証拠品", "description": "写真を10枚投稿した", "category": "photo_count", "condition": { "type": "photo_count_gte", "value": 10 }, "tier": 1, "humor": false },
-  { "id": "title_120", "name": "食レポカメラマン見習い", "description": "写真を30枚投稿した", "category": "photo_count", "condition": { "type": "photo_count_gte", "value": 30 }, "tier": 2, "humor": false },
-  { "id": "title_121", "name": "映え意識してきた人", "description": "写真を50枚投稿した", "category": "photo_count", "condition": { "type": "photo_count_gte", "value": 50 }, "tier": 3, "humor": false },
-  { "id": "title_122", "name": "フォトジェニックグルメ勢", "description": "写真を100枚投稿した", "category": "photo_count", "condition": { "type": "photo_count_gte", "value": 100 }, "tier": 4, "humor": false },
-  { "id": "title_123", "name": "撮影許可待ちの常連", "description": "写真を200枚投稿した", "category": "photo_count", "condition": { "type": "photo_count_gte", "value": 200 }, "tier": 5, "humor": false },
-  { "id": "title_124", "name": "グルメカメラマン", "description": "写真を300枚投稿した", "category": "photo_count", "condition": { "type": "photo_count_gte", "value": 300 }, "tier": 6, "humor": false },
-  { "id": "title_125", "name": "写真だけでお腹いっぱい", "description": "写真を500枚投稿した", "category": "photo_count", "condition": { "type": "photo_count_gte", "value": 500 }, "tier": 7, "humor": false },
-  { "id": "title_126", "name": "食のフォトグラファー", "description": "写真を1000枚投稿した", "category": "photo_count", "condition": { "type": "photo_count_gte", "value": 1000 }, "tier": 8, "humor": false },
-  { "id": "title_127", "name": "コスパ重視デビュー", "description": "1000円以下の店に5回訪問した", "category": "budget_low", "condition": { "type": "low_price_visit_gte", "value": 5 }, "tier": 1, "humor": false },
-  { "id": "title_128", "name": "節約グルメ戦士", "description": "1000円以下の店に10回訪問した", "category": "budget_low", "condition": { "type": "low_price_visit_gte", "value": 10 }, "tier": 2, "humor": false },
-  { "id": "title_129", "name": "千円以下の求道者", "description": "1000円以下の店に20回訪問した", "category": "budget_low", "condition": { "type": "low_price_visit_gte", "value": 20 }, "tier": 3, "humor": false },
-  { "id": "title_130", "name": "コスパ番付・上位", "description": "1000円以下の店に40回訪問した", "category": "budget_low", "condition": { "type": "low_price_visit_gte", "value": 40 }, "tier": 4, "humor": false },
-  { "id": "title_131", "name": "財布に優しいグルメ王", "description": "1000円以下の店に60回訪問した", "category": "budget_low", "condition": { "type": "low_price_visit_gte", "value": 60 }, "tier": 5, "humor": false },
-  { "id": "title_132", "name": "コスパマスター・伝説", "description": "1000円以下の店に100回訪問した", "category": "budget_low", "condition": { "type": "low_price_visit_gte", "value": 100 }, "tier": 6, "humor": false },
-  { "id": "title_133", "name": "たまの贅沢デビュー", "description": "高価格帯の店に3回訪問した", "category": "budget_high", "condition": { "type": "high_price_visit_gte", "value": 3 }, "tier": 1, "humor": false },
-  { "id": "title_134", "name": "背伸びグルメ", "description": "高価格帯の店に5回訪問した", "category": "budget_high", "condition": { "type": "high_price_visit_gte", "value": 5 }, "tier": 2, "humor": false },
-  { "id": "title_135", "name": "特別な日の常連", "description": "高価格帯の店に10回訪問した", "category": "budget_high", "condition": { "type": "high_price_visit_gte", "value": 10 }, "tier": 3, "humor": false },
-  { "id": "title_136", "name": "高級店のVIP", "description": "高価格帯の店に20回訪問した", "category": "budget_high", "condition": { "type": "high_price_visit_gte", "value": 20 }, "tier": 4, "humor": false },
-  { "id": "title_137", "name": "グルメ富豪への道", "description": "高価格帯の店に30回訪問した", "category": "budget_high", "condition": { "type": "high_price_visit_gte", "value": 30 }, "tier": 5, "humor": false },
-  { "id": "title_138", "name": "美食家の称号・完全体", "description": "高価格帯の店に50回訪問した", "category": "budget_high", "condition": { "type": "high_price_visit_gte", "value": 50 }, "tier": 6, "humor": false },
-  { "id": "title_139", "name": "夜食の番人", "description": "深夜(0-4時)に5回投稿した", "category": "time_day_humor", "condition": { "type": "late_night_count", "value": 5 }, "tier": 1, "humor": true },
-  { "id": "title_140", "name": "深夜徘徊グルメ", "description": "深夜(0-4時)に20回投稿した", "category": "time_day_humor", "condition": { "type": "late_night_count", "value": 20 }, "tier": 2, "humor": true },
-  { "id": "title_141", "name": "朝活グルメ", "description": "早朝(5-8時)に5回投稿した", "category": "time_day_humor", "condition": { "type": "early_morning_count", "value": 5 }, "tier": 3, "humor": true },
-  { "id": "title_142", "name": "モーニング戦士", "description": "早朝(5-8時)に20回投稿した", "category": "time_day_humor", "condition": { "type": "early_morning_count", "value": 20 }, "tier": 4, "humor": true },
-  { "id": "title_143", "name": "週末グルメ専門", "description": "週末のみの投稿が10回続いた", "category": "time_day_humor", "condition": { "type": "weekend_only_count", "value": 10 }, "tier": 5, "humor": true },
-  { "id": "title_144", "name": "ランチ戦線を駆け抜ける者", "description": "平日ランチタイムに20回投稿した", "category": "time_day_humor", "condition": { "type": "weekday_lunch_count", "value": 20 }, "tier": 6, "humor": true },
-  { "id": "title_145", "name": "月曜からグルメ", "description": "月曜日に10回投稿した", "category": "time_day_humor", "condition": { "type": "monday_count", "value": 10 }, "tier": 7, "humor": true },
-  { "id": "title_146", "name": "花金グルメ王", "description": "金曜の夜に15回投稿した", "category": "time_day_humor", "condition": { "type": "friday_night_count", "value": 15 }, "tier": 8, "humor": true },
-  { "id": "title_147", "name": "1週間毎日グルメ", "description": "7日間連続で投稿した", "category": "time_day_humor", "condition": { "type": "daily_streak_gte", "value": 7 }, "tier": 9, "humor": true },
-  { "id": "title_148", "name": "グルメ皆勤賞", "description": "30日間連続で投稿した", "category": "time_day_humor", "condition": { "type": "daily_streak_gte", "value": 30 }, "tier": 10, "humor": true },
-  { "id": "title_149", "name": "食べ歩き修行僧", "description": "100日間連続で投稿した", "category": "time_day_humor", "condition": { "type": "daily_streak_gte", "value": 100 }, "tier": 11, "humor": true },
-  { "id": "title_150", "name": "三食制覇の日", "description": "同じ日に朝・昼・晩すべて投稿した", "category": "time_day_humor", "condition": { "type": "same_day_three_meals", "value": 1 }, "tier": 12, "humor": true },
-  { "id": "title_151", "name": "雨天決行グルメ", "description": "雨の日に10回投稿した", "category": "time_day_humor", "condition": { "type": "rainy_day_count", "value": 10 }, "tier": 13, "humor": true },
-  { "id": "title_152", "name": "灼熱グルメ戦士", "description": "真夏日に10回投稿した", "category": "time_day_humor", "condition": { "type": "hot_day_count", "value": 10 }, "tier": 14, "humor": true },
-  { "id": "title_153", "name": "極寒グルメ戦士", "description": "真冬日に10回投稿した", "category": "time_day_humor", "condition": { "type": "cold_day_count", "value": 10 }, "tier": 15, "humor": true },
-  { "id": "title_154", "name": "桜の下でグルメ", "description": "春に20回投稿した", "category": "season_weather_humor", "condition": { "type": "spring_count", "value": 20 }, "tier": 1, "humor": true },
-  { "id": "title_155", "name": "夏バテ知らずグルメ王", "description": "夏に30回投稿した", "category": "season_weather_humor", "condition": { "type": "summer_count", "value": 30 }, "tier": 2, "humor": true },
-  { "id": "title_156", "name": "食欲の秋、極めたり", "description": "秋に30回投稿した", "category": "season_weather_humor", "condition": { "type": "autumn_count", "value": 30 }, "tier": 3, "humor": true },
-  { "id": "title_157", "name": "鍋奉行", "description": "冬に30回投稿した", "category": "season_weather_humor", "condition": { "type": "winter_count", "value": 30 }, "tier": 4, "humor": true },
-  { "id": "title_158", "name": "台風グルメ強行軍", "description": "台風接近時に投稿した", "category": "season_weather_humor", "condition": { "type": "typhoon_day_post", "value": 1 }, "tier": 5, "humor": true },
-  { "id": "title_159", "name": "雪見グルメ", "description": "雪の日に投稿した", "category": "season_weather_humor", "condition": { "type": "snow_day_post", "value": 1 }, "tier": 6, "humor": true },
-  { "id": "title_160", "name": "花粉に負けないグルメ魂", "description": "花粉シーズンに10回投稿した", "category": "season_weather_humor", "condition": { "type": "pollen_season_count", "value": 10 }, "tier": 7, "humor": true },
-  { "id": "title_161", "name": "ゴールデンウィーク満喫グルメ", "description": "GW期間中に5回投稿した", "category": "season_weather_humor", "condition": { "type": "gw_count", "value": 5 }, "tier": 8, "humor": true },
-  { "id": "title_162", "name": "年越しグルメ巡礼", "description": "年末年始に投稿した", "category": "season_weather_humor", "condition": { "type": "new_year_post", "value": 1 }, "tier": 9, "humor": true },
-  { "id": "title_163", "name": "帰省ついでにグルメ探訪", "description": "お盆期間に投稿した", "category": "season_weather_humor", "condition": { "type": "obon_post", "value": 1 }, "tier": 10, "humor": true },
-  { "id": "title_164", "name": "常連への第一歩", "description": "同じ店に3回訪問した", "category": "repeat_visit", "condition": { "type": "same_store_visit_gte", "value": 3 }, "tier": 1, "humor": false },
-  { "id": "title_165", "name": "あの店の顔", "description": "同じ店に5回訪問した", "category": "repeat_visit", "condition": { "type": "same_store_visit_gte", "value": 5 }, "tier": 2, "humor": false },
-  { "id": "title_166", "name": "マイベスト店確定", "description": "同じ店に10回訪問した", "category": "repeat_visit", "condition": { "type": "same_store_visit_gte", "value": 10 }, "tier": 3, "humor": false },
-  { "id": "title_167", "name": "名前を覚えられている説", "description": "同じ店に20回訪問した", "category": "repeat_visit", "condition": { "type": "same_store_visit_gte", "value": 20 }, "tier": 4, "humor": false },
-  { "id": "title_168", "name": "心の故郷認定", "description": "同じ店に30回訪問した", "category": "repeat_visit", "condition": { "type": "same_store_visit_gte", "value": 30 }, "tier": 5, "humor": false },
-  { "id": "title_169", "name": "長年の常連", "description": "同じ店に1年以上継続して通った", "category": "repeat_visit", "condition": { "type": "same_store_duration_years_gte", "value": 1 }, "tier": 6, "humor": false },
-  { "id": "title_170", "name": "マルチ常連", "description": "3店舗以上でそれぞれ5回以上訪問した", "category": "repeat_visit", "condition": { "type": "multi_store_regular", "value": { "stores": 3, "visits": 5 } }, "tier": 7, "humor": false },
-  { "id": "title_171", "name": "月イチ聖地巡礼", "description": "同じ店に3ヶ月連続で月1回訪問した", "category": "repeat_visit", "condition": { "type": "monthly_streak_gte", "value": 3 }, "tier": 8, "humor": false },
-  { "id": "title_172", "name": "隣駅までグルメ遠征", "description": "自宅から5km以上の店に5回訪問した", "category": "travel_distance", "condition": { "type": "distance_visit", "value": { "km": 5, "count": 5 } }, "tier": 1, "humor": false },
-  { "id": "title_173", "name": "電車で行くグルメ", "description": "自宅から10km以上の店に10回訪問した", "category": "travel_distance", "condition": { "type": "distance_visit", "value": { "km": 10, "count": 10 } }, "tier": 2, "humor": false },
-  { "id": "title_174", "name": "日帰りグルメ遠征", "description": "自宅から30km以上の店に5回訪問した", "category": "travel_distance", "condition": { "type": "distance_visit", "value": { "km": 30, "count": 5 } }, "tier": 3, "humor": false },
-  { "id": "title_175", "name": "泊まりがけグルメ旅", "description": "自宅から100km以上の店に3回訪問した", "category": "travel_distance", "condition": { "type": "distance_visit", "value": { "km": 100, "count": 3 } }, "tier": 4, "humor": false },
-  { "id": "title_176", "name": "新幹線グルメ紀行", "description": "自宅から200km以上の店に3回訪問した", "category": "travel_distance", "condition": { "type": "distance_visit", "value": { "km": 200, "count": 3 } }, "tier": 5, "humor": false },
-  { "id": "title_177", "name": "飛行機で食べに行く人", "description": "自宅から500km以上の店に1回訪問した", "category": "travel_distance", "condition": { "type": "distance_visit", "value": { "km": 500, "count": 1 } }, "tier": 6, "humor": false },
-  { "id": "title_178", "name": "グルメ大陸縦断", "description": "累計移動距離が1000kmを超えた", "category": "travel_distance", "condition": { "type": "total_distance_gte", "value": 1000 }, "tier": 7, "humor": false },
-  { "id": "title_179", "name": "グルメのために海外へ", "description": "海外の店舗を1件登録した", "category": "travel_distance", "condition": { "type": "overseas_store_count_gte", "value": 1 }, "tier": 8, "humor": false },
-  { "id": "title_180", "name": "ひとりめし道", "description": "1人での訪問を10回記録した", "category": "social", "condition": { "type": "solo_visit_gte", "value": 10 }, "tier": 1, "humor": false },
-  { "id": "title_181", "name": "孤高のグルメ", "description": "1人での訪問を50回記録した", "category": "social", "condition": { "type": "solo_visit_gte", "value": 50 }, "tier": 2, "humor": false },
-  { "id": "title_182", "name": "わいわいグルメ部", "description": "複数人での訪問を10回記録した", "category": "social", "condition": { "type": "group_visit_gte", "value": 10 }, "tier": 3, "humor": false },
-  { "id": "title_183", "name": "幹事の鑑", "description": "5人以上での訪問を5回記録した", "category": "social", "condition": { "type": "large_group_visit_gte", "value": 5 }, "tier": 4, "humor": false },
-  { "id": "title_184", "name": "グルメ布教活動家", "description": "友人を連れて行った店が10件になった", "category": "social", "condition": { "type": "brought_friend_store_gte", "value": 10 }, "tier": 5, "humor": false },
-  { "id": "title_185", "name": "一人でも大勢でも楽しめる人", "description": "ソロ・グループそれぞれ50回ずつ訪問した", "category": "social", "condition": { "type": "solo_and_group_balance", "value": { "solo": 50, "group": 50 } }, "tier": 6, "humor": false },
-  { "id": "title_186", "name": "誕生日グルメ", "description": "自分の誕生日に投稿した", "category": "special_day", "condition": { "type": "birthday_post", "value": 1 }, "tier": 1, "humor": true },
-  { "id": "title_187", "name": "記念日ディナー", "description": "アプリ登録記念日に投稿した", "category": "special_day", "condition": { "type": "app_anniversary_post", "value": 1 }, "tier": 2, "humor": true },
-  { "id": "title_188", "name": "元旦グルメ", "description": "1月1日に投稿した", "category": "special_day", "condition": { "type": "new_years_day_post", "value": 1 }, "tier": 3, "humor": true },
-  { "id": "title_189", "name": "クリスマスグルメ", "description": "12月24〜25日に投稿した", "category": "special_day", "condition": { "type": "christmas_post", "value": 1 }, "tier": 4, "humor": true },
-  { "id": "title_190", "name": "バレンタイングルメ", "description": "2月14日に投稿した", "category": "special_day", "condition": { "type": "valentine_post", "value": 1 }, "tier": 5, "humor": true },
-  { "id": "title_191", "name": "グルメマップ1周年", "description": "アプリ利用1年を達成した", "category": "special_day", "condition": { "type": "app_usage_years_gte", "value": 1 }, "tier": 6, "humor": true },
-  { "id": "title_192", "name": "グルメマップ・オールスター", "description": "活動量・ジャンル多様性・エリア制覇のすべてで中級以上を達成した", "category": "legendary_complete", "condition": { "type": "composite_all_intermediate", "value": 1 }, "tier": 1, "humor": false },
-  { "id": "title_193", "name": "五感で味わう者", "description": "写真投稿・レビュー・評価のすべてで一定数を達成した", "category": "legendary_complete", "condition": { "type": "composite_photo_review_rating", "value": 1 }, "tier": 2, "humor": false },
-  { "id": "title_194", "name": "グルメ図鑑コンプリート", "description": "全ジャンル制覇と全国都道府県制覇を同時に達成した", "category": "legendary_complete", "condition": { "type": "composite_genre_pref_complete", "value": 1 }, "tier": 3, "humor": false },
-  { "id": "title_195", "name": "伝説の美食家", "description": "各カテゴリの最上位称号を3つ以上達成した", "category": "legendary_complete", "condition": { "type": "top_tier_count_gte", "value": 3 }, "tier": 4, "humor": false },
-  { "id": "title_196", "name": "グルメマップの守護者", "description": "アプリの長期利用と高評価数トップクラスを両立した", "category": "legendary_complete", "condition": { "type": "composite_long_use_high_rating", "value": 1 }, "tier": 5, "humor": false },
-  { "id": "title_197", "name": "食べ歩きの賢者", "description": "登録店舗数500件・レビュー数300件を達成した", "category": "legendary_complete", "condition": { "type": "composite_post_review_threshold", "value": { "post": 500, "review": 300 } }, "tier": 6, "humor": false },
-  { "id": "title_198", "name": "グルメマップ殿堂入り", "description": "運営が認めた特別な功績を持つ(隠し称号)", "category": "legendary_complete", "condition": { "type": "admin_awarded", "value": 1 }, "tier": 7, "humor": true },
-  { "id": "title_199", "name": "味覚の求道者・極", "description": "辛口・甘口どちらの評価傾向称号も獲得した", "category": "legendary_complete", "condition": { "type": "composite_both_tendency", "value": 1 }, "tier": 8, "humor": false },
-  { "id": "title_200", "name": "グルメマップ・ザ・レジェンド", "description": "すべての称号をコンプリートした", "category": "legendary_complete", "condition": { "type": "all_titles_complete", "value": 1 }, "tier": 9, "humor": false }
+  {
+    "id": "title_001",
+    "name": "はじめの一皿",
+    "description": "はじめてお店を登録した",
+    "category": "post_count",
+    "condition": {
+      "type": "post_count_gte",
+      "value": 1
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 18.0,
+    "rarity": "bronze",
+    "icon": "post_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_002",
+    "name": "グルメの卵",
+    "description": "お店を3軒登録した",
+    "category": "post_count",
+    "condition": {
+      "type": "post_count_gte",
+      "value": 3
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 21.8,
+    "rarity": "bronze",
+    "icon": "post_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_003",
+    "name": "食べ歩き見習い",
+    "description": "お店を5軒登録した",
+    "category": "post_count",
+    "condition": {
+      "type": "post_count_gte",
+      "value": 5
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 25.6,
+    "rarity": "bronze",
+    "icon": "post_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_004",
+    "name": "町の探検家",
+    "description": "お店を10軒登録した",
+    "category": "post_count",
+    "condition": {
+      "type": "post_count_gte",
+      "value": 10
+    },
+    "tier": 4,
+    "humor": false,
+    "difficulty_score": 29.5,
+    "rarity": "bronze",
+    "icon": "post_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_005",
+    "name": "味覚のパトロール",
+    "description": "お店を20軒登録した",
+    "category": "post_count",
+    "condition": {
+      "type": "post_count_gte",
+      "value": 20
+    },
+    "tier": 5,
+    "humor": false,
+    "difficulty_score": 33.3,
+    "rarity": "silver",
+    "icon": "post_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_006",
+    "name": "グルメマップ常連",
+    "description": "お店を30軒登録した",
+    "category": "post_count",
+    "condition": {
+      "type": "post_count_gte",
+      "value": 30
+    },
+    "tier": 6,
+    "humor": false,
+    "difficulty_score": 37.1,
+    "rarity": "silver",
+    "icon": "post_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_007",
+    "name": "食通の入り口",
+    "description": "お店を50軒登録した",
+    "category": "post_count",
+    "condition": {
+      "type": "post_count_gte",
+      "value": 50
+    },
+    "tier": 7,
+    "humor": false,
+    "difficulty_score": 40.9,
+    "rarity": "silver",
+    "icon": "post_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_008",
+    "name": "舌の賢者(見習い)",
+    "description": "お店を75軒登録した",
+    "category": "post_count",
+    "condition": {
+      "type": "post_count_gte",
+      "value": 75
+    },
+    "tier": 8,
+    "humor": false,
+    "difficulty_score": 44.7,
+    "rarity": "silver",
+    "icon": "post_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_009",
+    "name": "百軒突破の猛者",
+    "description": "お店を100軒登録した",
+    "category": "post_count",
+    "condition": {
+      "type": "post_count_gte",
+      "value": 100
+    },
+    "tier": 9,
+    "humor": false,
+    "difficulty_score": 48.5,
+    "rarity": "silver",
+    "icon": "post_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_010",
+    "name": "食い倒れ予備軍",
+    "description": "お店を150軒登録した",
+    "category": "post_count",
+    "condition": {
+      "type": "post_count_gte",
+      "value": 150
+    },
+    "tier": 10,
+    "humor": false,
+    "difficulty_score": 52.4,
+    "rarity": "gold",
+    "icon": "post_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_011",
+    "name": "グルメ番付・小結",
+    "description": "お店を250軒登録した",
+    "category": "post_count",
+    "condition": {
+      "type": "post_count_gte",
+      "value": 250
+    },
+    "tier": 11,
+    "humor": false,
+    "difficulty_score": 56.2,
+    "rarity": "gold",
+    "icon": "post_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_012",
+    "name": "伝説の食べ歩き人",
+    "description": "お店を500軒登録した",
+    "category": "post_count",
+    "condition": {
+      "type": "post_count_gte",
+      "value": 500
+    },
+    "tier": 12,
+    "humor": false,
+    "difficulty_score": 60.0,
+    "rarity": "gold",
+    "icon": "post_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_013",
+    "name": "初めてのひとこと",
+    "description": "はじめてレビューを書いた",
+    "category": "review_count",
+    "condition": {
+      "type": "review_count_gte",
+      "value": 1
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 17.4,
+    "rarity": "bronze",
+    "icon": "review_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_014",
+    "name": "レビュー見習い",
+    "description": "レビューを5件書いた",
+    "category": "review_count",
+    "condition": {
+      "type": "review_count_gte",
+      "value": 5
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 21.9,
+    "rarity": "bronze",
+    "icon": "review_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_015",
+    "name": "コメント職人",
+    "description": "レビューを10件書いた",
+    "category": "review_count",
+    "condition": {
+      "type": "review_count_gte",
+      "value": 10
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 26.4,
+    "rarity": "bronze",
+    "icon": "review_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_016",
+    "name": "言葉の調味料",
+    "description": "レビューを20件書いた",
+    "category": "review_count",
+    "condition": {
+      "type": "review_count_gte",
+      "value": 20
+    },
+    "tier": 4,
+    "humor": false,
+    "difficulty_score": 30.9,
+    "rarity": "bronze",
+    "icon": "review_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_017",
+    "name": "レビュアー覚醒",
+    "description": "レビューを40件書いた",
+    "category": "review_count",
+    "condition": {
+      "type": "review_count_gte",
+      "value": 40
+    },
+    "tier": 5,
+    "humor": false,
+    "difficulty_score": 35.4,
+    "rarity": "silver",
+    "icon": "review_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_018",
+    "name": "評論家気取り",
+    "description": "レビューを60件書いた",
+    "category": "review_count",
+    "condition": {
+      "type": "review_count_gte",
+      "value": 60
+    },
+    "tier": 6,
+    "humor": false,
+    "difficulty_score": 40.0,
+    "rarity": "silver",
+    "icon": "review_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_019",
+    "name": "百件レビューの主",
+    "description": "レビューを100件書いた",
+    "category": "review_count",
+    "condition": {
+      "type": "review_count_gte",
+      "value": 100
+    },
+    "tier": 7,
+    "humor": false,
+    "difficulty_score": 44.5,
+    "rarity": "silver",
+    "icon": "review_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_020",
+    "name": "文字数モンスター",
+    "description": "レビューを150件書いた",
+    "category": "review_count",
+    "condition": {
+      "type": "review_count_gte",
+      "value": 150
+    },
+    "tier": 8,
+    "humor": false,
+    "difficulty_score": 49.0,
+    "rarity": "gold",
+    "icon": "review_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_021",
+    "name": "グルメ評論家",
+    "description": "レビューを250件書いた",
+    "category": "review_count",
+    "condition": {
+      "type": "review_count_gte",
+      "value": 250
+    },
+    "tier": 9,
+    "humor": false,
+    "difficulty_score": 53.5,
+    "rarity": "gold",
+    "icon": "review_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_022",
+    "name": "レビュー仙人",
+    "description": "レビューを400件書いた",
+    "category": "review_count",
+    "condition": {
+      "type": "review_count_gte",
+      "value": 400
+    },
+    "tier": 10,
+    "humor": false,
+    "difficulty_score": 58.0,
+    "rarity": "gold",
+    "icon": "review_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_023",
+    "name": "ラーメン一杯目のあなた",
+    "description": "「ラーメン」ジャンルの店に5軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "ラーメン",
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "ラーメン",
+    "icon_bg": "#FDECC8"
+  },
+  {
+    "id": "title_024",
+    "name": "スープの深淵を覗く者",
+    "description": "「ラーメン」ジャンルの店に15軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "ラーメン",
+        "count": 15
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "ラーメン",
+    "icon_bg": "#FDECC8"
+  },
+  {
+    "id": "title_025",
+    "name": "麺帝国の支配者",
+    "description": "「ラーメン」ジャンルの店に30軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "ラーメン",
+        "count": 30
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "fork_spoon",
+    "icon_genre": "ラーメン",
+    "icon_bg": "#FDECC8"
+  },
+  {
+    "id": "title_026",
+    "name": "シャリ初心者",
+    "description": "「寿司」ジャンルの店に5軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "寿司",
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "寿司",
+    "icon_bg": "#F3F3F3"
+  },
+  {
+    "id": "title_027",
+    "name": "寿司通のたまご",
+    "description": "「寿司」ジャンルの店に15軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "寿司",
+        "count": 15
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "寿司",
+    "icon_bg": "#F3F3F3"
+  },
+  {
+    "id": "title_028",
+    "name": "大将も一目置く常連",
+    "description": "「寿司」ジャンルの店に30軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "寿司",
+        "count": 30
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "fork_spoon",
+    "icon_genre": "寿司",
+    "icon_bg": "#F3F3F3"
+  },
+  {
+    "id": "title_029",
+    "name": "網の見習い",
+    "description": "「焼肉」ジャンルの店に5軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "焼肉",
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "焼肉",
+    "icon_bg": "#F5DCC8"
+  },
+  {
+    "id": "title_030",
+    "name": "カルビ道を極める者",
+    "description": "「焼肉」ジャンルの店に15軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "焼肉",
+        "count": 15
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "焼肉",
+    "icon_bg": "#F5DCC8"
+  },
+  {
+    "id": "title_031",
+    "name": "焼肉界のMVP",
+    "description": "「焼肉」ジャンルの店に30軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "焼肉",
+        "count": 30
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "fork_spoon",
+    "icon_genre": "焼肉",
+    "icon_bg": "#F5DCC8"
+  },
+  {
+    "id": "title_032",
+    "name": "カフェ巡りビギナー",
+    "description": "「カフェ」ジャンルの店に5軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "カフェ",
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "カフェ",
+    "icon_bg": "#E7D3B8"
+  },
+  {
+    "id": "title_033",
+    "name": "コーヒー片手の放浪者",
+    "description": "「カフェ」ジャンルの店に15軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "カフェ",
+        "count": 15
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "カフェ",
+    "icon_bg": "#E7D3B8"
+  },
+  {
+    "id": "title_034",
+    "name": "カフェハンターの真髄",
+    "description": "「カフェ」ジャンルの店に30軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "カフェ",
+        "count": 30
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "fork_spoon",
+    "icon_genre": "カフェ",
+    "icon_bg": "#E7D3B8"
+  },
+  {
+    "id": "title_035",
+    "name": "パスタ入門者",
+    "description": "「イタリアン」ジャンルの店に5軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "イタリアン",
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "イタリアン",
+    "icon_bg": "#FDF1DC"
+  },
+  {
+    "id": "title_036",
+    "name": "トラットリア常連",
+    "description": "「イタリアン」ジャンルの店に15軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "イタリアン",
+        "count": 15
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "イタリアン",
+    "icon_bg": "#FDF1DC"
+  },
+  {
+    "id": "title_037",
+    "name": "イタリアンの伊達者",
+    "description": "「イタリアン」ジャンルの店に30軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "イタリアン",
+        "count": 30
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "fork_spoon",
+    "icon_genre": "イタリアン",
+    "icon_bg": "#FDF1DC"
+  },
+  {
+    "id": "title_038",
+    "name": "町中華デビュー",
+    "description": "「中華」ジャンルの店に5軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "中華",
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "中華",
+    "icon_bg": "#F7DCC0"
+  },
+  {
+    "id": "title_039",
+    "name": "円卓の常連",
+    "description": "「中華」ジャンルの店に15軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "中華",
+        "count": 15
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "中華",
+    "icon_bg": "#F7DCC0"
+  },
+  {
+    "id": "title_040",
+    "name": "中華街の顔役",
+    "description": "「中華」ジャンルの店に30軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "中華",
+        "count": 30
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "fork_spoon",
+    "icon_genre": "中華",
+    "icon_bg": "#F7DCC0"
+  },
+  {
+    "id": "title_041",
+    "name": "一軒目の勇者",
+    "description": "「居酒屋」ジャンルの店に5軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "居酒屋",
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "居酒屋",
+    "icon_bg": "#EDE6D6"
+  },
+  {
+    "id": "title_042",
+    "name": "はしご酒の名手",
+    "description": "「居酒屋」ジャンルの店に15軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "居酒屋",
+        "count": 15
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "居酒屋",
+    "icon_bg": "#EDE6D6"
+  },
+  {
+    "id": "title_043",
+    "name": "飲み歩き界の生ける伝説",
+    "description": "「居酒屋」ジャンルの店に30軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "居酒屋",
+        "count": 30
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "fork_spoon",
+    "icon_genre": "居酒屋",
+    "icon_bg": "#EDE6D6"
+  },
+  {
+    "id": "title_044",
+    "name": "甘党見習い",
+    "description": "「スイーツ」ジャンルの店に5軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "スイーツ",
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "スイーツ",
+    "icon_bg": "#FBE4EC"
+  },
+  {
+    "id": "title_045",
+    "name": "スイーツハンター",
+    "description": "「スイーツ」ジャンルの店に15軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "スイーツ",
+        "count": 15
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "スイーツ",
+    "icon_bg": "#FBE4EC"
+  },
+  {
+    "id": "title_046",
+    "name": "糖分の帝王",
+    "description": "「スイーツ」ジャンルの店に30軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "スイーツ",
+        "count": 30
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "fork_spoon",
+    "icon_genre": "スイーツ",
+    "icon_bg": "#FBE4EC"
+  },
+  {
+    "id": "title_047",
+    "name": "スパイス初体験",
+    "description": "「カレー」ジャンルの店に5軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "カレー",
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "カレー",
+    "icon_bg": "#F6E4C8"
+  },
+  {
+    "id": "title_048",
+    "name": "辛さと友達になった人",
+    "description": "「カレー」ジャンルの店に15軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "カレー",
+        "count": 15
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "カレー",
+    "icon_bg": "#F6E4C8"
+  },
+  {
+    "id": "title_049",
+    "name": "カレー番付・横綱",
+    "description": "「カレー」ジャンルの店に30軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "カレー",
+        "count": 30
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "fork_spoon",
+    "icon_genre": "カレー",
+    "icon_bg": "#F6E4C8"
+  },
+  {
+    "id": "title_050",
+    "name": "麺つゆデビュー",
+    "description": "「うどん・そば」ジャンルの店に5軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "うどん・そば",
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "うどん・そば",
+    "icon_bg": "#F1E7D0"
+  },
+  {
+    "id": "title_051",
+    "name": "手繰りの達人",
+    "description": "「うどん・そば」ジャンルの店に15軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "うどん・そば",
+        "count": 15
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "うどん・そば",
+    "icon_bg": "#F1E7D0"
+  },
+  {
+    "id": "title_052",
+    "name": "蕎麦道の求道者",
+    "description": "「うどん・そば」ジャンルの店に30軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "うどん・そば",
+        "count": 30
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "fork_spoon",
+    "icon_genre": "うどん・そば",
+    "icon_bg": "#F1E7D0"
+  },
+  {
+    "id": "title_053",
+    "name": "洋食屋さん巡り初心者",
+    "description": "「洋食」ジャンルの店に5軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "洋食",
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "洋食",
+    "icon_bg": "#F7E6C4"
+  },
+  {
+    "id": "title_054",
+    "name": "オムライス評論家",
+    "description": "「洋食」ジャンルの店に15軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "洋食",
+        "count": 15
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "洋食",
+    "icon_bg": "#F7E6C4"
+  },
+  {
+    "id": "title_055",
+    "name": "洋食界のレジェンド",
+    "description": "「洋食」ジャンルの店に30軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "洋食",
+        "count": 30
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "fork_spoon",
+    "icon_genre": "洋食",
+    "icon_bg": "#F7E6C4"
+  },
+  {
+    "id": "title_056",
+    "name": "和の心・入門",
+    "description": "「和食」ジャンルの店に5軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "和食",
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "和食",
+    "icon_bg": "#EFD9C8"
+  },
+  {
+    "id": "title_057",
+    "name": "だしの魔術師",
+    "description": "「和食」ジャンルの店に15軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "和食",
+        "count": 15
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "和食",
+    "icon_bg": "#EFD9C8"
+  },
+  {
+    "id": "title_058",
+    "name": "和食道の継承者",
+    "description": "「和食」ジャンルの店に30軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "和食",
+        "count": 30
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "fork_spoon",
+    "icon_genre": "和食",
+    "icon_bg": "#EFD9C8"
+  },
+  {
+    "id": "title_059",
+    "name": "エスニック探検隊",
+    "description": "「エスニック」ジャンルの店に5軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "エスニック",
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "エスニック",
+    "icon_bg": "#F8D9CC"
+  },
+  {
+    "id": "title_060",
+    "name": "スパイスの旅人",
+    "description": "「エスニック」ジャンルの店に15軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "エスニック",
+        "count": 15
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "エスニック",
+    "icon_bg": "#F8D9CC"
+  },
+  {
+    "id": "title_061",
+    "name": "世界の台所マスター",
+    "description": "「エスニック」ジャンルの店に30軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "エスニック",
+        "count": 30
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "fork_spoon",
+    "icon_genre": "エスニック",
+    "icon_bg": "#F8D9CC"
+  },
+  {
+    "id": "title_062",
+    "name": "サクッと派デビュー",
+    "description": "「ファストフード」ジャンルの店に5軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "ファストフード",
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "ファストフード",
+    "icon_bg": "#FBE8B8"
+  },
+  {
+    "id": "title_063",
+    "name": "スピード飯の達人",
+    "description": "「ファストフード」ジャンルの店に15軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "ファストフード",
+        "count": 15
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "ファストフード",
+    "icon_bg": "#FBE8B8"
+  },
+  {
+    "id": "title_064",
+    "name": "ファストフード帝国の住人",
+    "description": "「ファストフード」ジャンルの店に30軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "ファストフード",
+        "count": 30
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "fork_spoon",
+    "icon_genre": "ファストフード",
+    "icon_bg": "#FBE8B8"
+  },
+  {
+    "id": "title_065",
+    "name": "一杯目の夜",
+    "description": "「バー」ジャンルの店に5軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "バー",
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "バー",
+    "icon_bg": "#E3DCEF"
+  },
+  {
+    "id": "title_066",
+    "name": "カウンターの常連",
+    "description": "「バー」ジャンルの店に15軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "バー",
+        "count": 15
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "fork_spoon",
+    "icon_genre": "バー",
+    "icon_bg": "#E3DCEF"
+  },
+  {
+    "id": "title_067",
+    "name": "バーテンダーと呼び合う仲",
+    "description": "「バー」ジャンルの店に30軒訪問した",
+    "category": "genre_explore",
+    "condition": {
+      "type": "genre_visit_count_gte",
+      "value": {
+        "genre": "バー",
+        "count": 30
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "fork_spoon",
+    "icon_genre": "バー",
+    "icon_bg": "#E3DCEF"
+  },
+  {
+    "id": "title_068",
+    "name": "浮気性グルメ",
+    "description": "3種類のジャンルを訪れた",
+    "category": "genre_diversity",
+    "condition": {
+      "type": "genre_type_count_gte",
+      "value": 3
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 17.4,
+    "rarity": "bronze",
+    "icon": "genre_diversity",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_069",
+    "name": "ジャンル横断者",
+    "description": "5種類のジャンルを訪れた",
+    "category": "genre_diversity",
+    "condition": {
+      "type": "genre_type_count_gte",
+      "value": 5
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 25.5,
+    "rarity": "bronze",
+    "icon": "genre_diversity",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_070",
+    "name": "何でも食べる人",
+    "description": "8種類のジャンルを訪れた",
+    "category": "genre_diversity",
+    "condition": {
+      "type": "genre_type_count_gte",
+      "value": 8
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 33.6,
+    "rarity": "silver",
+    "icon": "genre_diversity",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_071",
+    "name": "雑食系グルメマスター",
+    "description": "10種類のジャンルを訪れた",
+    "category": "genre_diversity",
+    "condition": {
+      "type": "genre_type_count_gte",
+      "value": 10
+    },
+    "tier": 4,
+    "humor": false,
+    "difficulty_score": 41.8,
+    "rarity": "silver",
+    "icon": "genre_diversity",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_072",
+    "name": "食のオールラウンダー",
+    "description": "12種類のジャンルを訪れた",
+    "category": "genre_diversity",
+    "condition": {
+      "type": "genre_type_count_gte",
+      "value": 12
+    },
+    "tier": 5,
+    "humor": false,
+    "difficulty_score": 49.9,
+    "rarity": "gold",
+    "icon": "genre_diversity",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_073",
+    "name": "グルメ界のコンプリートマスター",
+    "description": "全15種類のジャンルを制覇した",
+    "category": "genre_diversity",
+    "condition": {
+      "type": "genre_type_count_gte",
+      "value": 15
+    },
+    "tier": 6,
+    "humor": false,
+    "difficulty_score": 58.0,
+    "rarity": "gold",
+    "icon": "genre_diversity",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_074",
+    "name": "ご近所グルメ",
+    "description": "3つの市区町村で食べ歩いた",
+    "category": "area_conquest",
+    "condition": {
+      "type": "city_count_gte",
+      "value": 3
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 17.4,
+    "rarity": "bronze",
+    "icon": "area_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_075",
+    "name": "町内グルメパトロール",
+    "description": "5つの市区町村で食べ歩いた",
+    "category": "area_conquest",
+    "condition": {
+      "type": "city_count_gte",
+      "value": 5
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 21.9,
+    "rarity": "bronze",
+    "icon": "area_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_076",
+    "name": "隣町まで遠征隊",
+    "description": "10の市区町村で食べ歩いた",
+    "category": "area_conquest",
+    "condition": {
+      "type": "city_count_gte",
+      "value": 10
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 26.4,
+    "rarity": "bronze",
+    "icon": "area_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_077",
+    "name": "県内食べ歩き隊",
+    "description": "15の市区町村で食べ歩いた",
+    "category": "area_conquest",
+    "condition": {
+      "type": "city_count_gte",
+      "value": 15
+    },
+    "tier": 4,
+    "humor": false,
+    "difficulty_score": 30.9,
+    "rarity": "bronze",
+    "icon": "area_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_078",
+    "name": "グルメ移動距離ヤバい人",
+    "description": "20の市区町村で食べ歩いた",
+    "category": "area_conquest",
+    "condition": {
+      "type": "city_count_gte",
+      "value": 20
+    },
+    "tier": 5,
+    "humor": false,
+    "difficulty_score": 35.4,
+    "rarity": "silver",
+    "icon": "area_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_079",
+    "name": "市区町村コレクター",
+    "description": "30の市区町村で食べ歩いた",
+    "category": "area_conquest",
+    "condition": {
+      "type": "city_count_gte",
+      "value": 30
+    },
+    "tier": 6,
+    "humor": false,
+    "difficulty_score": 40.0,
+    "rarity": "silver",
+    "icon": "area_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_080",
+    "name": "地図が埋まってきた人",
+    "description": "40の市区町村で食べ歩いた",
+    "category": "area_conquest",
+    "condition": {
+      "type": "city_count_gte",
+      "value": 40
+    },
+    "tier": 7,
+    "humor": false,
+    "difficulty_score": 44.5,
+    "rarity": "silver",
+    "icon": "area_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_081",
+    "name": "半分制覇の猛者",
+    "description": "50の市区町村で食べ歩いた",
+    "category": "area_conquest",
+    "condition": {
+      "type": "city_count_gte",
+      "value": 50
+    },
+    "tier": 8,
+    "humor": false,
+    "difficulty_score": 49.0,
+    "rarity": "gold",
+    "icon": "area_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_082",
+    "name": "グルメ地理マスター",
+    "description": "70の市区町村で食べ歩いた",
+    "category": "area_conquest",
+    "condition": {
+      "type": "city_count_gte",
+      "value": 70
+    },
+    "tier": 9,
+    "humor": false,
+    "difficulty_score": 53.5,
+    "rarity": "gold",
+    "icon": "area_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_083",
+    "name": "全国区の食べ歩き人",
+    "description": "100の市区町村で食べ歩いた",
+    "category": "area_conquest",
+    "condition": {
+      "type": "city_count_gte",
+      "value": 100
+    },
+    "tier": 10,
+    "humor": false,
+    "difficulty_score": 58.0,
+    "rarity": "gold",
+    "icon": "area_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_084",
+    "name": "地元グルメ",
+    "description": "1都道府県で食べ歩いた",
+    "category": "prefecture_conquest",
+    "condition": {
+      "type": "prefecture_count_gte",
+      "value": 1
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 24.6,
+    "rarity": "bronze",
+    "icon": "prefecture_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_085",
+    "name": "県境越えの第一歩",
+    "description": "3都道府県で食べ歩いた",
+    "category": "prefecture_conquest",
+    "condition": {
+      "type": "prefecture_count_gte",
+      "value": 3
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 31.8,
+    "rarity": "silver",
+    "icon": "prefecture_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_086",
+    "name": "5県制覇の旅人",
+    "description": "5都道府県で食べ歩いた",
+    "category": "prefecture_conquest",
+    "condition": {
+      "type": "prefecture_count_gte",
+      "value": 5
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 38.9,
+    "rarity": "silver",
+    "icon": "prefecture_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_087",
+    "name": "10都道府県踏破",
+    "description": "10都道府県で食べ歩いた",
+    "category": "prefecture_conquest",
+    "condition": {
+      "type": "prefecture_count_gte",
+      "value": 10
+    },
+    "tier": 4,
+    "humor": false,
+    "difficulty_score": 46.1,
+    "rarity": "silver",
+    "icon": "prefecture_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_088",
+    "name": "西へ東へグルメ紀行",
+    "description": "15都道府県で食べ歩いた",
+    "category": "prefecture_conquest",
+    "condition": {
+      "type": "prefecture_count_gte",
+      "value": 15
+    },
+    "tier": 5,
+    "humor": false,
+    "difficulty_score": 53.3,
+    "rarity": "gold",
+    "icon": "prefecture_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_089",
+    "name": "日本半分グルメマップ",
+    "description": "20都道府県で食べ歩いた",
+    "category": "prefecture_conquest",
+    "condition": {
+      "type": "prefecture_count_gte",
+      "value": 20
+    },
+    "tier": 6,
+    "humor": false,
+    "difficulty_score": 60.5,
+    "rarity": "gold",
+    "icon": "prefecture_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_090",
+    "name": "グルメ日本縦断中",
+    "description": "25都道府県で食べ歩いた",
+    "category": "prefecture_conquest",
+    "condition": {
+      "type": "prefecture_count_gte",
+      "value": 25
+    },
+    "tier": 7,
+    "humor": false,
+    "difficulty_score": 67.6,
+    "rarity": "platinum",
+    "icon": "prefecture_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_091",
+    "name": "あと少しで全国制覇",
+    "description": "35都道府県で食べ歩いた",
+    "category": "prefecture_conquest",
+    "condition": {
+      "type": "prefecture_count_gte",
+      "value": 35
+    },
+    "tier": 8,
+    "humor": false,
+    "difficulty_score": 74.8,
+    "rarity": "platinum",
+    "icon": "prefecture_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_092",
+    "name": "日本全国グルメ制覇王",
+    "description": "全47都道府県を制覇した",
+    "category": "prefecture_conquest",
+    "condition": {
+      "type": "prefecture_count_gte",
+      "value": 47
+    },
+    "tier": 9,
+    "humor": false,
+    "difficulty_score": 82.0,
+    "rarity": "platinum",
+    "icon": "prefecture_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_093",
+    "name": "グルメパスポート・ワールドツアー",
+    "description": "海外のお店も登録した",
+    "category": "prefecture_conquest",
+    "condition": {
+      "type": "overseas_registered",
+      "value": "海外"
+    },
+    "tier": 10,
+    "humor": false,
+    "difficulty_score": 55.0,
+    "rarity": "gold",
+    "icon": "prefecture_conquest",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_094",
+    "name": "推し店発掘家",
+    "description": "★5評価を5件つけた",
+    "category": "high_rating_count",
+    "condition": {
+      "type": "five_star_count_gte",
+      "value": 5
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 15.0,
+    "rarity": "bronze",
+    "icon": "high_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_095",
+    "name": "星5ハンター",
+    "description": "★5評価を10件つけた",
+    "category": "high_rating_count",
+    "condition": {
+      "type": "five_star_count_gte",
+      "value": 10
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 20.0,
+    "rarity": "bronze",
+    "icon": "high_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_096",
+    "name": "満点評価の使徒",
+    "description": "★5評価を20件つけた",
+    "category": "high_rating_count",
+    "condition": {
+      "type": "five_star_count_gte",
+      "value": 20
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 25.0,
+    "rarity": "bronze",
+    "icon": "high_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_097",
+    "name": "神席探索者",
+    "description": "★5評価を30件つけた",
+    "category": "high_rating_count",
+    "condition": {
+      "type": "five_star_count_gte",
+      "value": 30
+    },
+    "tier": 4,
+    "humor": false,
+    "difficulty_score": 30.0,
+    "rarity": "bronze",
+    "icon": "high_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_098",
+    "name": "星5マイスター",
+    "description": "★5評価を50件つけた",
+    "category": "high_rating_count",
+    "condition": {
+      "type": "five_star_count_gte",
+      "value": 50
+    },
+    "tier": 5,
+    "humor": false,
+    "difficulty_score": 35.0,
+    "rarity": "silver",
+    "icon": "high_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_099",
+    "name": "満点しか勝たん勢",
+    "description": "★5評価を75件つけた",
+    "category": "high_rating_count",
+    "condition": {
+      "type": "five_star_count_gte",
+      "value": 75
+    },
+    "tier": 6,
+    "humor": false,
+    "difficulty_score": 40.0,
+    "rarity": "silver",
+    "icon": "high_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_100",
+    "name": "殿堂入り店コレクター",
+    "description": "★5評価を100件つけた",
+    "category": "high_rating_count",
+    "condition": {
+      "type": "five_star_count_gte",
+      "value": 100
+    },
+    "tier": 7,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "high_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_101",
+    "name": "星5伝説",
+    "description": "★5評価を150件つけた",
+    "category": "high_rating_count",
+    "condition": {
+      "type": "five_star_count_gte",
+      "value": 150
+    },
+    "tier": 8,
+    "humor": false,
+    "difficulty_score": 50.0,
+    "rarity": "gold",
+    "icon": "high_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_102",
+    "name": "辛口デビュー",
+    "description": "★1〜2評価を5件つけた",
+    "category": "low_rating_count",
+    "condition": {
+      "type": "low_star_count_gte",
+      "value": 5
+    },
+    "tier": 1,
+    "humor": true,
+    "difficulty_score": 12.6,
+    "rarity": "bronze",
+    "icon": "low_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_103",
+    "name": "正直者のレビュアー",
+    "description": "★1〜2評価を10件つけた",
+    "category": "low_rating_count",
+    "condition": {
+      "type": "low_star_count_gte",
+      "value": 10
+    },
+    "tier": 2,
+    "humor": true,
+    "difficulty_score": 16.8,
+    "rarity": "bronze",
+    "icon": "low_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_104",
+    "name": "厳しめ評論家",
+    "description": "★1〜2評価を20件つけた",
+    "category": "low_rating_count",
+    "condition": {
+      "type": "low_star_count_gte",
+      "value": 20
+    },
+    "tier": 3,
+    "humor": true,
+    "difficulty_score": 21.0,
+    "rarity": "bronze",
+    "icon": "low_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_105",
+    "name": "採点基準は世界一厳しい人",
+    "description": "★1〜2評価を30件つけた",
+    "category": "low_rating_count",
+    "condition": {
+      "type": "low_star_count_gte",
+      "value": 30
+    },
+    "tier": 4,
+    "humor": true,
+    "difficulty_score": 25.2,
+    "rarity": "bronze",
+    "icon": "low_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_106",
+    "name": "辛口の鬼",
+    "description": "★1〜2評価を50件つけた",
+    "category": "low_rating_count",
+    "condition": {
+      "type": "low_star_count_gte",
+      "value": 50
+    },
+    "tier": 5,
+    "humor": true,
+    "difficulty_score": 29.4,
+    "rarity": "bronze",
+    "icon": "low_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_107",
+    "name": "採点ハードモード",
+    "description": "★1〜2評価を75件つけた",
+    "category": "low_rating_count",
+    "condition": {
+      "type": "low_star_count_gte",
+      "value": 75
+    },
+    "tier": 6,
+    "humor": true,
+    "difficulty_score": 33.6,
+    "rarity": "silver",
+    "icon": "low_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_108",
+    "name": "グルメ界の閻魔様",
+    "description": "★1〜2評価を100件つけた",
+    "category": "low_rating_count",
+    "condition": {
+      "type": "low_star_count_gte",
+      "value": 100
+    },
+    "tier": 7,
+    "humor": true,
+    "difficulty_score": 37.8,
+    "rarity": "silver",
+    "icon": "low_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_109",
+    "name": "伝説の激辛評論家",
+    "description": "★1〜2評価を150件つけた",
+    "category": "low_rating_count",
+    "condition": {
+      "type": "low_star_count_gte",
+      "value": 150
+    },
+    "tier": 8,
+    "humor": true,
+    "difficulty_score": 42.0,
+    "rarity": "silver",
+    "icon": "low_rating",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_110",
+    "name": "みんな大好き甘口さん",
+    "description": "評価20件以上で「甘口」傾向が継続している",
+    "category": "rating_tendency",
+    "condition": {
+      "type": "tendency_streak_gte",
+      "value": {
+        "kind": "甘口",
+        "count": 20
+      }
+    },
+    "tier": 1,
+    "humor": true,
+    "difficulty_score": 15.0,
+    "rarity": "bronze",
+    "icon": "rating_tendency",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_111",
+    "name": "褒め上手グルメ",
+    "description": "評価50件以上で「甘口」傾向が継続している",
+    "category": "rating_tendency",
+    "condition": {
+      "type": "tendency_streak_gte",
+      "value": {
+        "kind": "甘口",
+        "count": 50
+      }
+    },
+    "tier": 2,
+    "humor": true,
+    "difficulty_score": 32.5,
+    "rarity": "silver",
+    "icon": "rating_tendency",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_112",
+    "name": "星空一面(オール星5に近い人)",
+    "description": "評価100件以上で「甘口」傾向が継続している",
+    "category": "rating_tendency",
+    "condition": {
+      "type": "tendency_streak_gte",
+      "value": {
+        "kind": "甘口",
+        "count": 100
+      }
+    },
+    "tier": 3,
+    "humor": true,
+    "difficulty_score": 50.0,
+    "rarity": "gold",
+    "icon": "rating_tendency",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_113",
+    "name": "求道者の舌",
+    "description": "評価20件以上で「辛口」傾向が継続している",
+    "category": "rating_tendency",
+    "condition": {
+      "type": "tendency_streak_gte",
+      "value": {
+        "kind": "辛口",
+        "count": 20
+      }
+    },
+    "tier": 1,
+    "humor": true,
+    "difficulty_score": 15.0,
+    "rarity": "bronze",
+    "icon": "rating_tendency",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_114",
+    "name": "妥協なき採点官",
+    "description": "評価50件以上で「辛口」傾向が継続している",
+    "category": "rating_tendency",
+    "condition": {
+      "type": "tendency_streak_gte",
+      "value": {
+        "kind": "辛口",
+        "count": 50
+      }
+    },
+    "tier": 2,
+    "humor": true,
+    "difficulty_score": 32.5,
+    "rarity": "silver",
+    "icon": "rating_tendency",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_115",
+    "name": "採点は減点方式の鬼",
+    "description": "評価100件以上で「辛口」傾向が継続している",
+    "category": "rating_tendency",
+    "condition": {
+      "type": "tendency_streak_gte",
+      "value": {
+        "kind": "辛口",
+        "count": 100
+      }
+    },
+    "tier": 3,
+    "humor": true,
+    "difficulty_score": 50.0,
+    "rarity": "gold",
+    "icon": "rating_tendency",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_116",
+    "name": "バランス評価の達人",
+    "description": "評価20件以上で「中庸」傾向が継続している",
+    "category": "rating_tendency",
+    "condition": {
+      "type": "tendency_streak_gte",
+      "value": {
+        "kind": "中庸",
+        "count": 20
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 15.0,
+    "rarity": "bronze",
+    "icon": "rating_tendency",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_117",
+    "name": "公平無私のレビュアー",
+    "description": "評価50件以上で「中庸」傾向が継続している",
+    "category": "rating_tendency",
+    "condition": {
+      "type": "tendency_streak_gte",
+      "value": {
+        "kind": "中庸",
+        "count": 50
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 32.5,
+    "rarity": "silver",
+    "icon": "rating_tendency",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_118",
+    "name": "採点AIかと思うほどブレない人",
+    "description": "評価100件以上で「中庸」傾向が継続している",
+    "category": "rating_tendency",
+    "condition": {
+      "type": "tendency_streak_gte",
+      "value": {
+        "kind": "中庸",
+        "count": 100
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 50.0,
+    "rarity": "gold",
+    "icon": "rating_tendency",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_119",
+    "name": "写真は証拠品",
+    "description": "写真を10枚投稿した",
+    "category": "photo_count",
+    "condition": {
+      "type": "photo_count_gte",
+      "value": 10
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 16.5,
+    "rarity": "bronze",
+    "icon": "photo_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_120",
+    "name": "食レポカメラマン見習い",
+    "description": "写真を30枚投稿した",
+    "category": "photo_count",
+    "condition": {
+      "type": "photo_count_gte",
+      "value": 30
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 22.0,
+    "rarity": "bronze",
+    "icon": "photo_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_121",
+    "name": "映え意識してきた人",
+    "description": "写真を50枚投稿した",
+    "category": "photo_count",
+    "condition": {
+      "type": "photo_count_gte",
+      "value": 50
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 27.5,
+    "rarity": "bronze",
+    "icon": "photo_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_122",
+    "name": "フォトジェニックグルメ勢",
+    "description": "写真を100枚投稿した",
+    "category": "photo_count",
+    "condition": {
+      "type": "photo_count_gte",
+      "value": 100
+    },
+    "tier": 4,
+    "humor": false,
+    "difficulty_score": 33.0,
+    "rarity": "silver",
+    "icon": "photo_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_123",
+    "name": "撮影許可待ちの常連",
+    "description": "写真を200枚投稿した",
+    "category": "photo_count",
+    "condition": {
+      "type": "photo_count_gte",
+      "value": 200
+    },
+    "tier": 5,
+    "humor": false,
+    "difficulty_score": 38.5,
+    "rarity": "silver",
+    "icon": "photo_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_124",
+    "name": "グルメカメラマン",
+    "description": "写真を300枚投稿した",
+    "category": "photo_count",
+    "condition": {
+      "type": "photo_count_gte",
+      "value": 300
+    },
+    "tier": 6,
+    "humor": false,
+    "difficulty_score": 44.0,
+    "rarity": "silver",
+    "icon": "photo_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_125",
+    "name": "写真だけでお腹いっぱい",
+    "description": "写真を500枚投稿した",
+    "category": "photo_count",
+    "condition": {
+      "type": "photo_count_gte",
+      "value": 500
+    },
+    "tier": 7,
+    "humor": false,
+    "difficulty_score": 49.5,
+    "rarity": "gold",
+    "icon": "photo_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_126",
+    "name": "食のフォトグラファー",
+    "description": "写真を1000枚投稿した",
+    "category": "photo_count",
+    "condition": {
+      "type": "photo_count_gte",
+      "value": 1000
+    },
+    "tier": 8,
+    "humor": false,
+    "difficulty_score": 55.0,
+    "rarity": "gold",
+    "icon": "photo_count",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_127",
+    "name": "コスパ重視デビュー",
+    "description": "1000円以下の店に5回訪問した",
+    "category": "budget_low",
+    "condition": {
+      "type": "low_price_visit_gte",
+      "value": 5
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 10.5,
+    "rarity": "bronze",
+    "icon": "budget_low",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_128",
+    "name": "節約グルメ戦士",
+    "description": "1000円以下の店に10回訪問した",
+    "category": "budget_low",
+    "condition": {
+      "type": "low_price_visit_gte",
+      "value": 10
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 15.4,
+    "rarity": "bronze",
+    "icon": "budget_low",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_129",
+    "name": "千円以下の求道者",
+    "description": "1000円以下の店に20回訪問した",
+    "category": "budget_low",
+    "condition": {
+      "type": "low_price_visit_gte",
+      "value": 20
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 20.3,
+    "rarity": "bronze",
+    "icon": "budget_low",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_130",
+    "name": "コスパ番付・上位",
+    "description": "1000円以下の店に40回訪問した",
+    "category": "budget_low",
+    "condition": {
+      "type": "low_price_visit_gte",
+      "value": 40
+    },
+    "tier": 4,
+    "humor": false,
+    "difficulty_score": 25.2,
+    "rarity": "bronze",
+    "icon": "budget_low",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_131",
+    "name": "財布に優しいグルメ王",
+    "description": "1000円以下の店に60回訪問した",
+    "category": "budget_low",
+    "condition": {
+      "type": "low_price_visit_gte",
+      "value": 60
+    },
+    "tier": 5,
+    "humor": false,
+    "difficulty_score": 30.1,
+    "rarity": "bronze",
+    "icon": "budget_low",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_132",
+    "name": "コスパマスター・伝説",
+    "description": "1000円以下の店に100回訪問した",
+    "category": "budget_low",
+    "condition": {
+      "type": "low_price_visit_gte",
+      "value": 100
+    },
+    "tier": 6,
+    "humor": false,
+    "difficulty_score": 35.0,
+    "rarity": "silver",
+    "icon": "budget_low",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_133",
+    "name": "たまの贅沢デビュー",
+    "description": "高価格帯の店に3回訪問した",
+    "category": "budget_high",
+    "condition": {
+      "type": "high_price_visit_gte",
+      "value": 3
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 21.6,
+    "rarity": "bronze",
+    "icon": "budget_high",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_134",
+    "name": "背伸びグルメ",
+    "description": "高価格帯の店に5回訪問した",
+    "category": "budget_high",
+    "condition": {
+      "type": "high_price_visit_gte",
+      "value": 5
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 31.7,
+    "rarity": "silver",
+    "icon": "budget_high",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_135",
+    "name": "特別な日の常連",
+    "description": "高価格帯の店に10回訪問した",
+    "category": "budget_high",
+    "condition": {
+      "type": "high_price_visit_gte",
+      "value": 10
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 41.8,
+    "rarity": "silver",
+    "icon": "budget_high",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_136",
+    "name": "高級店のVIP",
+    "description": "高価格帯の店に20回訪問した",
+    "category": "budget_high",
+    "condition": {
+      "type": "high_price_visit_gte",
+      "value": 20
+    },
+    "tier": 4,
+    "humor": false,
+    "difficulty_score": 51.8,
+    "rarity": "gold",
+    "icon": "budget_high",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_137",
+    "name": "グルメ富豪への道",
+    "description": "高価格帯の店に30回訪問した",
+    "category": "budget_high",
+    "condition": {
+      "type": "high_price_visit_gte",
+      "value": 30
+    },
+    "tier": 5,
+    "humor": false,
+    "difficulty_score": 61.9,
+    "rarity": "platinum",
+    "icon": "budget_high",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_138",
+    "name": "美食家の称号・完全体",
+    "description": "高価格帯の店に50回訪問した",
+    "category": "budget_high",
+    "condition": {
+      "type": "high_price_visit_gte",
+      "value": 50
+    },
+    "tier": 6,
+    "humor": false,
+    "difficulty_score": 72.0,
+    "rarity": "platinum",
+    "icon": "budget_high",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_139",
+    "name": "夜食の番人",
+    "description": "深夜(0-4時)に5回投稿した",
+    "category": "time_day_humor",
+    "condition": {
+      "type": "late_night_count",
+      "value": 5
+    },
+    "tier": 1,
+    "humor": true,
+    "difficulty_score": 7.5,
+    "rarity": "bronze",
+    "icon": "time_day_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_140",
+    "name": "深夜徘徊グルメ",
+    "description": "深夜(0-4時)に20回投稿した",
+    "category": "time_day_humor",
+    "condition": {
+      "type": "late_night_count",
+      "value": 20
+    },
+    "tier": 2,
+    "humor": true,
+    "difficulty_score": 25.0,
+    "rarity": "bronze",
+    "icon": "time_day_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_141",
+    "name": "朝活グルメ",
+    "description": "早朝(5-8時)に5回投稿した",
+    "category": "time_day_humor",
+    "condition": {
+      "type": "early_morning_count",
+      "value": 5
+    },
+    "tier": 3,
+    "humor": true,
+    "difficulty_score": 7.5,
+    "rarity": "bronze",
+    "icon": "time_day_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_142",
+    "name": "モーニング戦士",
+    "description": "早朝(5-8時)に20回投稿した",
+    "category": "time_day_humor",
+    "condition": {
+      "type": "early_morning_count",
+      "value": 20
+    },
+    "tier": 4,
+    "humor": true,
+    "difficulty_score": 25.0,
+    "rarity": "bronze",
+    "icon": "time_day_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_143",
+    "name": "週末グルメ専門",
+    "description": "週末のみの投稿が10回続いた",
+    "category": "time_day_humor",
+    "condition": {
+      "type": "weekend_only_count",
+      "value": 10
+    },
+    "tier": 5,
+    "humor": true,
+    "difficulty_score": 32.0,
+    "rarity": "silver",
+    "icon": "time_day_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_144",
+    "name": "ランチ戦線を駆け抜ける者",
+    "description": "平日ランチタイムに20回投稿した",
+    "category": "time_day_humor",
+    "condition": {
+      "type": "weekday_lunch_count",
+      "value": 20
+    },
+    "tier": 6,
+    "humor": true,
+    "difficulty_score": 32.0,
+    "rarity": "silver",
+    "icon": "time_day_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_145",
+    "name": "月曜からグルメ",
+    "description": "月曜日に10回投稿した",
+    "category": "time_day_humor",
+    "condition": {
+      "type": "monday_count",
+      "value": 10
+    },
+    "tier": 7,
+    "humor": true,
+    "difficulty_score": 25.0,
+    "rarity": "bronze",
+    "icon": "time_day_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_146",
+    "name": "花金グルメ王",
+    "description": "金曜の夜に15回投稿した",
+    "category": "time_day_humor",
+    "condition": {
+      "type": "friday_night_count",
+      "value": 15
+    },
+    "tier": 8,
+    "humor": true,
+    "difficulty_score": 30.0,
+    "rarity": "bronze",
+    "icon": "time_day_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_147",
+    "name": "1週間毎日グルメ",
+    "description": "7日間連続で投稿した",
+    "category": "time_day_humor",
+    "condition": {
+      "type": "daily_streak_gte",
+      "value": 7
+    },
+    "tier": 9,
+    "humor": true,
+    "difficulty_score": 18.0,
+    "rarity": "bronze",
+    "icon": "time_day_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_148",
+    "name": "グルメ皆勤賞",
+    "description": "30日間連続で投稿した",
+    "category": "time_day_humor",
+    "condition": {
+      "type": "daily_streak_gte",
+      "value": 30
+    },
+    "tier": 10,
+    "humor": true,
+    "difficulty_score": 39.0,
+    "rarity": "silver",
+    "icon": "time_day_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_149",
+    "name": "食べ歩き修行僧",
+    "description": "100日間連続で投稿した",
+    "category": "time_day_humor",
+    "condition": {
+      "type": "daily_streak_gte",
+      "value": 100
+    },
+    "tier": 11,
+    "humor": true,
+    "difficulty_score": 60.0,
+    "rarity": "gold",
+    "icon": "time_day_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_150",
+    "name": "三食制覇の日",
+    "description": "同じ日に朝・昼・晩すべて投稿した",
+    "category": "time_day_humor",
+    "condition": {
+      "type": "same_day_three_meals",
+      "value": 1
+    },
+    "tier": 12,
+    "humor": true,
+    "difficulty_score": 28.0,
+    "rarity": "bronze",
+    "icon": "time_day_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_151",
+    "name": "雨天決行グルメ",
+    "description": "雨の日に10回投稿した",
+    "category": "time_day_humor",
+    "condition": {
+      "type": "rainy_day_count",
+      "value": 10
+    },
+    "tier": 13,
+    "humor": true,
+    "difficulty_score": 25.0,
+    "rarity": "bronze",
+    "icon": "time_day_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_152",
+    "name": "灼熱グルメ戦士",
+    "description": "真夏日に10回投稿した",
+    "category": "time_day_humor",
+    "condition": {
+      "type": "hot_day_count",
+      "value": 10
+    },
+    "tier": 14,
+    "humor": true,
+    "difficulty_score": 25.0,
+    "rarity": "bronze",
+    "icon": "time_day_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_153",
+    "name": "極寒グルメ戦士",
+    "description": "真冬日に10回投稿した",
+    "category": "time_day_humor",
+    "condition": {
+      "type": "cold_day_count",
+      "value": 10
+    },
+    "tier": 15,
+    "humor": true,
+    "difficulty_score": 25.0,
+    "rarity": "bronze",
+    "icon": "time_day_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_154",
+    "name": "桜の下でグルメ",
+    "description": "春に20回投稿した",
+    "category": "season_weather_humor",
+    "condition": {
+      "type": "spring_count",
+      "value": 20
+    },
+    "tier": 1,
+    "humor": true,
+    "difficulty_score": 25.0,
+    "rarity": "bronze",
+    "icon": "season_weather_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_155",
+    "name": "夏バテ知らずグルメ王",
+    "description": "夏に30回投稿した",
+    "category": "season_weather_humor",
+    "condition": {
+      "type": "summer_count",
+      "value": 30
+    },
+    "tier": 2,
+    "humor": true,
+    "difficulty_score": 25.0,
+    "rarity": "bronze",
+    "icon": "season_weather_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_156",
+    "name": "食欲の秋、極めたり",
+    "description": "秋に30回投稿した",
+    "category": "season_weather_humor",
+    "condition": {
+      "type": "autumn_count",
+      "value": 30
+    },
+    "tier": 3,
+    "humor": true,
+    "difficulty_score": 25.0,
+    "rarity": "bronze",
+    "icon": "season_weather_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_157",
+    "name": "鍋奉行",
+    "description": "冬に30回投稿した",
+    "category": "season_weather_humor",
+    "condition": {
+      "type": "winter_count",
+      "value": 30
+    },
+    "tier": 4,
+    "humor": true,
+    "difficulty_score": 25.0,
+    "rarity": "bronze",
+    "icon": "season_weather_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_158",
+    "name": "台風グルメ強行軍",
+    "description": "台風接近時に投稿した",
+    "category": "season_weather_humor",
+    "condition": {
+      "type": "typhoon_day_post",
+      "value": 1
+    },
+    "tier": 5,
+    "humor": true,
+    "difficulty_score": 30.0,
+    "rarity": "bronze",
+    "icon": "season_weather_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_159",
+    "name": "雪見グルメ",
+    "description": "雪の日に投稿した",
+    "category": "season_weather_humor",
+    "condition": {
+      "type": "snow_day_post",
+      "value": 1
+    },
+    "tier": 6,
+    "humor": true,
+    "difficulty_score": 30.0,
+    "rarity": "bronze",
+    "icon": "season_weather_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_160",
+    "name": "花粉に負けないグルメ魂",
+    "description": "花粉シーズンに10回投稿した",
+    "category": "season_weather_humor",
+    "condition": {
+      "type": "pollen_season_count",
+      "value": 10
+    },
+    "tier": 7,
+    "humor": true,
+    "difficulty_score": 25.0,
+    "rarity": "bronze",
+    "icon": "season_weather_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_161",
+    "name": "ゴールデンウィーク満喫グルメ",
+    "description": "GW期間中に5回投稿した",
+    "category": "season_weather_humor",
+    "condition": {
+      "type": "gw_count",
+      "value": 5
+    },
+    "tier": 8,
+    "humor": true,
+    "difficulty_score": 25.0,
+    "rarity": "bronze",
+    "icon": "season_weather_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_162",
+    "name": "年越しグルメ巡礼",
+    "description": "年末年始に投稿した",
+    "category": "season_weather_humor",
+    "condition": {
+      "type": "new_year_post",
+      "value": 1
+    },
+    "tier": 9,
+    "humor": true,
+    "difficulty_score": 30.0,
+    "rarity": "bronze",
+    "icon": "season_weather_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_163",
+    "name": "帰省ついでにグルメ探訪",
+    "description": "お盆期間に投稿した",
+    "category": "season_weather_humor",
+    "condition": {
+      "type": "obon_post",
+      "value": 1
+    },
+    "tier": 10,
+    "humor": true,
+    "difficulty_score": 30.0,
+    "rarity": "bronze",
+    "icon": "season_weather_humor",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_164",
+    "name": "常連への第一歩",
+    "description": "同じ店に3回訪問した",
+    "category": "repeat_visit",
+    "condition": {
+      "type": "same_store_visit_gte",
+      "value": 3
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 13.5,
+    "rarity": "bronze",
+    "icon": "repeat_visit",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_165",
+    "name": "あの店の顔",
+    "description": "同じ店に5回訪問した",
+    "category": "repeat_visit",
+    "condition": {
+      "type": "same_store_visit_gte",
+      "value": 5
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 21.4,
+    "rarity": "bronze",
+    "icon": "repeat_visit",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_166",
+    "name": "マイベスト店確定",
+    "description": "同じ店に10回訪問した",
+    "category": "repeat_visit",
+    "condition": {
+      "type": "same_store_visit_gte",
+      "value": 10
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 29.2,
+    "rarity": "bronze",
+    "icon": "repeat_visit",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_167",
+    "name": "名前を覚えられている説",
+    "description": "同じ店に20回訪問した",
+    "category": "repeat_visit",
+    "condition": {
+      "type": "same_store_visit_gte",
+      "value": 20
+    },
+    "tier": 4,
+    "humor": false,
+    "difficulty_score": 37.1,
+    "rarity": "silver",
+    "icon": "repeat_visit",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_168",
+    "name": "心の故郷認定",
+    "description": "同じ店に30回訪問した",
+    "category": "repeat_visit",
+    "condition": {
+      "type": "same_store_visit_gte",
+      "value": 30
+    },
+    "tier": 5,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "repeat_visit",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_169",
+    "name": "長年の常連",
+    "description": "同じ店に1年以上継続して通った",
+    "category": "repeat_visit",
+    "condition": {
+      "type": "same_store_duration_years_gte",
+      "value": 1
+    },
+    "tier": 6,
+    "humor": false,
+    "difficulty_score": 58.0,
+    "rarity": "gold",
+    "icon": "repeat_visit",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_170",
+    "name": "マルチ常連",
+    "description": "3店舗以上でそれぞれ5回以上訪問した",
+    "category": "repeat_visit",
+    "condition": {
+      "type": "multi_store_regular",
+      "value": {
+        "stores": 3,
+        "visits": 5
+      }
+    },
+    "tier": 7,
+    "humor": false,
+    "difficulty_score": 55.0,
+    "rarity": "gold",
+    "icon": "repeat_visit",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_171",
+    "name": "月イチ聖地巡礼",
+    "description": "同じ店に3ヶ月連続で月1回訪問した",
+    "category": "repeat_visit",
+    "condition": {
+      "type": "monthly_streak_gte",
+      "value": 3
+    },
+    "tier": 8,
+    "humor": false,
+    "difficulty_score": 55.0,
+    "rarity": "gold",
+    "icon": "repeat_visit",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_172",
+    "name": "隣駅までグルメ遠征",
+    "description": "よく行くエリアから5km以上離れた店に5回訪問した",
+    "category": "travel_distance",
+    "condition": {
+      "type": "distance_from_hub_visit",
+      "value": {
+        "km": 5,
+        "count": 5
+      }
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 30.7,
+    "rarity": "bronze",
+    "icon": "travel",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_173",
+    "name": "電車で行くグルメ",
+    "description": "よく行くエリアから10km以上離れた店に10回訪問した",
+    "category": "travel_distance",
+    "condition": {
+      "type": "distance_from_hub_visit",
+      "value": {
+        "km": 10,
+        "count": 10
+      }
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 40.0,
+    "rarity": "silver",
+    "icon": "travel",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_174",
+    "name": "日帰りグルメ遠征",
+    "description": "よく行くエリアから30km以上離れた店に5回訪問した",
+    "category": "travel_distance",
+    "condition": {
+      "type": "distance_from_hub_visit",
+      "value": {
+        "km": 30,
+        "count": 5
+      }
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 30.7,
+    "rarity": "bronze",
+    "icon": "travel",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_175",
+    "name": "泊まりがけグルメ旅",
+    "description": "よく行くエリアから100km以上離れた店に3回訪問した",
+    "category": "travel_distance",
+    "condition": {
+      "type": "distance_from_hub_visit",
+      "value": {
+        "km": 100,
+        "count": 3
+      }
+    },
+    "tier": 4,
+    "humor": false,
+    "difficulty_score": 21.3,
+    "rarity": "bronze",
+    "icon": "travel",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_176",
+    "name": "新幹線グルメ紀行",
+    "description": "よく行くエリアから200km以上離れた店に3回訪問した",
+    "category": "travel_distance",
+    "condition": {
+      "type": "distance_from_hub_visit",
+      "value": {
+        "km": 200,
+        "count": 3
+      }
+    },
+    "tier": 5,
+    "humor": false,
+    "difficulty_score": 21.3,
+    "rarity": "bronze",
+    "icon": "travel",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_177",
+    "name": "飛行機で食べに行く人",
+    "description": "よく行くエリアから500km以上離れた店に1回訪問した",
+    "category": "travel_distance",
+    "condition": {
+      "type": "distance_from_hub_visit",
+      "value": {
+        "km": 500,
+        "count": 1
+      }
+    },
+    "tier": 6,
+    "humor": false,
+    "difficulty_score": 12.0,
+    "rarity": "bronze",
+    "icon": "travel",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_178",
+    "name": "グルメ大陸縦断",
+    "description": "累計移動距離が1000kmを超えた",
+    "category": "travel_distance",
+    "condition": {
+      "type": "total_distance_gte",
+      "value": 1000
+    },
+    "tier": 7,
+    "humor": false,
+    "difficulty_score": 65.0,
+    "rarity": "platinum",
+    "icon": "travel",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_179",
+    "name": "グルメのために海外へ",
+    "description": "海外の店舗を1件登録した",
+    "category": "travel_distance",
+    "condition": {
+      "type": "overseas_store_count_gte",
+      "value": 1
+    },
+    "tier": 8,
+    "humor": false,
+    "difficulty_score": 72.0,
+    "rarity": "platinum",
+    "icon": "travel",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_180",
+    "name": "ひとりめし道",
+    "description": "1人での訪問を10回記録した",
+    "category": "social",
+    "condition": {
+      "type": "solo_visit_gte",
+      "value": 10
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 12.0,
+    "rarity": "bronze",
+    "icon": "social",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_181",
+    "name": "孤高のグルメ",
+    "description": "1人での訪問を50回記録した",
+    "category": "social",
+    "condition": {
+      "type": "solo_visit_gte",
+      "value": 50
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 40.0,
+    "rarity": "silver",
+    "icon": "social",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_182",
+    "name": "わいわいグルメ部",
+    "description": "複数人での訪問を10回記録した",
+    "category": "social",
+    "condition": {
+      "type": "group_visit_gte",
+      "value": 10
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 35.0,
+    "rarity": "silver",
+    "icon": "social",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_183",
+    "name": "幹事の鑑",
+    "description": "5人以上での訪問を5回記録した",
+    "category": "social",
+    "condition": {
+      "type": "large_group_visit_gte",
+      "value": 5
+    },
+    "tier": 4,
+    "humor": false,
+    "difficulty_score": 45.0,
+    "rarity": "silver",
+    "icon": "social",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_184",
+    "name": "グルメ布教活動家",
+    "description": "友人を連れて行った店が10件になった",
+    "category": "social",
+    "condition": {
+      "type": "brought_friend_store_gte",
+      "value": 10
+    },
+    "tier": 5,
+    "humor": false,
+    "difficulty_score": 50.0,
+    "rarity": "gold",
+    "icon": "social",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_185",
+    "name": "一人でも大勢でも楽しめる人",
+    "description": "ソロ・グループそれぞれ50回ずつ訪問した",
+    "category": "social",
+    "condition": {
+      "type": "solo_and_group_balance",
+      "value": {
+        "solo": 50,
+        "group": 50
+      }
+    },
+    "tier": 6,
+    "humor": false,
+    "difficulty_score": 60.0,
+    "rarity": "gold",
+    "icon": "social",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_186",
+    "name": "誕生日グルメ",
+    "description": "自分の誕生日に投稿した",
+    "category": "special_day",
+    "condition": {
+      "type": "birthday_post",
+      "value": 1
+    },
+    "tier": 1,
+    "humor": true,
+    "difficulty_score": 30.0,
+    "rarity": "bronze",
+    "icon": "special_day",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_187",
+    "name": "記念日ディナー",
+    "description": "アプリ登録記念日に投稿した",
+    "category": "special_day",
+    "condition": {
+      "type": "app_anniversary_post",
+      "value": 1
+    },
+    "tier": 2,
+    "humor": true,
+    "difficulty_score": 30.0,
+    "rarity": "bronze",
+    "icon": "special_day",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_188",
+    "name": "元旦グルメ",
+    "description": "1月1日に投稿した",
+    "category": "special_day",
+    "condition": {
+      "type": "new_years_day_post",
+      "value": 1
+    },
+    "tier": 3,
+    "humor": true,
+    "difficulty_score": 30.0,
+    "rarity": "bronze",
+    "icon": "special_day",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_189",
+    "name": "クリスマスグルメ",
+    "description": "12月24〜25日に投稿した",
+    "category": "special_day",
+    "condition": {
+      "type": "christmas_post",
+      "value": 1
+    },
+    "tier": 4,
+    "humor": true,
+    "difficulty_score": 30.0,
+    "rarity": "bronze",
+    "icon": "special_day",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_190",
+    "name": "バレンタイングルメ",
+    "description": "2月14日に投稿した",
+    "category": "special_day",
+    "condition": {
+      "type": "valentine_post",
+      "value": 1
+    },
+    "tier": 5,
+    "humor": true,
+    "difficulty_score": 30.0,
+    "rarity": "bronze",
+    "icon": "special_day",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_191",
+    "name": "グルメマップ1周年",
+    "description": "アプリ利用1年を達成した",
+    "category": "special_day",
+    "condition": {
+      "type": "app_usage_years_gte",
+      "value": 1
+    },
+    "tier": 6,
+    "humor": true,
+    "difficulty_score": 60.0,
+    "rarity": "gold",
+    "icon": "special_day",
+    "icon_genre": null,
+    "icon_bg": "#EDEDED"
+  },
+  {
+    "id": "title_192",
+    "name": "グルメマップ・オールスター",
+    "description": "活動量・ジャンル多様性・エリア制覇のすべてで中級以上を達成した",
+    "category": "legendary_complete",
+    "condition": {
+      "type": "composite_all_intermediate",
+      "value": 1
+    },
+    "tier": 1,
+    "humor": false,
+    "difficulty_score": 85.0,
+    "rarity": "platinum",
+    "icon": "legendary",
+    "icon_genre": null,
+    "icon_bg": "#0d0904"
+  },
+  {
+    "id": "title_193",
+    "name": "五感で味わう者",
+    "description": "写真投稿・レビュー・評価のすべてで一定数を達成した",
+    "category": "legendary_complete",
+    "condition": {
+      "type": "composite_photo_review_rating",
+      "value": 1
+    },
+    "tier": 2,
+    "humor": false,
+    "difficulty_score": 85.0,
+    "rarity": "platinum",
+    "icon": "legendary",
+    "icon_genre": null,
+    "icon_bg": "#0d0904"
+  },
+  {
+    "id": "title_194",
+    "name": "グルメ図鑑コンプリート",
+    "description": "全ジャンル制覇と全国都道府県制覇を同時に達成した",
+    "category": "legendary_complete",
+    "condition": {
+      "type": "composite_genre_pref_complete",
+      "value": 1
+    },
+    "tier": 3,
+    "humor": false,
+    "difficulty_score": 97.0,
+    "rarity": "rainbow",
+    "icon": "legendary",
+    "icon_genre": null,
+    "icon_bg": "#0d0904"
+  },
+  {
+    "id": "title_195",
+    "name": "伝説の美食家",
+    "description": "各カテゴリの最上位称号を3つ以上達成した",
+    "category": "legendary_complete",
+    "condition": {
+      "type": "top_tier_count_gte",
+      "value": 3
+    },
+    "tier": 4,
+    "humor": false,
+    "difficulty_score": 95.0,
+    "rarity": "rainbow",
+    "icon": "legendary",
+    "icon_genre": null,
+    "icon_bg": "#0d0904"
+  },
+  {
+    "id": "title_196",
+    "name": "グルメマップの守護者",
+    "description": "アプリの長期利用と高評価数トップクラスを両立した",
+    "category": "legendary_complete",
+    "condition": {
+      "type": "composite_long_use_high_rating",
+      "value": 1
+    },
+    "tier": 5,
+    "humor": false,
+    "difficulty_score": 93.0,
+    "rarity": "rainbow",
+    "icon": "legendary",
+    "icon_genre": null,
+    "icon_bg": "#0d0904"
+  },
+  {
+    "id": "title_197",
+    "name": "食べ歩きの賢者",
+    "description": "登録店舗数500件・レビュー数300件を達成した",
+    "category": "legendary_complete",
+    "condition": {
+      "type": "composite_post_review_threshold",
+      "value": {
+        "post": 500,
+        "review": 300
+      }
+    },
+    "tier": 6,
+    "humor": false,
+    "difficulty_score": 90.0,
+    "rarity": "rainbow",
+    "icon": "legendary",
+    "icon_genre": null,
+    "icon_bg": "#0d0904"
+  },
+  {
+    "id": "title_198",
+    "name": "グルメマップ殿堂入り",
+    "description": "運営が認めた特別な功績を持つ(隠し称号)",
+    "category": "legendary_complete",
+    "condition": {
+      "type": "admin_awarded",
+      "value": 1
+    },
+    "tier": 7,
+    "humor": true,
+    "difficulty_score": 100,
+    "rarity": "rainbow",
+    "icon": "legendary",
+    "icon_genre": null,
+    "icon_bg": "#0d0904"
+  },
+  {
+    "id": "title_199",
+    "name": "味覚の求道者・極",
+    "description": "辛口・甘口どちらの評価傾向称号も獲得した",
+    "category": "legendary_complete",
+    "condition": {
+      "type": "composite_both_tendency",
+      "value": 1
+    },
+    "tier": 8,
+    "humor": false,
+    "difficulty_score": 85.0,
+    "rarity": "platinum",
+    "icon": "legendary",
+    "icon_genre": null,
+    "icon_bg": "#0d0904"
+  },
+  {
+    "id": "title_200",
+    "name": "グルメマップ・ザ・レジェンド",
+    "description": "すべての称号をコンプリートした",
+    "category": "legendary_complete",
+    "condition": {
+      "type": "all_titles_complete",
+      "value": 1
+    },
+    "tier": 9,
+    "humor": false,
+    "difficulty_score": 100,
+    "rarity": "rainbow",
+    "icon": "legendary",
+    "icon_genre": null,
+    "icon_bg": "#0d0904"
+  }
 ]

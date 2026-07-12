@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fetchCompanionRanking, fetchGenreRanking, fetchOverallRanking } from '../api/client'
+import { RankBadge } from './icons'
 import { storeVisual } from '../data/visits'
-
-const medals = ['🥇', '🥈', '🥉']
 
 const criteria = [
   { key: 'taste', label: '味' },
@@ -36,9 +35,7 @@ function StoreRankList({ items, emptyMessage, metaLabel }) {
         const visual = storeVisual(store.name)
         return (
           <article key={store.name} className="rank-item">
-            <span className="rank-item__medal" aria-hidden="true">
-              {medals[index] ?? `${index + 1}`}
-            </span>
+            <RankBadge rank={index + 1} />
             <span className="rank-item__thumb" style={{ background: visual.gradient }}>
               {visual.emoji}
             </span>

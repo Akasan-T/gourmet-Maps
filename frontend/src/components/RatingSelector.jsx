@@ -1,5 +1,6 @@
 function RatingSelector({ label, helper, options, value, onChange, descriptions }) {
   const activeDescription = descriptions?.[value]
+  const sortedOptions = [...options].sort((a, b) => Number(a) - Number(b))
 
   return (
     <div className="field">
@@ -7,21 +8,22 @@ function RatingSelector({ label, helper, options, value, onChange, descriptions 
         <span className="field__label">{label}</span>
         <span className="field__helper">{helper}</span>
       </div>
-      <div className="segment-control" role="radiogroup" aria-label={label}>
-        {options.map((option) => {
-          const checked = option === value
+      <div className="star-rating" role="radiogroup" aria-label={label}>
+        {sortedOptions.map((option) => {
+          const filled = Number(value) >= Number(option)
           const description = descriptions?.[option]
 
           return (
             <button
               key={option}
               type="button"
-              className={`segment-control__option${checked ? ' segment-control__option--active' : ''}`}
-              aria-pressed={checked}
+              className={`star-rating__star${filled ? ' star-rating__star--filled' : ''}`}
+              aria-pressed={option === value}
+              aria-label={`★${option}${description ? `: ${description}` : ''}`}
               title={description ? `★${option}: ${description}` : undefined}
               onClick={() => onChange(option)}
             >
-              {option}
+              ★
             </button>
           )
         })}

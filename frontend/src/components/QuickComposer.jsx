@@ -1,11 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import RatingSelector from './RatingSelector'
-import { createGourmetEntry, fetchMembers, fetchStores } from '../api/client'
+import { createGourmetEntry, fetchGooglePlaces, fetchMembers, fetchStores } from '../api/client'
 
 const overpassUrl = 'https://overpass-api.de/api/interpreter'
 const nearbySearchRadiusMeters = 600
+// 店名で検索するときは、ただの周辺検索より広く探す
+const nameSearchRadiusMeters = 3000
+const nameSearchDebounceMs = 400
 
 const ratingOptions = ['5', '4', '3', '2', '1']
+
+// 下書きの自動保存: 手動ボタンではなく、無操作が続いた場合とページ離脱時に保存する
+const draftStorageKey = 'tabemap.quickComposerDraft'
+const draftInactivityMs = 10000
 
 // 5段階の評価基準（ブレ防止のためツールチップ/補足で表示）
 const ratingAxes = [
@@ -95,10 +102,17 @@ function formatDistance(distance) {
   return `${(distance / 1000).toFixed(1)}km`
 }
 
-async function fetchNearbyPlaces(latitude, longitude) {
+// Overpass QL の正規表現リテラルに埋め込むための最低限のエスケープ
+function escapeOverpassRegex(text) {
+  return text.replace(/["\\]/g, '\\$&').replace(/[.*+?^${}()|[\]]/g, '\\$&')
+}
+
+async function fetchNearbyPlaces(latitude, longitude, options = {}) {
+  const { radiusMeters = nearbySearchRadiusMeters, nameFilter } = options
+  const nameClause = nameFilter ? `["name"~"${escapeOverpassRegex(nameFilter)}",i]` : ''
   const query = `[out:json][timeout:15];`
-    + `(node["amenity"~"^(restaurant|cafe|fast_food|bar|pub|ice_cream)$"]`
-    + `(around:${nearbySearchRadiusMeters},${latitude},${longitude}););`
+    + `(node["amenity"~"^(restaurant|cafe|fast_food|bar|pub|ice_cream)$"]${nameClause}`
+    + `(around:${radiusMeters},${latitude},${longitude}););`
     + `out center 30;`
 
   const response = await fetch(overpassUrl, {
@@ -156,17 +170,30 @@ function readAndCompressImage(file) {
   })
 }
 
+// 前回保存された下書きを読み込む（初期状態の遅延初期化で1度だけ呼ばれる）
+function loadStoredDraft() {
+  try {
+    const saved = localStorage.getItem(draftStorageKey)
+    return saved ? JSON.parse(saved) : null
+  } catch {
+    return null
+  }
+}
+
 function QuickComposer({ quickTags, visitTypes, onSaved }) {
-  const [restaurantName, setRestaurantName] = useState('')
-  const [menuName, setMenuName] = useState('')
-  const [genre, setGenre] = useState(genreOptions[0])
-  const [selectedVisitType, setSelectedVisitType] = useState(visitTypes[0])
-  const [selectedTag, setSelectedTag] = useState(quickTags[0])
-  const [sceneTag, setSceneTag] = useState('')
-  const [priceRange, setPriceRange] = useState('')
-  const [scores, setScores] = useState({ taste: '4', cost: '4', atmosphere: '4', service: '4', repeat: '4' })
-  const [memo, setMemo] = useState('')
-  const [photoDataUrl, setPhotoDataUrl] = useState('')
+  const [initialDraft] = useState(loadStoredDraft)
+  const [restaurantName, setRestaurantName] = useState(() => initialDraft?.restaurantName ?? '')
+  const [menuName, setMenuName] = useState(() => initialDraft?.menuName ?? '')
+  const [genre, setGenre] = useState(() => initialDraft?.genre ?? genreOptions[0])
+  const [selectedVisitType, setSelectedVisitType] = useState(() => initialDraft?.selectedVisitType ?? visitTypes[0])
+  const [selectedTag, setSelectedTag] = useState(() => initialDraft?.selectedTag ?? quickTags[0])
+  const [sceneTag, setSceneTag] = useState(() => initialDraft?.sceneTag ?? '')
+  const [priceRange, setPriceRange] = useState(() => initialDraft?.priceRange ?? '')
+  const [scores, setScores] = useState(
+    () => initialDraft?.scores ?? { taste: '4', cost: '4', atmosphere: '4', service: '4', repeat: '4' },
+  )
+  const [memo, setMemo] = useState(() => initialDraft?.memo ?? '')
+  const [photoDataUrl, setPhotoDataUrl] = useState(() => initialDraft?.photoDataUrl ?? '')
   const [submitState, setSubmitState] = useState('idle')
   const [statusMessage, setStatusMessage] = useState('')
   const [position, setPosition] = useState(null)
@@ -175,9 +202,94 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
   const [selectedPlace, setSelectedPlace] = useState(null)
   const [isListOpen, setIsListOpen] = useState(false)
   const [members, setMembers] = useState([])
-  const [participantIds, setParticipantIds] = useState([])
-  const [showDetails, setShowDetails] = useState(false)
+  const [participantIds, setParticipantIds] = useState(() => initialDraft?.participantIds ?? [])
+  const [showDetails, setShowDetails] = useState(() => Boolean(initialDraft?.showDetails))
+  const [draftStatus, setDraftStatus] = useState(initialDraft ? 'restored' : 'idle') // idle | restored | saved
   const fileInputRef = useRef(null)
+  const draftTimeoutRef = useRef(null)
+  const submittedDraftSnapshotRef = useRef(null)
+  const positionRef = useRef(null)
+  positionRef.current = position
+  const isFirstKeywordRunRef = useRef(true)
+
+  // 直近の入力内容を常に最新化しておく（アンマウント/離脱時のクロージャ問題を避けるため）
+  const draftFieldsRef = useRef(null)
+  draftFieldsRef.current = {
+    restaurantName,
+    menuName,
+    genre,
+    selectedVisitType,
+    selectedTag,
+    sceneTag,
+    priceRange,
+    scores,
+    memo,
+    photoDataUrl,
+    participantIds,
+    showDetails,
+  }
+
+  function persistDraft(fields) {
+    if (!fields || !fields.restaurantName.trim()) {
+      return
+    }
+    const snapshot = JSON.stringify(fields)
+    if (snapshot === submittedDraftSnapshotRef.current) {
+      return
+    }
+    try {
+      localStorage.setItem(draftStorageKey, snapshot)
+      setDraftStatus('saved')
+    } catch {
+      // 保存容量オーバー等は下書き機能が補助的なため無視する
+    }
+  }
+
+  // 10秒操作がなければ自動で下書き保存する
+  useEffect(() => {
+    if (draftTimeoutRef.current) clearTimeout(draftTimeoutRef.current)
+    draftTimeoutRef.current = setTimeout(() => {
+      persistDraft(draftFieldsRef.current)
+    }, draftInactivityMs)
+    return () => clearTimeout(draftTimeoutRef.current)
+  }, [
+    restaurantName,
+    menuName,
+    genre,
+    selectedVisitType,
+    selectedTag,
+    sceneTag,
+    priceRange,
+    scores,
+    memo,
+    photoDataUrl,
+    participantIds,
+    showDetails,
+  ])
+
+  // ページ離脱 (タブ切替・リロード・ブラウザを閉じる) 時にも即座に保存する
+  useEffect(() => {
+    function handleLeave() {
+      if (draftTimeoutRef.current) clearTimeout(draftTimeoutRef.current)
+      persistDraft(draftFieldsRef.current)
+    }
+
+    window.addEventListener('beforeunload', handleLeave)
+    window.addEventListener('pagehide', handleLeave)
+
+    return () => {
+      window.removeEventListener('beforeunload', handleLeave)
+      window.removeEventListener('pagehide', handleLeave)
+      handleLeave() // SPA内でタブを切り替えてアンマウントされる場合もここで保存する
+    }
+  }, [])
+
+  // 保存済みの下書き表示は少し経ったら消す
+  useEffect(() => {
+    if (draftStatus !== 'saved') return
+    const timer = setTimeout(() => setDraftStatus('idle'), 4000)
+    return () => clearTimeout(timer)
+  }, [draftStatus])
 
   useEffect(() => {
     fetchMembers()
@@ -229,7 +341,44 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
     }
   }
 
-  // 自店DB + 現在地周辺(Overpass) をマージして距離順の候補を作る
+  // 自店DB + 現在地周辺(Overpass) をマージして候補を作る。
+  // keyword があれば店名で絞り込み、より広い範囲まで探す。
+  async function runSearch(coords, keyword) {
+    setNearbySearchState('loading')
+
+    const trimmedKeyword = keyword.trim()
+    const radiusMeters = trimmedKeyword ? nameSearchRadiusMeters : nearbySearchRadiusMeters
+
+    try {
+      const [savedStores, nearbyPlaces, googlePlaces] = await Promise.all([
+        fetchStores({ lat: coords.latitude, lng: coords.longitude, q: trimmedKeyword || undefined }).catch(() => []),
+        fetchNearbyPlaces(coords.latitude, coords.longitude, {
+          radiusMeters,
+          nameFilter: trimmedKeyword || undefined,
+        }).catch(() => []),
+        fetchGooglePlaces({
+          lat: coords.latitude,
+          lng: coords.longitude,
+          q: trimmedKeyword || undefined,
+          radiusMeters,
+        }).catch(() => []),
+      ])
+
+      const merged = mergeCandidates(
+        savedStores.map(toSavedCandidate),
+        nearbyPlaces,
+        googlePlaces.map(toGoogleCandidate),
+      )
+      setCandidates(merged)
+      setNearbySearchState(merged.length > 0 ? 'success' : 'empty')
+      setIsListOpen(merged.length > 0)
+    } catch {
+      setCandidates([])
+      setNearbySearchState('error')
+    }
+  }
+
+  // 現在地を取得して検索する（初回マウント・「近くのお店を検索」ボタン用）
   async function handleSearchNearby() {
     setNearbySearchState('loading')
     setSelectedPlace(null)
@@ -240,9 +389,9 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
       coords = { latitude: currentPosition.coords.latitude, longitude: currentPosition.coords.longitude }
       setPosition(coords)
     } catch (error) {
-      // 位置情報が取れなくても自店DBだけは読み込む（手入力にフォールバック）
+      // 位置情報が取れなくても自店DBだけは(入力中の店名があればそれで)読み込む
       try {
-        const savedStores = await fetchStores()
+        const savedStores = await fetchStores({ q: restaurantName.trim() || undefined })
         setCandidates(mergeCandidates(savedStores.map(toSavedCandidate), []))
       } catch {
         setCandidates([])
@@ -251,21 +400,26 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
       return
     }
 
-    try {
-      const [savedStores, nearbyPlaces] = await Promise.all([
-        fetchStores({ lat: coords.latitude, lng: coords.longitude }).catch(() => []),
-        fetchNearbyPlaces(coords.latitude, coords.longitude).catch(() => []),
-      ])
-
-      const merged = mergeCandidates(savedStores.map(toSavedCandidate), nearbyPlaces)
-      setCandidates(merged)
-      setNearbySearchState(merged.length > 0 ? 'success' : 'empty')
-      setIsListOpen(merged.length > 0)
-    } catch {
-      setCandidates([])
-      setNearbySearchState('error')
-    }
+    await runSearch(coords, restaurantName)
   }
+
+  // 店名を入力したら、その文字で近くのお店を再検索する（デバウンス）
+  useEffect(() => {
+    if (isFirstKeywordRunRef.current) {
+      // 初回マウント時の検索は handleSearchNearby 側にまかせる
+      isFirstKeywordRunRef.current = false
+      return
+    }
+
+    const coords = positionRef.current
+    if (!coords) return
+
+    const timer = setTimeout(() => {
+      runSearch(coords, restaurantName)
+    }, nameSearchDebounceMs)
+
+    return () => clearTimeout(timer)
+  }, [restaurantName])
 
   const filteredCandidates = useMemo(() => {
     const keyword = restaurantName.trim().toLowerCase()
@@ -355,6 +509,20 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
       setStatusMessage('保存しました。地図のピンを更新しています。')
       setParticipantIds([])
       setPhotoDataUrl('')
+
+      // 保存済みの内容を「送信済みスナップショット」として記録し、下書きとして再保存されないようにする
+      submittedDraftSnapshotRef.current = JSON.stringify({
+        ...draftFieldsRef.current,
+        participantIds: [],
+        photoDataUrl: '',
+      })
+      try {
+        localStorage.removeItem(draftStorageKey)
+      } catch {
+        // 無視する
+      }
+      setDraftStatus('idle')
+
       onSaved?.()
     } catch (error) {
       setSubmitState('error')
@@ -377,9 +545,12 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
           <p className="eyebrow">One-hand entry</p>
           <h2 id="composer-title">来店直後に記録</h2>
         </div>
-        <button type="button" className="ghost-button">
-          下書き保存
-        </button>
+        {draftStatus === 'saved' && (
+          <span className="composer-card__draft-status">下書きを自動保存しました</span>
+        )}
+        {draftStatus === 'restored' && (
+          <span className="composer-card__draft-status">前回の下書きを復元しました</span>
+        )}
       </div>
 
       <div className="composer-card__fields">
@@ -601,14 +772,14 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
           <p className="composer-card__hint">
             {selectedPlace
               ? `${selectedPlace.name} の位置でピンを立てます。`
-              : '保存時に現在地を使って地図へピンを立てます。'}
+              : '投稿時に現在地を使って地図へピンを立てます。'}
           </p>
           {statusMessage && (
             <p className={`composer-card__status composer-card__status--${submitState}`}>{statusMessage}</p>
           )}
         </div>
         <button type="button" className="primary-button" onClick={handleSubmit} disabled={submitState === 'saving'}>
-          この内容で保存
+          投稿
         </button>
       </div>
     </section>
@@ -630,14 +801,34 @@ function toSavedCandidate(store) {
   }
 }
 
-// 自店DBとOverpassの候補を、店名一致で重複排除（自店DB優先）してマージ
-function mergeCandidates(savedCandidates, overpassPlaces) {
+// Google Places の候補を候補形式に変換
+function toGoogleCandidate(place) {
+  return {
+    source: 'google',
+    storeId: null,
+    externalPlaceId: place.externalPlaceId,
+    name: place.name,
+    genre: place.genre,
+    latitude: place.latitude,
+    longitude: place.longitude,
+    distance: typeof place.distance === 'number' ? place.distance : null,
+  }
+}
+
+// 自店DB・OSM(Overpass)・Google Places の候補を、店名一致で重複排除（自店DB優先）してマージ
+function mergeCandidates(savedCandidates, overpassPlaces, googlePlaces = []) {
   const seen = new Set(savedCandidates.map((candidate) => candidate.name.toLowerCase()))
-  const overpassCandidates = overpassPlaces
-    .filter((place) => !seen.has(place.name.toLowerCase()))
+
+  const externalCandidates = [...overpassPlaces, ...googlePlaces]
+    .filter((place) => {
+      const key = place.name.toLowerCase()
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
     .map((place) => ({ ...place, key: place.externalPlaceId }))
 
-  return [...savedCandidates, ...overpassCandidates].sort((a, b) => {
+  return [...savedCandidates, ...externalCandidates].sort((a, b) => {
     if (a.distance == null) return 1
     if (b.distance == null) return -1
     return a.distance - b.distance

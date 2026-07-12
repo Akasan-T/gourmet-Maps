@@ -28,7 +28,6 @@ const navigationItems = [
   { key: 'capture', label: '記録' },
   { key: 'map', label: '地図' },
   { key: 'rank', label: '順位' },
-  { key: 'profile', label: '自分' },
 ]
 
 const validTabKeys = new Set(['home', 'capture', 'map', 'rank', 'profile'])
@@ -39,7 +38,7 @@ function initialTabFromUrl() {
 }
 
 function App() {
-  const { user, status: authStatus, signOut, setDisplayName } = useAuth()
+  const { user, status: authStatus, signOut, setDisplayName, setAvatar } = useAuth()
   const [activeTab, setActiveTab] = useState(initialTabFromUrl)
   const [entries, setEntries] = useState([])
   const [members, setMembers] = useState([])
@@ -118,6 +117,7 @@ function App() {
     name: user?.displayName ?? user?.email ?? 'ゲスト',
     email: user?.email ?? '',
     displayName: user?.displayName ?? '',
+    avatarUrl: user?.avatarUrl ?? '',
     entryCount: entries.length,
     favoriteCount: allStores.length,
     titles: user?.titles ?? [],
@@ -144,7 +144,11 @@ function App() {
     <div className="app-shell">
       <div className="app-shell__backdrop" aria-hidden="true"></div>
       <main className="mobile-frame">
-        <HeaderBar />
+        <HeaderBar
+          onProfileClick={() => setActiveTab('profile')}
+          isProfileActive={activeTab === 'profile'}
+          avatarUrl={user?.avatarUrl}
+        />
 
         {loadState === 'error' && (
           <p className="map-view__empty">バックエンドに接続できませんでした。backend が起動しているか確認してください。</p>
@@ -170,6 +174,7 @@ function App() {
             members={members}
             onSignOut={signOut}
             onUpdateDisplayName={setDisplayName}
+            onUpdateAvatar={setAvatar}
           />
         )}
       </main>

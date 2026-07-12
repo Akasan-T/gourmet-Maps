@@ -8,10 +8,14 @@ function MemberAvatars({ members, compact = false }) {
           <span
             key={member.id}
             className="member-avatars__badge"
-            style={{ background: palette[index % palette.length] }}
+            style={member.avatarUrl ? undefined : { background: palette[index % palette.length] }}
             title={member.displayName}
           >
-            {member.displayName.charAt(0)}
+            {member.avatarUrl ? (
+              <img className="member-avatars__image" src={member.avatarUrl} alt="" />
+            ) : (
+              member.displayName.charAt(0)
+            )}
           </span>
         ))}
       </div>

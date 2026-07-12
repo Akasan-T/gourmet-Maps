@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GourmetMaps.Data;
 using GourmetMaps.Models;
+using GourmetMaps.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,10 +18,12 @@ namespace GourmetMaps.Controllers
     public class GourmetEntriesController : ControllerBase
     {
         private readonly GourmetDbContext _context;
+        private readonly TitleEvaluationService _titleEvaluationService;
 
-        public GourmetEntriesController(GourmetDbContext context)
+        public GourmetEntriesController(GourmetDbContext context, TitleEvaluationService titleEvaluationService)
         {
             _context = context;
+            _titleEvaluationService = titleEvaluationService;
         }
 
         // GET: api/gourmetentries
@@ -110,8 +113,13 @@ namespace GourmetMaps.Controllers
             }
 
             var participantDtos = participants
-                .Select(participant => new ParticipantDto(participant.Id, participant.DisplayName ?? participant.UserName!))
+                .Select(participant => new ParticipantDto(
+                    participant.Id,
+                    participant.DisplayName ?? participant.UserName!,
+                    participant.AvatarUrl))
                 .ToList();
+
+            await _titleEvaluationService.SyncAsync(userId);
 
             return CreatedAtAction(nameof(GetGourmetEntries), new { id = entry.GourmetEntryID }, ToDto(entry, participantDtos));
         }
@@ -271,7 +279,8 @@ namespace GourmetMaps.Controllers
                 .Where(participant => participant.ApplicationUser is not null)
                 .Select(participant => new ParticipantDto(
                     participant.ApplicationUser.Id,
-                    participant.ApplicationUser.DisplayName ?? participant.ApplicationUser.UserName!))
+                    participant.ApplicationUser.DisplayName ?? participant.ApplicationUser.UserName!,
+                    participant.ApplicationUser.AvatarUrl))
                 .ToList();
 
             return ToDto(entry, participants);
@@ -322,7 +331,7 @@ namespace GourmetMaps.Controllers
             string? ExternalPlaceId,
             IReadOnlyList<string>? ParticipantUserIds);
 
-        public record ParticipantDto(string Id, string DisplayName);
+        public record ParticipantDto(string Id, string DisplayName, string? AvatarUrl);
 
         public record GourmetEntryMapItemDto(
             int Id,

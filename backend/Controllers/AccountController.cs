@@ -43,8 +43,11 @@ namespace GourmetMaps.Controllers
             return Ok(ToDto(user, titles));
         }
 
+        // アイコン画像 (data URL) の最大長。肥大化した画像でDBを圧迫しないための安全弁。
+        private const int MaxAvatarUrlLength = 400_000;
+
         // PUT: api/account/me
-        // 表示名 (DisplayName) を更新する。
+        // 表示名 (DisplayName) とアイコン画像 (AvatarUrl) を更新する。
         [HttpPut("me")]
         public async Task<ActionResult<AccountDto>> UpdateMe(UpdateAccountRequest request)
         {
@@ -54,8 +57,19 @@ namespace GourmetMaps.Controllers
                 return Unauthorized();
             }
 
+            if (request.AvatarUrl is not null && request.AvatarUrl.Length > MaxAvatarUrlLength)
+            {
+                return ValidationProblem("アイコン画像が大きすぎます。もう少し小さい画像をお試しください。");
+            }
+
             var displayName = request.DisplayName?.Trim();
             user.DisplayName = string.IsNullOrWhiteSpace(displayName) ? null : displayName;
+
+            if (request.AvatarUrl is not null)
+            {
+                var avatarUrl = request.AvatarUrl.Trim();
+                user.AvatarUrl = string.IsNullOrWhiteSpace(avatarUrl) ? null : avatarUrl;
+            }
 
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
@@ -79,6 +93,7 @@ namespace GourmetMaps.Controllers
                 null,
                 null,
                 user.DisplayName,
+                user.AvatarUrl,
                 titles,
                 titles.Contains(InvitesController.OwnerBadgeTitle));
         }
@@ -88,9 +103,10 @@ namespace GourmetMaps.Controllers
             string? UserName,
             string? Email,
             string? DisplayName,
+            string? AvatarUrl,
             IReadOnlyList<string> Titles,
             bool CanIssueInvites);
 
-        public record UpdateAccountRequest(string? DisplayName);
+        public record UpdateAccountRequest(string? DisplayName, string? AvatarUrl);
     }
 }

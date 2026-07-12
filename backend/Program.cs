@@ -6,6 +6,11 @@ using GourmetMaps.Data;
 using GourmetMaps.Models;
 using GourmetMaps.Services;
 
+// backend/.env (gitignored) から開発用の秘密情報を読み込む。存在しなければ何もしない。
+// Places__GoogleApiKey のように "__" 区切りにしておくと、ASP.NET Core の環境変数プロバイダが
+// 自動で "Places:GoogleApiKey" として設定に反映してくれる。
+LoadDotEnvFile(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
@@ -39,6 +44,15 @@ builder.Services.AddAuthorization();
 // 開発用のメール送信: 確認リンク等をサーバーのコンソールへ出力する。
 // 本番では SMTP / SendGrid 等を使う IEmailSender<ApplicationUser> に差し替える。
 builder.Services.AddTransient<IEmailSender<ApplicationUser>, ConsoleEmailSender>();
+
+// 称号 (titles.json) の達成判定・自動付与
+builder.Services.AddScoped<TitleEvaluationService>();
+
+// Google Places API (New) 呼び出し用 (APIキーはバックエンドのみが保持する)
+builder.Services.AddHttpClient("GooglePlaces", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(10);
+});
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -96,6 +110,33 @@ using (var scope = app.Services.CreateScope())
             using var alterTableCommand = connection.CreateCommand();
             alterTableCommand.CommandText = """
                 ALTER TABLE "AspNetUsers" ADD COLUMN "DisplayName" TEXT NULL;
+                """;
+            alterTableCommand.ExecuteNonQuery();
+        }
+
+        var hasAvatarUrlColumn = false;
+        using (var command = connection.CreateCommand())
+        {
+            command.CommandText = """
+                PRAGMA table_info("AspNetUsers");
+                """;
+
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                if (string.Equals(reader.GetString(1), "AvatarUrl", StringComparison.OrdinalIgnoreCase))
+                {
+                    hasAvatarUrlColumn = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasAvatarUrlColumn)
+        {
+            using var alterTableCommand = connection.CreateCommand();
+            alterTableCommand.CommandText = """
+                ALTER TABLE "AspNetUsers" ADD COLUMN "AvatarUrl" TEXT NULL;
                 """;
             alterTableCommand.ExecuteNonQuery();
         }
@@ -318,8 +359,17 @@ using (var scope = app.Services.CreateScope())
         });
     }
 
-    // 特別称号「初代タベマップ」をシードし、設定のオーナーへ付与する (冪等)。
+    // 特別称号「初代食べる王」をシードし、設定のオーナーへ付与する (冪等)。
     var ownerBadgeTitle = GourmetMaps.Controllers.InvitesController.OwnerBadgeTitle;
+
+    // 旧称号名「初代タベマップ」からの改名 (冪等: 既存の保有者リンクは BadgeID 経由なので維持される)
+    var legacyOwnerBadge = await dbContext.Badges.FirstOrDefaultAsync(badge => badge.Title == "初代タベマップ");
+    if (legacyOwnerBadge is not null && legacyOwnerBadge.Title != ownerBadgeTitle)
+    {
+        legacyOwnerBadge.Title = ownerBadgeTitle;
+        await dbContext.SaveChangesAsync();
+    }
+
     var ownerBadge = await dbContext.Badges.FirstOrDefaultAsync(badge => badge.Title == ownerBadgeTitle);
     if (ownerBadge is null)
     {
@@ -426,7 +476,7 @@ app.Use(async (context, next) =>
     var invite = await db.InviteCodes.FirstOrDefaultAsync(code => code.Code == normalizedCode);
     var oneTimeValid = invite is not null && invite.UsedAt is null && invite.ExpiresAt > now;
 
-    // ブートストラップ: オーナー (初代タベマップ称号保有者) がまだ存在しない場合に限り、
+    // ブートストラップ: オーナー (初代食べる王称号保有者) がまだ存在しない場合に限り、
     // 設定の固定合言葉での登録を許可する。オーナーが生まれた後は固定合言葉は無効になる。
     var ownerExists = await db.ApplicationUserBadges
         .Include(link => link.Badge)
@@ -484,7 +534,7 @@ app.Use(async (context, next) =>
         invite.UsedByUserId = newUser.Id;
     }
 
-    // 設定のオーナーのメールで登録された場合は「初代タベマップ」称号を付与する
+    // 設定のオーナーのメールで登録された場合は「初代食べる王」称号を付与する
     var ownerEmail = configuration["Auth:OwnerEmail"];
     if (!string.IsNullOrWhiteSpace(ownerEmail)
         && string.Equals(HashEmail(ownerEmail, hashKey), hashedEmail, StringComparison.Ordinal))
@@ -590,6 +640,39 @@ app.MapStaticAssets();
 app.MapRazorPages().WithStaticAssets(); // この行は冗長な可能性が高いですが、残しておきます。
 
 app.Run();
+
+// .env ファイル (KEY=VALUE 形式、# はコメント) を読み、プロセスの環境変数として設定する。
+// 実際の環境変数がすでに設定されている場合はそちらを優先し、上書きしない。
+static void LoadDotEnvFile(string path)
+{
+    if (!File.Exists(path))
+    {
+        return;
+    }
+
+    foreach (var line in File.ReadAllLines(path))
+    {
+        var trimmed = line.Trim();
+        if (trimmed.Length == 0 || trimmed.StartsWith('#'))
+        {
+            continue;
+        }
+
+        var separatorIndex = trimmed.IndexOf('=');
+        if (separatorIndex <= 0)
+        {
+            continue;
+        }
+
+        var key = trimmed[..separatorIndex].Trim();
+        var value = trimmed[(separatorIndex + 1)..].Trim().Trim('"');
+
+        if (Environment.GetEnvironmentVariable(key) is null)
+        {
+            Environment.SetEnvironmentVariable(key, value);
+        }
+    }
+}
 
 // 招待コード制の新規登録リクエスト本文
 record RegisterWithInviteRequest(string? Email, string? Password, string? InviteCode, string? DisplayName);

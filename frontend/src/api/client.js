@@ -146,7 +146,7 @@ export function fetchMe() {
   return getJson('/api/account/me')
 }
 
-// --- ワンタイム招待コード (「初代タベマップ」称号保有者のみ) ---
+// --- ワンタイム招待コード (「初代食べる王」称号保有者のみ) ---
 
 export async function issueInvite() {
   const response = await authFetch('/api/invites', { method: 'POST' })
@@ -165,6 +165,12 @@ export function fetchInvites() {
   return getJson('/api/invites')
 }
 
+// --- 称号図鑑 ---
+
+export function fetchTitles() {
+  return getJson('/api/titles')
+}
+
 export async function updateDisplayName(displayName) {
   const response = await authFetch('/api/account/me', {
     method: 'PUT',
@@ -174,6 +180,20 @@ export async function updateDisplayName(displayName) {
 
   if (!response.ok) {
     throw new Error('表示名の更新に失敗しました。')
+  }
+
+  return response.json()
+}
+
+export async function updateAvatar(avatarUrl) {
+  const response = await authFetch('/api/account/me', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ avatarUrl: avatarUrl ?? '' }),
+  })
+
+  if (!response.ok) {
+    throw new Error('アイコン画像の更新に失敗しました。')
   }
 
   return response.json()
@@ -214,6 +234,16 @@ export function fetchStores({ lat, lng, q } = {}) {
 // 手入力の重複を防ぐための類似店舗名サジェスト
 export function fetchStoreSuggestions(name) {
   return getJson(`/api/Stores/suggest?name=${encodeURIComponent(name)}`)
+}
+
+// Google Places API (New) 経由の周辺・キーワード検索 (バックエンドが代理でGoogleに問い合わせる)
+export function fetchGooglePlaces({ lat, lng, q, radiusMeters } = {}) {
+  const params = new URLSearchParams()
+  if (typeof lat === 'number') params.set('lat', lat)
+  if (typeof lng === 'number') params.set('lng', lng)
+  if (q) params.set('q', q)
+  if (typeof radiusMeters === 'number') params.set('radiusMeters', radiusMeters)
+  return getJson(`/api/places/search?${params.toString()}`)
 }
 
 // 位置検索での選択 or 手入力から店舗を登録し、店舗マスタのレコードを得る
