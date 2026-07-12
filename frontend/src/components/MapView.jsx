@@ -6,7 +6,7 @@ import StoreDetailModal from './StoreDetailModal'
 import Modal from './Modal'
 import { extractVisitType } from '../data/visits'
 
-const fallbackCenter = [35.7075, 139.666]
+const fallbackCenter = [35.6812, 139.7671] // 東京駅
 const currentLocationZoom = 16
 const ratingOptions = ['5', '4', '3', '2', '1']
 

@@ -40,6 +40,9 @@ builder.Services.AddAuthorization();
 // 本番では SMTP / SendGrid 等を使う IEmailSender<ApplicationUser> に差し替える。
 builder.Services.AddTransient<IEmailSender<ApplicationUser>, ConsoleEmailSender>();
 
+// 称号 (titles.json) の達成判定・自動付与
+builder.Services.AddScoped<TitleEvaluationService>();
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();

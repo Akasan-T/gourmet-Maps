@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GourmetMaps.Data;
 using GourmetMaps.Models;
+using GourmetMaps.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,10 +18,12 @@ namespace GourmetMaps.Controllers
     public class GourmetEntriesController : ControllerBase
     {
         private readonly GourmetDbContext _context;
+        private readonly TitleEvaluationService _titleEvaluationService;
 
-        public GourmetEntriesController(GourmetDbContext context)
+        public GourmetEntriesController(GourmetDbContext context, TitleEvaluationService titleEvaluationService)
         {
             _context = context;
+            _titleEvaluationService = titleEvaluationService;
         }
 
         // GET: api/gourmetentries
@@ -112,6 +115,8 @@ namespace GourmetMaps.Controllers
             var participantDtos = participants
                 .Select(participant => new ParticipantDto(participant.Id, participant.DisplayName ?? participant.UserName!))
                 .ToList();
+
+            await _titleEvaluationService.SyncAsync(userId);
 
             return CreatedAtAction(nameof(GetGourmetEntries), new { id = entry.GourmetEntryID }, ToDto(entry, participantDtos));
         }

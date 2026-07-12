@@ -6,7 +6,7 @@ import StoreDetailModal from './StoreDetailModal'
 import { participantNames, storeVisual } from '../data/visits'
 
 const medals = ['🥇', '🥈', '🥉']
-const fallbackCenter = [35.7075, 139.666]
+const fallbackCenter = [35.6812, 139.7671] // 東京駅
 const currentLocationZoom = 16
 
 function HomeView({ stores, ranking, onDataChange }) {

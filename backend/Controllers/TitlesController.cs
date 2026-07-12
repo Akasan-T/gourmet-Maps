@@ -5,12 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GourmetMaps.Data;
 using GourmetMaps.Models;
+using GourmetMaps.Services;
 
 namespace GourmetMaps.Controllers
 {
     // 称号図鑑用に、全称号 (Data/titles.json) とログイン中ユーザーの獲得状況を返す。
-    // 称号の獲得判定エンジンは未実装のため、獲得済みは付与済みバッジ名との一致で判定する
-    // (将来エンジンが同名バッジを付与すれば、この一覧に自動で反映される)。
+    // 獲得済みは付与済みバッジ名との一致で判定する。一覧取得のたびに TitleEvaluationService で
+    // 再評価してから返すため、既存データに対しても取りこぼしなく反映される。
     [ApiController]
     [Route("api/titles")]
     [Authorize]
@@ -24,15 +25,18 @@ namespace GourmetMaps.Controllers
         private readonly IWebHostEnvironment _env;
         private readonly GourmetDbContext _dbContext;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly TitleEvaluationService _titleEvaluationService;
 
         public TitlesController(
             IWebHostEnvironment env,
             GourmetDbContext dbContext,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            TitleEvaluationService titleEvaluationService)
         {
             _env = env;
             _dbContext = dbContext;
             _userManager = userManager;
+            _titleEvaluationService = titleEvaluationService;
         }
 
         // GET: api/titles
@@ -44,6 +48,8 @@ namespace GourmetMaps.Controllers
             {
                 return Unauthorized();
             }
+
+            await _titleEvaluationService.SyncAsync(userId);
 
             var path = Path.Combine(_env.ContentRootPath, "Data", "titles.json");
             if (!System.IO.File.Exists(path))
