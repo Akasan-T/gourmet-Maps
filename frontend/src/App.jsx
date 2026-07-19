@@ -12,7 +12,7 @@ import RecentVisitList from './components/RecentVisitList'
 import AuthView from './components/AuthView'
 import { fetchGourmetEntries, fetchMembers } from './api/client'
 import { useAuth } from './auth/useAuth'
-import { deriveTag, formatRelativeTime, groupEntriesByStore, participantNames, withinHours } from './data/visits'
+import { deriveTag, formatRelativeTime, groupEntriesByStore, withinHours } from './data/visits'
 
 const dailyStats = [
   { label: '今日の記録', value: '3件' },
@@ -99,7 +99,7 @@ function App() {
           const visual = groupEntriesByStore([entry])[0]
           return {
             restaurant: entry.name,
-            menu: participantNames(entry).join('・') || '記録者不明',
+            menu: entry.recordedByDisplayName ?? '記録者不明',
             time: formatRelativeTime(new Date(entry.visitDate)),
             taste: entry.tasteRating.toFixed(1),
             repeat: entry.repeatRating.toFixed(1),

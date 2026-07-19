@@ -212,6 +212,7 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
   const positionRef = useRef(null)
   positionRef.current = position
   const isFirstKeywordRunRef = useRef(true)
+  const isSubmittingRef = useRef(false)
 
   // 直近の入力内容を常に最新化しておく（アンマウント/離脱時のクロージャ問題を避けるため）
   const draftFieldsRef = useRef(null)
@@ -291,6 +292,14 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
     const timer = setTimeout(() => setDraftStatus('idle'), 4000)
     return () => clearTimeout(timer)
   }, [draftStatus])
+
+  // 投稿成功直後は地図側の再取得が終わるまでボタンを押させない (連投防止)。
+  // 一定時間後にidleへ戻し、同じ内容を書き換えて次の記録を投稿できるようにする。
+  useEffect(() => {
+    if (submitState !== 'success') return
+    const timer = setTimeout(() => setSubmitState('idle'), 1500)
+    return () => clearTimeout(timer)
+  }, [submitState])
 
   useEffect(() => {
     fetchMembers()
@@ -451,12 +460,15 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
   }
 
   async function handleSubmit() {
+    if (isSubmittingRef.current) return // 連打でイベントが二重発火してもここで弾く
+
     if (!restaurantName.trim()) {
       setSubmitState('error')
       setStatusMessage('お店の名前を入力してください。')
       return
     }
 
+    isSubmittingRef.current = true
     setSubmitState('saving')
 
     try {
@@ -536,6 +548,8 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
         return
       }
       setStatusMessage('保存に失敗しました。backend が起動しているか確認してください。')
+    } finally {
+      isSubmittingRef.current = false
     }
   }
 
@@ -782,7 +796,12 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
             <p className={`composer-card__status composer-card__status--${submitState}`}>{statusMessage}</p>
           )}
         </div>
-        <button type="button" className="primary-button" onClick={handleSubmit} disabled={submitState === 'saving'}>
+        <button
+          type="button"
+          className="primary-button"
+          onClick={handleSubmit}
+          disabled={submitState === 'saving' || submitState === 'success'}
+        >
           投稿
         </button>
       </div>

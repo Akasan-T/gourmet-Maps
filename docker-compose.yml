@@ -6,6 +6,9 @@ services:
       - "5001:5000"
     volumes:
       - ./backend/noodlemaps.db:/app/noodlemaps.db
+    env_file:
+      - path: ./backend/.env
+        required: false
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - Smtp__Host=mailpit

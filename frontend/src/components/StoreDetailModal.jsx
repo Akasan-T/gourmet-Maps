@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Modal from './Modal'
 import { deleteGourmetEntry } from '../api/client'
-import { deriveTag, formatRelativeTime, participantNames, positiveTags } from '../data/visits'
+import { deriveTag, formatRelativeTime, positiveTags } from '../data/visits'
 
 function StoreDetailModal({ store, onClose, onDeleted }) {
   const [deletingId, setDeletingId] = useState(null)
@@ -31,7 +31,6 @@ function StoreDetailModal({ store, onClose, onDeleted }) {
 
       {store.visits.map((visit) => {
         const tag = deriveTag(visit)
-        const names = participantNames(visit)
         return (
           <article key={visit.id} className="visit-card">
             <div className="visit-card__header">
@@ -40,7 +39,7 @@ function StoreDetailModal({ store, onClose, onDeleted }) {
               </span>
               <div className="visit-card__title">
                 <h3>{visit.genre}</h3>
-                <p className="visit-card__menu">{names.length > 0 ? names.join('・') : '記録者不明'}</p>
+                <p className="visit-card__menu">{visit.recordedByDisplayName ?? '記録者不明'}</p>
               </div>
               <span className="visit-card__time">{formatRelativeTime(new Date(visit.visitDate))}</span>
             </div>
@@ -65,14 +64,16 @@ function StoreDetailModal({ store, onClose, onDeleted }) {
               </span>
               {visit.sceneTag && <span className="visit-card__tag">{visit.sceneTag}</span>}
               {visit.priceRange && <span className="visit-card__tag">{visit.priceRange}</span>}
-              <button
-                type="button"
-                className="text-button visit-card__delete"
-                onClick={() => handleDelete(visit)}
-                disabled={deletingId === visit.id}
-              >
-                {deletingId === visit.id ? '削除中…' : '削除'}
-              </button>
+              {visit.canDelete && (
+                <button
+                  type="button"
+                  className="text-button visit-card__delete"
+                  onClick={() => handleDelete(visit)}
+                  disabled={deletingId === visit.id}
+                >
+                  {deletingId === visit.id ? '削除中…' : '削除'}
+                </button>
+              )}
             </div>
           </article>
         )

@@ -30,14 +30,17 @@ namespace GourmetMaps.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<GourmetEntryMapItemDto>>> GetGourmetEntries()
         {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             var entries = await _context.GourmetEntries
                 .AsNoTracking()
+                .Include(entry => entry.User)
                 .Include(entry => entry.Participants)
                     .ThenInclude(participant => participant.ApplicationUser)
                 .OrderByDescending(entry => entry.VisitDate)
                 .ToListAsync();
 
-            return Ok(entries.Select(ToDto));
+            return Ok(entries.Select(entry => ToDto(entry, currentUserId)));
         }
 
         [HttpPost]
@@ -121,7 +124,13 @@ namespace GourmetMaps.Controllers
 
             await _titleEvaluationService.SyncAsync(userId);
 
-            return CreatedAtAction(nameof(GetGourmetEntries), new { id = entry.GourmetEntryID }, ToDto(entry, participantDtos));
+            var recordedByUser = await _context.Users.FindAsync(userId);
+            var recordedByDisplayName = recordedByUser?.DisplayName ?? recordedByUser?.UserName;
+
+            return CreatedAtAction(
+                nameof(GetGourmetEntries),
+                new { id = entry.GourmetEntryID },
+                ToDto(entry, participantDtos, recordedByDisplayName, userId));
         }
 
         // DELETE: api/gourmetentries/5
@@ -132,6 +141,13 @@ namespace GourmetMaps.Controllers
             if (entry is null)
             {
                 return NotFound();
+            }
+
+            // 投稿した本人以外は削除できない
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(currentUserId) || currentUserId != entry.UserID)
+            {
+                return Forbid();
             }
 
             // 一緒に行ったメンバーの中間レコードを先に削除する
@@ -273,7 +289,7 @@ namespace GourmetMaps.Controllers
                 .ToList();
         }
 
-        private static GourmetEntryMapItemDto ToDto(GourmetEntry entry)
+        private static GourmetEntryMapItemDto ToDto(GourmetEntry entry, string? currentUserId)
         {
             var participants = (entry.Participants ?? new List<GourmetEntryParticipant>())
                 .Where(participant => participant.ApplicationUser is not null)
@@ -283,10 +299,16 @@ namespace GourmetMaps.Controllers
                     participant.ApplicationUser.AvatarUrl))
                 .ToList();
 
-            return ToDto(entry, participants);
+            var recordedByDisplayName = entry.User?.DisplayName ?? entry.User?.UserName;
+
+            return ToDto(entry, participants, recordedByDisplayName, currentUserId);
         }
 
-        private static GourmetEntryMapItemDto ToDto(GourmetEntry entry, IReadOnlyList<ParticipantDto> participants)
+        private static GourmetEntryMapItemDto ToDto(
+            GourmetEntry entry,
+            IReadOnlyList<ParticipantDto> participants,
+            string? recordedByDisplayName,
+            string? currentUserId)
         {
             return new GourmetEntryMapItemDto(
                 entry.GourmetEntryID,
@@ -308,7 +330,9 @@ namespace GourmetMaps.Controllers
                 entry.Latitude,
                 entry.Longitude,
                 entry.StoreID,
-                participants);
+                participants,
+                recordedByDisplayName,
+                !string.IsNullOrEmpty(currentUserId) && currentUserId == entry.UserID);
         }
 
         public record CreateGourmetEntryRequest(
@@ -353,7 +377,9 @@ namespace GourmetMaps.Controllers
             float? Latitude,
             float? Longitude,
             int? StoreId,
-            IReadOnlyList<ParticipantDto> Participants);
+            IReadOnlyList<ParticipantDto> Participants,
+            string? RecordedByDisplayName,
+            bool CanDelete);
 
         public record StoreRankingDto(
             string Name,
