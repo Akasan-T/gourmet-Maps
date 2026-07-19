@@ -1,8 +1,8 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using GourmetMaps.Data;
 using GourmetMaps.Models;
 using GourmetMaps.Services;
@@ -45,6 +45,9 @@ builder.Services
     .AddEntityFrameworkStores<GourmetDbContext>();
 
 builder.Services.AddAuthorization();
+
+// パスワードリセットの短いコードと本来の(長い) Identity トークンとの対応を一時保存する。
+builder.Services.AddMemoryCache();
 
 // メール送信: SMTP経由で送る。開発環境では docker-compose の Mailpit (localhost:1025)、
 // 本番では appsettings の "Smtp" セクションに実際のSMTPサーバーを設定する。
@@ -431,6 +434,9 @@ static string HashEmail(string email, string key)
     return Convert.ToHexString(hash);
 }
 
+// パスワードリセットの短いコードをメモリキャッシュのキーへ変換する
+static string PasswordResetCacheKey(string shortCode) => $"pwreset:{shortCode}";
+
 // 招待コード制の新規登録:
 // 既定の Identity register (/api/auth/register) を横取りし、appsettings の
 // 招待コードと一致した場合のみ「確認済み」ユーザーを作成する (身内利用のため確認メールは省略)。
@@ -672,13 +678,17 @@ app.Use(async (context, next) =>
 
     var userManager = context.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
     var emailSender = context.RequestServices.GetRequiredService<IEmailSender<ApplicationUser>>();
+    var cache = context.RequestServices.GetRequiredService<IMemoryCache>();
 
     var user = await userManager.FindByNameAsync(HashEmail(forgot.Email, hashKey));
     if (user is not null && await userManager.IsEmailConfirmedAsync(user))
     {
-        var code = await userManager.GeneratePasswordResetTokenAsync(user);
-        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-        await emailSender.SendPasswordResetCodeAsync(user, forgot.Email, code);
+        // 本来の(長い) Identity トークンはメールに載せず、短い数字コードをキーにして
+        // メモリ上に一時保存する(有効期限15分)。メールに書くのは短いコードのみ。
+        var token = await userManager.GeneratePasswordResetTokenAsync(user);
+        var shortCode = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+        cache.Set(PasswordResetCacheKey(shortCode), (user.Id, token), TimeSpan.FromMinutes(15));
+        await emailSender.SendPasswordResetCodeAsync(user, forgot.Email, shortCode);
     }
 
     context.Response.StatusCode = StatusCodes.Status200OK;
@@ -725,8 +735,13 @@ app.Use(async (context, next) =>
     }
 
     var userManager = context.RequestServices.GetRequiredService<UserManager<ApplicationUser>>();
+    var cache = context.RequestServices.GetRequiredService<IMemoryCache>();
     var user = await userManager.FindByNameAsync(HashEmail(reset.Email, hashKey));
-    if (user is null)
+
+    IdentityResult result;
+    if (user is null
+        || !cache.TryGetValue(PasswordResetCacheKey(reset.ResetCode.Trim()), out (string UserId, string Token) entry)
+        || entry.UserId != user.Id)
     {
         // メール列挙攻撃を防ぐため、ユーザーが存在しない場合も汎用エラーメッセージを返す。
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -734,15 +749,10 @@ app.Use(async (context, next) =>
         return;
     }
 
-    IdentityResult result;
-    try
+    result = await userManager.ResetPasswordAsync(user, entry.Token, reset.NewPassword);
+    if (result.Succeeded)
     {
-        var decodedCode = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(reset.ResetCode));
-        result = await userManager.ResetPasswordAsync(user, decodedCode, reset.NewPassword);
-    }
-    catch (FormatException)
-    {
-        result = IdentityResult.Failed(new IdentityError { Code = "InvalidToken", Description = "コードが正しくないか、有効期限が切れています。" });
+        cache.Remove(PasswordResetCacheKey(reset.ResetCode.Trim()));
     }
 
     if (!result.Succeeded)
