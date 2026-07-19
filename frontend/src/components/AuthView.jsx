@@ -1,17 +1,22 @@
 import { useState } from 'react'
 import BrandMark from './BrandMark'
 import { useAuth } from '../auth/useAuth'
+import { forgotPassword, resetPassword } from '../api/client'
 
 function AuthView() {
   const { signIn, signUp } = useAuth()
-  const [mode, setMode] = useState('login') // login | register
+  const [mode, setMode] = useState('login') // login | register | forgot | reset
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [inviteCode, setInviteCode] = useState('')
+  const [resetCode, setResetCode] = useState('')
+  const [newPassword, setNewPassword] = useState('')
   const [status, setStatus] = useState(null) // { type: 'success' | 'error', message }
   const [submitting, setSubmitting] = useState(false)
 
   const isRegister = mode === 'register'
+  const isForgot = mode === 'forgot'
+  const isReset = mode === 'reset'
 
   function switchMode(nextMode) {
     setMode(nextMode)
@@ -35,6 +40,23 @@ function AuthView() {
         setMode('login')
         setPassword('')
         setInviteCode('')
+      } else if (isForgot) {
+        await forgotPassword(email)
+        setStatus({
+          type: 'success',
+          message: 'リセットコードを発行しました。サーバーログを確認し、届いたコードを次の画面で入力してください。',
+        })
+        setMode('reset')
+      } else if (isReset) {
+        await resetPassword(email, resetCode, newPassword)
+        setStatus({
+          type: 'success',
+          message: 'パスワードを再設定しました。新しいパスワードでログインしてください。',
+        })
+        setMode('login')
+        setPassword('')
+        setResetCode('')
+        setNewPassword('')
       } else {
         await signIn(email, password)
         // 成功すると認証状態が変わり、App 側で自動的にアプリ画面へ切り替わる
@@ -57,8 +79,18 @@ function AuthView() {
         <section className="composer-card auth-card" aria-labelledby="auth-title">
           <div className="composer-card__header">
             <div>
-              <p className="eyebrow">{isRegister ? 'Create account' : 'Welcome back'}</p>
-              <h2 id="auth-title">{isRegister ? '新規登録' : 'ログイン'}</h2>
+              <p className="eyebrow">
+                {isRegister ? 'Create account' : isForgot || isReset ? 'Reset password' : 'Welcome back'}
+              </p>
+              <h2 id="auth-title">
+                {isRegister
+                  ? '新規登録'
+                  : isForgot
+                    ? 'パスワードをお忘れですか？'
+                    : isReset
+                      ? 'パスワードの再設定'
+                      : 'ログイン'}
+              </h2>
             </div>
           </div>
 
@@ -75,18 +107,20 @@ function AuthView() {
               />
             </label>
 
-            <label className="field">
-              <span className="field__label">パスワード</span>
-              <input
-                type="password"
-                autoComplete={isRegister ? 'new-password' : 'current-password'}
-                required
-                minLength={6}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder={isRegister ? '6文字以上・英大小/数字/記号を含む' : 'パスワード'}
-              />
-            </label>
+            {!isForgot && !isReset && (
+              <label className="field">
+                <span className="field__label">パスワード</span>
+                <input
+                  type="password"
+                  autoComplete={isRegister ? 'new-password' : 'current-password'}
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder={isRegister ? '6文字以上・英大小/数字/記号を含む' : 'パスワード'}
+                />
+              </label>
+            )}
 
             {isRegister && (
               <label className="field">
@@ -105,6 +139,38 @@ function AuthView() {
               </label>
             )}
 
+            {isReset && (
+              <>
+                <label className="field">
+                  <span className="field__label">リセットコード</span>
+                  <input
+                    type="text"
+                    autoComplete="off"
+                    required
+                    value={resetCode}
+                    onChange={(event) => setResetCode(event.target.value)}
+                    placeholder="サーバーログに出力されたコード"
+                  />
+                  <span className="field__helper">
+                    「コードを送信」後にサーバーログへ出力されるリセットコードを入力してください。
+                  </span>
+                </label>
+
+                <label className="field">
+                  <span className="field__label">新しいパスワード</span>
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    minLength={6}
+                    value={newPassword}
+                    onChange={(event) => setNewPassword(event.target.value)}
+                    placeholder="6文字以上・英大小/数字/記号を含む"
+                  />
+                </label>
+              </>
+            )}
+
             {status && (
               <p
                 className={`composer-card__status ${
@@ -119,20 +185,46 @@ function AuthView() {
             )}
 
             <button type="submit" className="primary-button" disabled={submitting}>
-              {submitting ? '処理中…' : isRegister ? '登録する' : 'ログイン'}
+              {submitting
+                ? '処理中…'
+                : isRegister
+                  ? '登録する'
+                  : isForgot
+                    ? 'コードを送信'
+                    : isReset
+                      ? 'パスワードを再設定'
+                      : 'ログイン'}
             </button>
           </form>
 
-          <p className="auth-switch">
-            {isRegister ? 'すでにアカウントをお持ちですか？' : 'アカウントをお持ちでないですか？'}{' '}
-            <button
-              type="button"
-              className="text-button"
-              onClick={() => switchMode(isRegister ? 'login' : 'register')}
-            >
-              {isRegister ? 'ログイン' : '新規登録'}
-            </button>
-          </p>
+          {!isForgot && !isReset && (
+            <p className="auth-switch">
+              {isRegister ? 'すでにアカウントをお持ちですか？' : 'アカウントをお持ちでないですか？'}{' '}
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => switchMode(isRegister ? 'login' : 'register')}
+              >
+                {isRegister ? 'ログイン' : '新規登録'}
+              </button>
+            </p>
+          )}
+
+          {!isRegister && !isForgot && !isReset && (
+            <p className="auth-switch">
+              <button type="button" className="text-button" onClick={() => switchMode('forgot')}>
+                パスワードをお忘れですか？
+              </button>
+            </p>
+          )}
+
+          {(isForgot || isReset) && (
+            <p className="auth-switch">
+              <button type="button" className="text-button" onClick={() => switchMode('login')}>
+                ログインに戻る
+              </button>
+            </p>
+          )}
         </section>
       </main>
     </div>

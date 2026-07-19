@@ -8,11 +8,19 @@ services:
       - ./backend/noodlemaps.db:/app/noodlemaps.db
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - Smtp__Host=mailpit
     depends_on:
       - frontend
+      - mailpit
   frontend:
     build: ./frontend
     container_name: gourmet-frontend
     ports:
       - "3000:80"
     depends_on: []
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: gourmet-mailpit
+    ports:
+      - "8025:8025" # Web UI
+      - "1025:1025" # SMTP

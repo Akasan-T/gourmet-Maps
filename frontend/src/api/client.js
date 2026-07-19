@@ -26,6 +26,16 @@ function clearTokens() {
   localStorage.removeItem(REFRESH_TOKEN_KEY)
 }
 
+// fetch自体が失敗した場合(サーバーに繋がらない等)、ブラウザの生の英語メッセージ
+// ("Failed to fetch" 等)が露出してしまうため、日本語のメッセージに変換する。
+async function apiFetch(path, options) {
+  try {
+    return await fetch(`${apiBaseUrl}${path}`, options)
+  } catch {
+    throw new Error('サーバーに接続できませんでした。通信環境を確認し、時間をおいて再度お試しください。')
+  }
+}
+
 // リフレッシュの多重実行を防ぐための in-flight プロミス
 let refreshPromise = null
 
@@ -34,7 +44,7 @@ async function refreshTokens() {
   if (!refreshToken) throw new AuthError('no-refresh-token')
 
   if (!refreshPromise) {
-    refreshPromise = fetch(`${apiBaseUrl}/api/auth/refresh`, {
+    refreshPromise = apiFetch('/api/auth/refresh', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken }),
@@ -59,7 +69,7 @@ async function authFetch(path, options = {}, retry = true) {
   const headers = { ...(options.headers || {}) }
   if (token) headers.Authorization = `Bearer ${token}`
 
-  const response = await fetch(`${apiBaseUrl}${path}`, { ...options, headers })
+  const response = await apiFetch(path, { ...options, headers })
 
   if (response.status === 401) {
     if (retry) {
@@ -91,7 +101,7 @@ async function getJson(path) {
 // --- 認証エンドポイント ---
 
 export async function login(email, password) {
-  const response = await fetch(`${apiBaseUrl}/api/auth/login`, {
+  const response = await apiFetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -116,7 +126,7 @@ export async function login(email, password) {
 }
 
 export async function register(email, password, inviteCode) {
-  const response = await fetch(`${apiBaseUrl}/api/auth/register`, {
+  const response = await apiFetch('/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password, inviteCode }),
@@ -140,6 +150,41 @@ export async function register(email, password, inviteCode) {
 
 export function logout() {
   clearTokens()
+}
+
+export async function forgotPassword(email) {
+  const response = await apiFetch('/api/auth/forgotPassword', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  })
+
+  if (!response.ok) {
+    throw new Error('リセットコードの発行に失敗しました。')
+  }
+}
+
+export async function resetPassword(email, resetCode, newPassword) {
+  const response = await apiFetch('/api/auth/resetPassword', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, resetCode, newPassword }),
+  })
+
+  if (!response.ok) {
+    let message = 'パスワードのリセットに失敗しました。コードを確認してください。'
+    try {
+      const problem = await response.json()
+      if (problem?.errors) {
+        message = Object.values(problem.errors).flat().join(' ')
+      } else if (problem?.detail) {
+        message = problem.detail
+      }
+    } catch {
+      /* レスポンス本文が空の場合は既定メッセージを使う */
+    }
+    throw new Error(message)
+  }
 }
 
 export function fetchMe() {
