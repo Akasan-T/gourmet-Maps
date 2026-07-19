@@ -3,6 +3,23 @@ import BrandMark from './BrandMark'
 import { useAuth } from '../auth/useAuth'
 import { forgotPassword, resetPassword } from '../api/client'
 
+function EyeIcon({ open }) {
+  return open ? (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+      <path
+        d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.24 4.24M9.36 5.14A11.6 11.6 0 0 1 12 5c7 0 11 7 11 7a13.6 13.6 0 0 1-3.22 3.94M6.6 6.6C3.9 8.3 1 12 1 12s4 7 11 7a10.7 10.7 0 0 0 3.4-.56"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 function AuthView() {
   const { signIn, signUp } = useAuth()
   const [mode, setMode] = useState('login') // login | register | forgot | reset
@@ -11,6 +28,8 @@ function AuthView() {
   const [inviteCode, setInviteCode] = useState('')
   const [resetCode, setResetCode] = useState('')
   const [newPassword, setNewPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
   const [status, setStatus] = useState(null) // { type: 'success' | 'error', message }
   const [submitting, setSubmitting] = useState(false)
 
@@ -110,15 +129,26 @@ function AuthView() {
             {!isForgot && !isReset && (
               <label className="field">
                 <span className="field__label">パスワード</span>
-                <input
-                  type="password"
-                  autoComplete={isRegister ? 'new-password' : 'current-password'}
-                  required
-                  minLength={6}
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder={isRegister ? '6文字以上・英大小/数字/記号を含む' : 'パスワード'}
-                />
+                <div className="field__input-wrap">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete={isRegister ? 'new-password' : 'current-password'}
+                    required
+                    minLength={6}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder={isRegister ? '6文字以上・英大小/数字/記号を含む' : 'パスワード'}
+                  />
+                  <button
+                    type="button"
+                    className="field__toggle-visibility"
+                    onClick={() => setShowPassword((value) => !value)}
+                    aria-label={showPassword ? 'パスワードを隠す' : 'パスワードを表示する'}
+                    aria-pressed={showPassword}
+                  >
+                    <EyeIcon open={showPassword} />
+                  </button>
+                </div>
               </label>
             )}
 
@@ -160,15 +190,26 @@ function AuthView() {
 
                 <label className="field">
                   <span className="field__label">新しいパスワード</span>
-                  <input
-                    type="password"
-                    autoComplete="new-password"
-                    required
-                    minLength={6}
-                    value={newPassword}
-                    onChange={(event) => setNewPassword(event.target.value)}
-                    placeholder="6文字以上・英大小/数字/記号を含む"
-                  />
+                  <div className="field__input-wrap">
+                    <input
+                      type={showNewPassword ? 'text' : 'password'}
+                      autoComplete="new-password"
+                      required
+                      minLength={6}
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                      placeholder="6文字以上・英大小/数字/記号を含む"
+                    />
+                    <button
+                      type="button"
+                      className="field__toggle-visibility"
+                      onClick={() => setShowNewPassword((value) => !value)}
+                      aria-label={showNewPassword ? 'パスワードを隠す' : 'パスワードを表示する'}
+                      aria-pressed={showNewPassword}
+                    >
+                      <EyeIcon open={showNewPassword} />
+                    </button>
+                  </div>
                 </label>
               </>
             )}

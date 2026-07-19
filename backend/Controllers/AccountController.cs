@@ -35,10 +35,7 @@ namespace GourmetMaps.Controllers
                 return Unauthorized();
             }
 
-            var titles = await _dbContext.ApplicationUserBadges
-                .Where(link => link.ApplicationUserId == user.Id)
-                .Select(link => link.Badge.Title)
-                .ToListAsync();
+            var titles = await GetDisplayTitlesAsync(user.Id);
 
             return Ok(ToDto(user, titles));
         }
@@ -77,12 +74,19 @@ namespace GourmetMaps.Controllers
                 return ValidationProblem(string.Join(" ", result.Errors.Select(error => error.Description)));
             }
 
-            var titles = await _dbContext.ApplicationUserBadges
-                .Where(link => link.ApplicationUserId == user.Id)
-                .Select(link => link.Badge.Title)
-                .ToListAsync();
+            var titles = await GetDisplayTitlesAsync(user.Id);
 
             return Ok(ToDto(user, titles));
+        }
+
+        // プロフィール画面の「獲得ずみのバッジ」には称号図鑑(200種)の達成バッジを出さず、
+        // 特別枠の「初代食べる王」だけを表示する。
+        private async Task<List<string>> GetDisplayTitlesAsync(string userId)
+        {
+            return await _dbContext.ApplicationUserBadges
+                .Where(link => link.ApplicationUserId == userId && link.Badge.Title == InvitesController.OwnerBadgeTitle)
+                .Select(link => link.Badge.Title)
+                .ToListAsync();
         }
 
         private static AccountDto ToDto(ApplicationUser user, IReadOnlyList<string> titles)

@@ -19,6 +19,27 @@
   --shadow-strong: 0 24px 50px rgba(51, 38, 20, 0.15);
   --sans: 'Avenir Next', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
 
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 18px;
+  --space-6: 24px;
+
+  /* Radius scale */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+
+  /* Card padding */
+  --card-padding: var(--space-5);
+
+  /* Button heights */
+  --btn-h-sm: 40px;
+  --btn-h-lg: 48px;
+
   font-family: var(--sans);
   line-height: 1.5;
   font-weight: 500;
