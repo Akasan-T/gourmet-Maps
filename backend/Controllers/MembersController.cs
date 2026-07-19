@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GourmetMaps.Data;
@@ -9,6 +10,7 @@ namespace GourmetMaps.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class MembersController : ControllerBase
     {
         private const string GuestUserName = "guest-map";
@@ -27,12 +29,12 @@ namespace GourmetMaps.Controllers
                 .AsNoTracking()
                 .Where(user => user.DisplayName != null && user.DisplayName != "" && user.UserName != GuestUserName)
                 .OrderBy(user => user.DisplayName)
-                .Select(user => new MemberDto(user.Id, user.DisplayName!))
+                .Select(user => new MemberDto(user.Id, user.DisplayName!, user.AvatarUrl))
                 .ToListAsync();
 
             return Ok(members);
         }
 
-        public record MemberDto(string Id, string DisplayName);
+        public record MemberDto(string Id, string DisplayName, string? AvatarUrl);
     }
 }

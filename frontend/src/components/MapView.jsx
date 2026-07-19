@@ -4,13 +4,14 @@ import 'leaflet/dist/leaflet.css'
 import { createCurrentLocationIcon, createPinIcon } from './mapPinIcon'
 import StoreDetailModal from './StoreDetailModal'
 import Modal from './Modal'
+import { LocateIcon } from './icons'
 import { extractVisitType } from '../data/visits'
 
-const fallbackCenter = [35.7075, 139.666]
+const fallbackCenter = [35.6812, 139.7671] // 東京駅
 const currentLocationZoom = 16
 const ratingOptions = ['5', '4', '3', '2', '1']
 
-function MapView({ stores }) {
+function MapView({ stores, onDataChange }) {
   const [selectedGenre, setSelectedGenre] = useState('all')
   const [selectedVisitType, setSelectedVisitType] = useState('all')
   const [minTasteRating, setMinTasteRating] = useState('all')
@@ -166,7 +167,7 @@ function MapView({ stores }) {
           aria-label="現在地を表示"
           title="現在地を表示"
         >
-          {locateState === 'locating' ? '…' : '📍'}
+          {locateState === 'locating' ? '…' : <LocateIcon size={18} />}
         </button>
         {locateState === 'error' && (
           <p className="map-page__control-error">現在地を取得できませんでした</p>
@@ -284,7 +285,13 @@ function MapView({ stores }) {
         </Modal>
       )}
 
-      {selectedStore && <StoreDetailModal store={selectedStore} onClose={() => setSelectedStore(null)} />}
+      {selectedStore && (
+        <StoreDetailModal
+          store={selectedStore}
+          onClose={() => setSelectedStore(null)}
+          onDeleted={onDataChange}
+        />
+      )}
     </section>
   )
 }

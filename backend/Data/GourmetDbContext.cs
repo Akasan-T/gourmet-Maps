@@ -11,9 +11,11 @@ namespace GourmetMaps.Data
         {
         }
         public DbSet<GourmetEntry> GourmetEntries { get; set; }
+        public DbSet<Store> Stores { get; set; }
         public DbSet<Badge> Badges { get; set; }
         public DbSet<ApplicationUserBadge> ApplicationUserBadges { get; set; }
         public DbSet<GourmetEntryParticipant> GourmetEntryParticipants { get; set; }
+        public DbSet<InviteCode> InviteCodes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

@@ -3,13 +3,13 @@ import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { createCurrentLocationIcon, createPinIcon } from './mapPinIcon'
 import StoreDetailModal from './StoreDetailModal'
+import { LocateIcon, RankBadge } from './icons'
 import { participantNames, storeVisual } from '../data/visits'
 
-const medals = ['🥇', '🥈', '🥉']
-const fallbackCenter = [35.7075, 139.666]
+const fallbackCenter = [35.6812, 139.7671] // 東京駅
 const currentLocationZoom = 16
 
-function HomeView({ stores, ranking }) {
+function HomeView({ stores, ranking, onDataChange }) {
   const [selectedStore, setSelectedStore] = useState(null)
   const [currentPosition, setCurrentPosition] = useState(null)
   const [locateState, setLocateState] = useState('idle')
@@ -100,7 +100,7 @@ function HomeView({ stores, ranking }) {
             aria-label="現在地を表示"
             title="現在地を表示"
           >
-            {locateState === 'locating' ? '…' : '📍'}
+            {locateState === 'locating' ? '…' : <LocateIcon size={18} />}
           </button>
         </div>
 
@@ -124,9 +124,7 @@ function HomeView({ stores, ranking }) {
             const names = participantNames(entry)
             return (
               <article key={entry.id} className="rank-item">
-                <span className="rank-item__medal" aria-hidden="true">
-                  {medals[index] ?? `${index + 1}`}
-                </span>
+                <RankBadge rank={index + 1} />
                 <span className="rank-item__thumb" style={{ background: visual.gradient }}>
                   {visual.emoji}
                 </span>
@@ -142,7 +140,13 @@ function HomeView({ stores, ranking }) {
         </div>
       </section>
 
-      {selectedStore && <StoreDetailModal store={selectedStore} onClose={() => setSelectedStore(null)} />}
+      {selectedStore && (
+        <StoreDetailModal
+          store={selectedStore}
+          onClose={() => setSelectedStore(null)}
+          onDeleted={onDataChange}
+        />
+      )}
     </>
   )
 }

@@ -9,8 +9,10 @@ import ProfileView from './components/ProfileView'
 import QuickComposer from './components/QuickComposer'
 import RankView from './components/RankView'
 import RecentVisitList from './components/RecentVisitList'
+import AuthView from './components/AuthView'
 import { fetchGourmetEntries, fetchMembers } from './api/client'
-import { deriveTag, formatRelativeTime, groupEntriesByStore, participantNames, withinHours } from './data/visits'
+import { useAuth } from './auth/useAuth'
+import { deriveTag, formatRelativeTime, groupEntriesByStore, withinHours } from './data/visits'
 
 const dailyStats = [
   { label: '今日の記録', value: '3件' },
@@ -26,7 +28,6 @@ const navigationItems = [
   { key: 'capture', label: '記録' },
   { key: 'map', label: '地図' },
   { key: 'rank', label: '順位' },
-  { key: 'profile', label: '自分' },
 ]
 
 const validTabKeys = new Set(['home', 'capture', 'map', 'rank', 'profile'])
@@ -37,6 +38,7 @@ function initialTabFromUrl() {
 }
 
 function App() {
+  const { user, status: authStatus, signOut, setDisplayName, setAvatar } = useAuth()
   const [activeTab, setActiveTab] = useState(initialTabFromUrl)
   const [entries, setEntries] = useState([])
   const [members, setMembers] = useState([])
@@ -44,6 +46,9 @@ function App() {
   const [reloadToken, setReloadToken] = useState(0)
 
   useEffect(() => {
+    // ログイン済みのときだけデータを取得する
+    if (authStatus !== 'authenticated') return undefined
+
     let ignore = false
 
     Promise.all([fetchGourmetEntries(), fetchMembers()])
@@ -60,7 +65,7 @@ function App() {
     return () => {
       ignore = true
     }
-  }, [reloadToken])
+  }, [reloadToken, authStatus])
 
   const reloadData = () => setReloadToken((token) => token + 1)
 
@@ -94,7 +99,7 @@ function App() {
           const visual = groupEntriesByStore([entry])[0]
           return {
             restaurant: entry.name,
-            menu: participantNames(entry).join('・') || '記録者不明',
+            menu: entry.recordedByDisplayName ?? '記録者不明',
             time: formatRelativeTime(new Date(entry.visitDate)),
             taste: entry.tasteRating.toFixed(1),
             repeat: entry.repeatRating.toFixed(1),
@@ -108,19 +113,48 @@ function App() {
     [entries],
   )
 
-  const currentUser = { name: members[0]?.displayName ?? 'ゲスト', entryCount: entries.length, favoriteCount: allStores.length }
+  const currentUser = {
+    name: user?.displayName ?? user?.email ?? 'ゲスト',
+    email: user?.email ?? '',
+    displayName: user?.displayName ?? '',
+    avatarUrl: user?.avatarUrl ?? '',
+    entryCount: entries.length,
+    favoriteCount: allStores.length,
+    titles: user?.titles ?? [],
+    canIssueInvites: user?.canIssueInvites ?? false,
+  }
+
+  // 認証状態の確認中はスプラッシュ、未ログインならログイン画面を表示する
+  if (authStatus === 'loading') {
+    return (
+      <div className="app-shell">
+        <div className="app-shell__backdrop" aria-hidden="true"></div>
+        <main className="mobile-frame auth-screen">
+          <p className="map-view__empty">読み込み中…</p>
+        </main>
+      </div>
+    )
+  }
+
+  if (authStatus !== 'authenticated') {
+    return <AuthView />
+  }
 
   return (
     <div className="app-shell">
       <div className="app-shell__backdrop" aria-hidden="true"></div>
       <main className="mobile-frame">
-        <HeaderBar />
+        <HeaderBar
+          onProfileClick={() => setActiveTab('profile')}
+          isProfileActive={activeTab === 'profile'}
+          avatarUrl={user?.avatarUrl}
+        />
 
         {loadState === 'error' && (
           <p className="map-view__empty">バックエンドに接続できませんでした。backend が起動しているか確認してください。</p>
         )}
 
-        {activeTab === 'home' && <HomeView stores={storesToday} ranking={ranking24h} />}
+        {activeTab === 'home' && <HomeView stores={storesToday} ranking={ranking24h} onDataChange={reloadData} />}
 
         {activeTab === 'capture' && (
           <>
@@ -130,11 +164,19 @@ function App() {
           </>
         )}
 
-        {activeTab === 'map' && <MapView stores={allStores} members={members} />}
+        {activeTab === 'map' && <MapView stores={allStores} members={members} onDataChange={reloadData} />}
 
         {activeTab === 'rank' && <RankView stores={allStores} members={members} />}
 
-        {activeTab === 'profile' && <ProfileView user={currentUser} members={members} />}
+        {activeTab === 'profile' && (
+          <ProfileView
+            user={currentUser}
+            members={members}
+            onSignOut={signOut}
+            onUpdateDisplayName={setDisplayName}
+            onUpdateAvatar={setAvatar}
+          />
+        )}
       </main>
       <BottomNavigation items={navigationItems} activeKey={activeTab} onSelect={setActiveTab} />
     </div>

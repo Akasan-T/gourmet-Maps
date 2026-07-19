@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fetchCompanionRanking, fetchGenreRanking, fetchOverallRanking } from '../api/client'
+import { RankBadge } from './icons'
 import { storeVisual } from '../data/visits'
-
-const medals = ['🥇', '🥈', '🥉']
 
 const criteria = [
   { key: 'taste', label: '味' },
-  { key: 'repeat', label: '再訪したさ' },
-  { key: 'volume', label: '量' },
+  { key: 'cost', label: 'コスパ' },
+  { key: 'atmosphere', label: '雰囲気' },
+  { key: 'service', label: '接客' },
+  { key: 'repeat', label: 'また行きたいか' },
   { key: 'popularity', label: '人気(来店数)' },
 ]
 
@@ -34,17 +35,20 @@ function StoreRankList({ items, emptyMessage, metaLabel }) {
         const visual = storeVisual(store.name)
         return (
           <article key={store.name} className="rank-item">
-            <span className="rank-item__medal" aria-hidden="true">
-              {medals[index] ?? `${index + 1}`}
-            </span>
+            <RankBadge rank={index + 1} />
             <span className="rank-item__thumb" style={{ background: visual.gradient }}>
               {visual.emoji}
             </span>
             <div className="rank-item__body">
               <h3>{store.name}</h3>
-              <p className="visit-card__menu">{metaLabel(store)}</p>
+              <p className="visit-card__menu">
+                {metaLabel(store)}
+                {typeof store.bayesianScore === 'number' ? ` ・ 平均${store.averageOverallRating.toFixed(1)}` : ''}
+              </p>
             </div>
-            <span className="rank-item__score">{store.averageOverallRating.toFixed(1)}</span>
+            <span className="rank-item__score" title="また行きたいか(Bayesian補正)">
+              {(typeof store.bayesianScore === 'number' ? store.bayesianScore : store.averageOverallRating).toFixed(1)}
+            </span>
           </article>
         )
       })}
@@ -94,8 +98,10 @@ function RankView({ stores, members }) {
         gradient: store.gradient,
         genre: store.visits[0]?.genre ?? '未設定',
         taste: average(store.visits.map((visit) => visit.tasteRating)),
+        cost: average(store.visits.map((visit) => visit.costPerformanceRating)),
+        atmosphere: average(store.visits.map((visit) => visit.appearanceRating)),
+        service: average(store.visits.map((visit) => visit.serviceRating ?? visit.repeatRating)),
         repeat: average(store.visits.map((visit) => visit.repeatRating)),
-        volume: average(store.visits.map((visit) => visit.volumeRating)),
         popularity: store.visits.length,
       }))
       .sort((a, b) => b[criterion] - a[criterion])
