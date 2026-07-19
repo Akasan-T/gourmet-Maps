@@ -44,6 +44,18 @@
   z-index: 10;
 }
 
+/* カード内の直下セクション同士の余白を統一する（個別に margin-top を書かず、
+   これで上下どこでも同じ量の余白になる）。.placeholder-card は独自の gap を持つため対象外。 */
+.map-card,
+.snapshot-card,
+.composer-card,
+.recent-section,
+.visit-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
 .app-header__profile-button {
   position: relative;
   flex-shrink: 0;
@@ -53,11 +65,16 @@
   justify-content: center;
   width: 40px;
   height: 40px;
+  aspect-ratio: 1 / 1;
   border: none;
   border-radius: 999px;
   background: var(--panel);
   color: var(--heading);
   cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
@@ -73,6 +90,7 @@
 }
 
 .app-header__profile-avatar {
+  display: block;
   width: 100%;
   height: 100%;
   border-radius: 999px;
@@ -200,10 +218,6 @@
   gap: 12px;
 }
 
-.composer-card__footer {
-  margin-top: 16px;
-}
-
 .composer-card__footer > div {
   min-width: 0;
 }
@@ -219,10 +233,6 @@
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 600;
-}
-
-.map-card__surface {
-  margin-top: 16px;
 }
 
 .map-card__canvas {
@@ -277,10 +287,6 @@
   line-height: 1.6;
 }
 
-.map-card__status {
-  margin-top: 14px;
-}
-
 .map-card__legend {
   display: flex;
   flex-direction: column;
@@ -297,7 +303,6 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
-  margin-top: 16px;
 }
 
 .snapshot-metric {
@@ -338,7 +343,6 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-top: 16px;
 }
 
 .field {
@@ -544,6 +548,12 @@
   color: var(--muted);
 }
 
+.composer-card__nearby-address {
+  font-size: 0.74rem;
+  color: var(--muted);
+  opacity: 0.85;
+}
+
 .composer-card__nearby-status {
   margin: 0;
   color: var(--muted);
@@ -616,7 +626,6 @@
   max-height: 220px;
   object-fit: cover;
   border-radius: 14px;
-  margin: 8px 0;
 }
 
 .visit-card {
@@ -664,17 +673,11 @@
   color: var(--heading);
 }
 
-.visit-card__scores {
-  margin-top: 12px;
-}
-
 .visit-card__memo {
-  margin-top: 12px;
   line-height: 1.6;
 }
 
 .visit-card__footer {
-  margin-top: 14px;
   flex-wrap: wrap;
 }
 
@@ -862,7 +865,6 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 8px;
 }
 
 .map-page__empty--inline {
@@ -942,7 +944,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 18px 20px;
+  padding: var(--card-padding);
   border-bottom: 1px solid var(--border);
 }
 
@@ -963,7 +965,7 @@
 }
 
 .modal-card__body {
-  padding: 18px 20px 28px;
+  padding: var(--card-padding);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -993,7 +995,6 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 16px;
 }
 
 .rank-item {
@@ -1054,13 +1055,6 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  margin-top: 16px;
-}
-
-.profile-share {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
 
 .profile-share__list {
@@ -1159,16 +1153,13 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-top: 8px;
 }
 
 .auth-form .primary-button {
-  margin-top: 4px;
   width: 100%;
 }
 
 .auth-switch {
-  margin-top: 16px;
   text-align: center;
   color: var(--muted);
   font-size: 0.9rem;
@@ -1200,12 +1191,15 @@
   flex-shrink: 0;
   width: 56px;
   height: 56px;
+  aspect-ratio: 1 / 1;
   border: none;
   border-radius: 999px;
   background: var(--panel);
   cursor: pointer;
   overflow: visible;
   padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .profile-avatar-button__image {
@@ -1316,7 +1310,7 @@
 }
 
 .profile-badges-hint {
-  margin: 10px 2px 0;
+  margin: 0 2px;
   color: var(--muted);
   font-size: 0.78rem;
   line-height: 1.4;
@@ -1351,7 +1345,6 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  margin-top: 20px;
   padding: 16px 18px;
   border: 1px solid var(--border);
   border-radius: 16px;

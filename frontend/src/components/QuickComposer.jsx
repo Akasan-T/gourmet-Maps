@@ -141,6 +141,7 @@ async function fetchNearbyPlaces(latitude, longitude, options = {}) {
         latitude: lat,
         longitude: lon,
         distance: distanceInMeters(latitude, longitude, lat, lon),
+        address: null,
       }
     })
     .sort((a, b) => a.distance - b.distance)
@@ -591,6 +592,9 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
                     {place.genre || 'ジャンル未設定'}
                     {formatDistance(place.distance) ? ` ・ ${formatDistance(place.distance)}` : ''}
                   </span>
+                  {place.address && (
+                    <span className="composer-card__nearby-address">{place.address}</span>
+                  )}
                 </button>
               ))}
             </div>
@@ -798,6 +802,7 @@ function toSavedCandidate(store) {
     latitude: store.latitude,
     longitude: store.longitude,
     distance: typeof store.distance === 'number' ? store.distance : null,
+    address: store.address ?? null,
   }
 }
 
@@ -812,6 +817,7 @@ function toGoogleCandidate(place) {
     latitude: place.latitude,
     longitude: place.longitude,
     distance: typeof place.distance === 'number' ? place.distance : null,
+    address: place.address ?? null,
   }
 }
 

@@ -3540,7 +3540,7 @@
   {
     "id": "title_198",
     "name": "グルメマップ殿堂入り",
-    "description": "運営が認めた特別な功績を持つ(隠し称号)",
+    "description": "運営が認めた特別な功績を持つ",
     "category": "legendary_complete",
     "condition": {
       "type": "admin_awarded",

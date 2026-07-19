@@ -68,10 +68,10 @@ namespace GourmetMaps.Controllers
             {
                 using var request = string.IsNullOrEmpty(keyword)
                     ? BuildNearbyRequest(lat, lng, radiusMeters)
-                    : BuildTextSearchRequest(lat, lng, radiusMeters, keyword);
+                    : BuildTextSearchRequest(keyword);
 
                 request.Headers.Add("X-Goog-Api-Key", apiKey);
-                request.Headers.Add("X-Goog-FieldMask", "places.id,places.displayName,places.location,places.primaryType");
+                request.Headers.Add("X-Goog-FieldMask", "places.id,places.displayName,places.location,places.primaryType,places.formattedAddress");
 
                 using var response = await client.SendAsync(request);
                 if (!response.IsSuccessStatusCode)
@@ -119,19 +119,13 @@ namespace GourmetMaps.Controllers
             return CreateJsonRequest("https://places.googleapis.com/v1/places:searchNearby", payload);
         }
 
-        private static HttpRequestMessage BuildTextSearchRequest(double lat, double lng, double radiusMeters, string keyword)
+        // 店名などキーワードがある検索は、近所に絞らず全国どこでもヒットさせる
+        // (locationBias を付けないことで現在地からの距離による足切りをしない)
+        private static HttpRequestMessage BuildTextSearchRequest(string keyword)
         {
             var payload = new
             {
                 textQuery = keyword,
-                locationBias = new
-                {
-                    circle = new
-                    {
-                        center = new { latitude = lat, longitude = lng },
-                        radius = radiusMeters,
-                    },
-                },
                 languageCode = "ja",
             };
 
@@ -164,7 +158,8 @@ namespace GourmetMaps.Controllers
                 genre,
                 place.Location?.Latitude,
                 place.Location?.Longitude,
-                distance);
+                distance,
+                place.FormattedAddress);
         }
 
         private static double DistanceInMeters(double lat1, double lon1, double lat2, double lon2)
@@ -187,7 +182,8 @@ namespace GourmetMaps.Controllers
             string Genre,
             float? Latitude,
             float? Longitude,
-            double? Distance);
+            double? Distance,
+            string? Address);
 
         private class PlacesSearchResponse
         {
@@ -208,6 +204,9 @@ namespace GourmetMaps.Controllers
 
             [JsonPropertyName("primaryType")]
             public string? PrimaryType { get; set; }
+
+            [JsonPropertyName("formattedAddress")]
+            public string? FormattedAddress { get; set; }
         }
 
         private class GoogleDisplayName
