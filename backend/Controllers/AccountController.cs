@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GourmetMaps.Data;
 using GourmetMaps.Models;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace GourmetMaps.Controllers
@@ -111,6 +112,10 @@ namespace GourmetMaps.Controllers
             IReadOnlyList<string> Titles,
             bool CanIssueInvites);
 
-        public record UpdateAccountRequest(string? DisplayName, string? AvatarUrl);
+        // AvatarUrl の長さは MaxAvatarUrlLength で別途チェックする (超過時に分かりやすい日本語メッセージを返すため)。
+        // レコードの検証属性はコンストラクタ引数に直接付ける ([property:] だと MVC が例外を投げる)。
+        public record UpdateAccountRequest(
+            [StringLength(60)] string? DisplayName,
+            string? AvatarUrl);
     }
 }

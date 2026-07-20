@@ -1,0 +1,9 @@
+# ホストの node_modules / ビルド成果物はイメージへ持ち込まない
+# (Dockerfile 内で npm ci → npm run build を実行するため)
+node_modules
+dist
+npm-debug.log*
+
+# OS / エディタ由来
+**/.DS_Store
+.vscode/

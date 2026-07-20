@@ -6,6 +6,7 @@ using GourmetMaps.Models;
 using GourmetMaps.Services;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -335,24 +336,28 @@ namespace GourmetMaps.Controllers
                 !string.IsNullOrEmpty(currentUserId) && currentUserId == entry.UserID);
         }
 
+        // 評価は 0〜5 スケール。範囲外・過大な文字列・巨大な写真データはサーバー側で弾く
+        // ([ApiController] がデータ注釈違反を自動的に 400 として返す)。
+        // レコードの検証属性はコンストラクタ引数に直接付ける必要がある ([property:] は不可)。
         public record CreateGourmetEntryRequest(
-            string Name,
-            string? Genre,
+            [Required][StringLength(200, MinimumLength = 1)] string Name,
+            [StringLength(50)] string? Genre,
             DateTime? VisitDate,
-            float OverallRating,
-            float TasteRating,
-            float CostRating,
-            float AtmosphereRating,
-            float ServiceRating,
-            float RepeatRating,
-            string? Memo,
-            string? SceneTag,
-            string? PriceRange,
-            string? PhotoUrl,
-            float Latitude,
-            float Longitude,
+            [Range(0, 5)] float OverallRating,
+            [Range(0, 5)] float TasteRating,
+            [Range(0, 5)] float CostRating,
+            [Range(0, 5)] float AtmosphereRating,
+            [Range(0, 5)] float ServiceRating,
+            [Range(0, 5)] float RepeatRating,
+            [StringLength(2000)] string? Memo,
+            [StringLength(50)] string? SceneTag,
+            [StringLength(50)] string? PriceRange,
+            // 縮小済み写真の data URL 上限 (1MB)。肥大化した投稿での DB 圧迫を防ぐ安全弁。
+            [StringLength(1_000_000)] string? PhotoUrl,
+            [Range(-90, 90)] float Latitude,
+            [Range(-180, 180)] float Longitude,
             int? StoreId,
-            string? ExternalPlaceId,
+            [StringLength(200)] string? ExternalPlaceId,
             IReadOnlyList<string>? ParticipantUserIds);
 
         public record ParticipantDto(string Id, string DisplayName, string? AvatarUrl);

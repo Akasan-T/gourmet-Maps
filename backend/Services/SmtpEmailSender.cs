@@ -53,7 +53,7 @@ namespace GourmetMaps.Services
             using var client = new SmtpClient();
             try
             {
-                await client.ConnectAsync(host, port, MailKit.Security.SecureSocketOptions.None);
+                await client.ConnectAsync(host, port, ResolveSecureSocketOptions());
 
                 var user = _configuration["Smtp:User"];
                 var password = _configuration["Smtp:Password"];
@@ -72,7 +72,24 @@ namespace GourmetMaps.Services
                 }
             }
 
-            _logger.LogInformation("メールを送信しました ({Host}:{Port} 経由, 宛先: {Email})", host, port, toEmail);
+            _logger.LogInformation("メールを送信しました ({Host}:{Port} 経由)", host, port);
+        }
+
+        // 接続時のTLSモードを設定 "Smtp:Secure" で切り替える。
+        //   none      … 平文（開発の Mailpit 用）
+        //   starttls  … 接続後に STARTTLS で暗号化（本番の 587 等）
+        //   ssl       … 接続時から SSL/TLS（465 等）
+        //   auto/未設定 … サーバーが対応していれば STARTTLS、非対応なら平文（既定・後方互換）
+        private MailKit.Security.SecureSocketOptions ResolveSecureSocketOptions()
+        {
+            var mode = _configuration["Smtp:Secure"]?.Trim().ToLowerInvariant();
+            return mode switch
+            {
+                "none" => MailKit.Security.SecureSocketOptions.None,
+                "starttls" => MailKit.Security.SecureSocketOptions.StartTls,
+                "ssl" or "tls" or "sslonconnect" => MailKit.Security.SecureSocketOptions.SslOnConnect,
+                _ => MailKit.Security.SecureSocketOptions.StartTlsWhenAvailable,
+            };
         }
     }
 }
