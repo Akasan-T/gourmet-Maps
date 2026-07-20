@@ -31,7 +31,7 @@ echo "② Vite(5173) OK"
 cloudflared tunnel --url http://localhost:5173 >"$CF_LOG" 2>&1 &
 PIDS+=($!)
 echo "③ トンネル確立中..."
-until grep -qE "trycloudflare.com" "$CF_LOG" 2>/dev/null; do sleep 1; done
+until grep -qE "https://[a-z0-9-]+\.trycloudflare\.com" "$CF_LOG" 2>/dev/null; do sleep 1; done
 URL=$(grep -oE "https://[a-z0-9-]+\.trycloudflare\.com" "$CF_LOG" | head -1)
 
 echo

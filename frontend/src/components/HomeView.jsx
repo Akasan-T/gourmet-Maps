@@ -85,9 +85,7 @@ function HomeView({ stores, ranking, onDataChange }) {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             {currentPosition && (
-              <Marker position={currentPosition} icon={createCurrentLocationIcon()}>
-                <Popup>現在地</Popup>
-              </Marker>
+              <Marker position={currentPosition} icon={createCurrentLocationIcon()} />
             )}
             {locatedStores.map((store) => (
               <Marker
