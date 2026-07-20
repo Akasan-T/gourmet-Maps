@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react'
-import MemberAvatars from './MemberAvatars'
+import MemberProfileModal from './MemberProfileModal'
 import TitlesModal from './TitlesModal'
 import { CameraIcon, CheckIcon, CrownIcon, PencilIcon } from './icons'
 import { issueInvite } from '../api/client'
+
+const memberColors = ['var(--accent-strong)', 'var(--accent-green)', 'var(--accent-blue)', '#d9a441']
 
 function formatExpiry(expiresAt) {
   const date = new Date(expiresAt)
@@ -51,6 +53,7 @@ function ProfileView({ user, members, onSignOut, onUpdateDisplayName, onUpdateAv
   const [copied, setCopied] = useState(false)
 
   const [showTitles, setShowTitles] = useState(false)
+  const [selectedMember, setSelectedMember] = useState(null)
 
   function handleStartEditName() {
     setDisplayName(user.displayName ?? '')
@@ -276,17 +279,42 @@ function ProfileView({ user, members, onSignOut, onUpdateDisplayName, onUpdateAv
 
       <section className="composer-card profile-share">
         <div className="field__heading">
-          <span className="field__label">身内メンバー</span>
+          <span className="field__label">メンバー</span>
         </div>
-        <MemberAvatars members={members} />
-        <ul className="profile-share__list">
-          {members.map((member) => (
-            <li key={member.id}>
-              <span>{member.displayName}</span>
-            </li>
+        <p className="field__helper">アイコンをタップすると、その人の登録店舗や称号の状況を見られます。</p>
+        <div className="member-grid">
+          {members.map((member, index) => (
+            <button
+              key={member.id}
+              type="button"
+              className="member-grid__item"
+              onClick={() => setSelectedMember(member)}
+              aria-label={`${member.displayName} のプロフィールを見る`}
+            >
+              <span
+                className="member-grid__avatar"
+                style={member.avatarUrl ? undefined : { background: memberColors[index % memberColors.length] }}
+                aria-hidden="true"
+              >
+                {member.avatarUrl ? (
+                  <img className="member-grid__image" src={member.avatarUrl} alt="" />
+                ) : (
+                  member.displayName.charAt(0)
+                )}
+              </span>
+              <span className="member-grid__name">{member.displayName}</span>
+            </button>
           ))}
-        </ul>
+        </div>
       </section>
+
+      {selectedMember && (
+        <MemberProfileModal
+          key={selectedMember.id}
+          member={selectedMember}
+          onClose={() => setSelectedMember(null)}
+        />
+      )}
 
       <section className="composer-card profile-signout">
         <button type="button" className="ghost-button" onClick={onSignOut}>

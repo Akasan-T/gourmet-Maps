@@ -254,6 +254,11 @@ export function fetchMembers() {
   return getJson('/api/Members')
 }
 
+// メンバー個別プロフィール(登録店舗・獲得称号)を取得する
+export function fetchMemberProfile(memberId) {
+  return getJson(`/api/Members/${memberId}`)
+}
+
 export function fetchOverallRanking() {
   return getJson('/api/GourmetEntries/rankings/overall')
 }
