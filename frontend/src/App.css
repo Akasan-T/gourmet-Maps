@@ -1184,6 +1184,26 @@
   font-size: 1rem;
 }
 
+.member-profile__stat-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+}
+
+.member-profile__stat-button:hover,
+.member-profile__stat-button:focus-visible {
+  border-color: var(--accent-strong);
+  color: var(--heading);
+}
+
 .member-profile__section {
   margin-top: var(--space-4);
 }

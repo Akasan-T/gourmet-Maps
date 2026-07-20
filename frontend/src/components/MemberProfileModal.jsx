@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import Modal from './Modal'
+import TitlesCollection from './TitlesCollection'
 import { fetchMemberProfile } from '../api/client'
 import { deriveTag, formatRelativeTime, groupEntriesByStore, positiveTags } from '../data/visits'
 
 // メンバーのアイコンをタップしたときに開く個別プロフィール。
-// その人が登録した店舗(投稿)と、獲得済み称号の状況を表示する。
+// その人が登録した店舗(投稿)を表示し、「獲得称号」ボタンから称号図鑑を別モーダルで開ける。
 function MemberProfileModal({ member, onClose }) {
   const [profile, setProfile] = useState(null)
   const [loadState, setLoadState] = useState('loading') // loading | success | error
+  const [showTitles, setShowTitles] = useState(false)
 
   useEffect(() => {
     let ignore = false
@@ -41,15 +43,13 @@ function MemberProfileModal({ member, onClose }) {
         </span>
         {profile && (
           <div className="member-profile__stats">
-            <span>
-              <strong>{profile.storeCount}</strong>店
-            </span>
-            <span>
-              <strong>{profile.entryCount}</strong>件の記録
-            </span>
-            <span>
-              称号 <strong>{profile.earnedTitleCount}</strong>/{profile.totalTitleCount}
-            </span>
+            <button
+              type="button"
+              className="member-profile__stat-button"
+              onClick={() => setShowTitles(true)}
+            >
+              獲得称号 <strong>{profile.earnedTitleCount}</strong>/{profile.totalTitleCount}
+            </button>
           </div>
         )}
       </div>
@@ -59,21 +59,6 @@ function MemberProfileModal({ member, onClose }) {
 
       {loadState === 'success' && profile && (
         <>
-          <section className="member-profile__section">
-            <h3 className="member-profile__section-title">獲得ずみの称号</h3>
-            {profile.titles.length > 0 ? (
-              <div className="chip-row" role="list">
-                {profile.titles.map((title) => (
-                  <span key={title.name} className="chip chip--active" role="listitem">
-                    {title.name}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="profile-empty-hint">まだ獲得した称号はありません。</p>
-            )}
-          </section>
-
           <section className="member-profile__section">
             <h3 className="member-profile__section-title">登録した店舗</h3>
             {stores.length === 0 ? (
@@ -123,6 +108,12 @@ function MemberProfileModal({ member, onClose }) {
             )}
           </section>
         </>
+      )}
+
+      {showTitles && profile && (
+        <Modal title="獲得称号" onClose={() => setShowTitles(false)}>
+          <TitlesCollection titles={profile.titles} />
+        </Modal>
       )}
     </Modal>
   )

@@ -102,10 +102,17 @@ namespace GourmetMaps.Controllers
             var earnedSet = new HashSet<string>(earnedTitleNames);
 
             var seeds = await LoadTitleSeedsAsync();
-            var earnedTitles = seeds
-                .Where(seed => earnedSet.Contains(seed.Name))
-                .Select(seed => new MemberTitleDto(seed.Name, seed.Category, seed.Tier))
+            var titles = seeds
+                .Select(seed => new MemberTitleDto(
+                    seed.Id,
+                    seed.Name,
+                    seed.Description,
+                    seed.Category,
+                    seed.Tier,
+                    seed.Humor,
+                    earnedSet.Contains(seed.Name)))
                 .ToList();
+            var earnedCount = titles.Count(title => title.Earned);
 
             var profile = new MemberProfileDto(
                 user.Id,
@@ -113,9 +120,9 @@ namespace GourmetMaps.Controllers
                 user.AvatarUrl,
                 entries.Count,
                 storeCount,
-                earnedTitles.Count,
+                earnedCount,
                 seeds.Count,
-                earnedTitles,
+                titles,
                 entries);
 
             return Ok(profile);
@@ -138,7 +145,7 @@ namespace GourmetMaps.Controllers
 
         public record MemberDto(string Id, string DisplayName, string? AvatarUrl);
 
-        public record MemberTitleDto(string Name, string Category, int Tier);
+        public record MemberTitleDto(string Id, string Name, string Description, string Category, int Tier, bool Humor, bool Earned);
 
         public record MemberEntryDto(
             int Id,
