@@ -3,10 +3,18 @@ bin/
 obj/
 appsettings.Development.json
 Properties/launchSettings.json
-NoodleMaps.db
 
+# SQLite の実データ・付随ファイル・バックアップ (大文字小文字/場所を問わず除外)
+*.db
+*.db-shm
+*.db-wal
+*.db.bak-*
+
+# OS / エディタ由来
+.DS_Store
+**/.DS_Store
 .vscode/
 *.user
 /packages/
 .claude
-backend/noodlemaps.db.bak-20260712234516
+backend/Properties/launchSettings.json

@@ -1,0 +1,22 @@
+# 機密・ローカル専用ファイルは Docker イメージへ含めない。
+# 実行時のシークレットは docker-compose の env_file / environment で供給し、
+# SQLite の実データはボリュームでマウントする。
+
+# シークレット (APIキー・メールハッシュ鍵など)
+.env
+appsettings.Development.json
+
+# SQLite 実データ / バックアップ (compose では volume マウント、無ければ起動時に生成)
+*.db
+*.db-shm
+*.db-wal
+*.db.bak-*
+
+# ビルド成果物・ローカル設定
+bin/
+obj/
+Properties/launchSettings.json
+
+# OS / エディタ由来
+**/.DS_Store
+.vscode/

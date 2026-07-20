@@ -1,3 +1,11 @@
+# この compose は「ローカル開発用」構成です（Mailpit でメールを受信・確認する前提）。
+#
+# 本番公開時の注意:
+#   - ASPNETCORE_ENVIRONMENT は Production にする（詳細な例外ページを隠し、HSTS を有効化）。
+#   - Auth__EmailHashKey / Places__GoogleApiKey / Auth__OwnerEmail は必ず env で供給する
+#     （シークレットは .dockerignore によりイメージへ焼き込まれない）。
+#   - Smtp は実SMTPサーバー + TLS を設定する（Smtp__Secure=starttls など。SmtpEmailSender 参照）。
+#   - TLS を終端するリバースプロキシ（nginx 等）を前段に置き、HTTP は HTTPS へリダイレクトする。
 services:
   backend:
     build: ./backend
@@ -5,11 +13,14 @@ services:
     ports:
       - "5001:5000"
     volumes:
+      # SQLite 実データはボリュームでマウント（イメージには含めない）
       - ./backend/noodlemaps.db:/app/noodlemaps.db
     env_file:
+      # APIキー・メールハッシュ鍵などのシークレットは実行時にここから注入する
       - path: ./backend/.env
         required: false
     environment:
+      # ローカル開発用。公開時は Production にすること。
       - ASPNETCORE_ENVIRONMENT=Development
       - Smtp__Host=mailpit
     depends_on:

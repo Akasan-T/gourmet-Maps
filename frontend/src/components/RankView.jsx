@@ -151,9 +151,7 @@ function RankView({ stores, members }) {
           <div className="rank-list">
             {criteriaRows.map((row, index) => (
               <article key={row.name} className="rank-item">
-                <span className="rank-item__medal" aria-hidden="true">
-                  {medals[index] ?? `${index + 1}`}
-                </span>
+                <RankBadge rank={index + 1} />
                 <span className="rank-item__thumb" style={{ background: row.gradient }}>
                   {row.emoji}
                 </span>

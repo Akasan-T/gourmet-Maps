@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -60,6 +61,60 @@ builder.Services.AddScoped<TitleEvaluationService>();
 builder.Services.AddHttpClient("GooglePlaces", client =>
 {
     client.Timeout = TimeSpan.FromSeconds(10);
+});
+
+// 認証まわりの機微なエンドポイント (login / register / forgotPassword / resetPassword) に
+// 送信元IP単位のレート制限をかける。特にパスワードリセットの6桁コードは総当たり
+// (100万通り) が可能なため、IPあたりの試行回数を厳しく絞ってブルートフォースを防ぐ。
+// これらは MapIdentityApi ではなく手前の独自ミドルウェアが処理するため、エンドポイント
+// メタデータではなく GlobalLimiter でパスを見て適用する。
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+    {
+        var path = context.Request.Path.Value ?? string.Empty;
+
+        var limit = path switch
+        {
+            _ when path.Equals("/api/auth/resetPassword", StringComparison.OrdinalIgnoreCase)
+                => (Bucket: "auth-reset", Permit: 10, Window: TimeSpan.FromMinutes(5)),
+            _ when path.Equals("/api/auth/forgotPassword", StringComparison.OrdinalIgnoreCase)
+                => (Bucket: "auth-forgot", Permit: 5, Window: TimeSpan.FromMinutes(5)),
+            _ when path.Equals("/api/auth/login", StringComparison.OrdinalIgnoreCase)
+                => (Bucket: "auth-login", Permit: 10, Window: TimeSpan.FromMinutes(1)),
+            _ when path.Equals("/api/auth/register", StringComparison.OrdinalIgnoreCase)
+                => (Bucket: "auth-register", Permit: 5, Window: TimeSpan.FromMinutes(1)),
+            // Google Places 代理検索は課金対象。通常利用は妨げず、暴走呼び出しだけを抑える。
+            _ when path.Equals("/api/places/search", StringComparison.OrdinalIgnoreCase)
+                => (Bucket: "places", Permit: 60, Window: TimeSpan.FromMinutes(1)),
+            _ => (Bucket: string.Empty, Permit: 0, Window: TimeSpan.Zero),
+        };
+
+        // 対象外のパスは無制限
+        if (limit.Bucket.Length == 0)
+        {
+            return RateLimitPartition.GetNoLimiter("__unlimited__");
+        }
+
+        var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return RateLimitPartition.GetFixedWindowLimiter(
+            $"{limit.Bucket}:{clientIp}",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = limit.Permit,
+                Window = limit.Window,
+                QueueLimit = 0,
+            });
+    });
+
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        await context.HttpContext.Response.WriteAsJsonAsync(
+            new { detail = "リクエストが多すぎます。しばらく待ってから再度お試しください。" }, token);
+    };
 });
 
 // Add services to the container.
@@ -421,6 +476,10 @@ app.UseHttpsRedirection();
 // ★ ルーティングと認証の順番は重要です
 app.UseRouting();
 app.UseCors("FrontendClient");
+
+// 認証エンドポイントのブルートフォース/スパム対策。独自の認証ミドルウェアより手前に置く。
+app.UseRateLimiter();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

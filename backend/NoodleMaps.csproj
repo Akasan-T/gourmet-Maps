@@ -18,7 +18,9 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
 
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.0" />
+    <!-- EF Core Sqlite が推移的に参照する 2.1.11 には高深刻度の脆弱性 (GHSA-2m69-gcr7-jv3q) が
+         あるため、修正版 2.1.12 を明示参照して上書きする。 -->
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
   </ItemGroup>
 
   <ItemGroup>
