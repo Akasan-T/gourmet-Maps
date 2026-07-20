@@ -17,3 +17,4 @@ Properties/launchSettings.json
 *.user
 /packages/
 .claude
+backend/Properties/launchSettings.json
