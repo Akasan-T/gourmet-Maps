@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { AttributionControl, MapContainer, Marker, Popup, TileLayer, ZoomControl } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { createCurrentLocationIcon, createPinIcon } from './mapPinIcon'
@@ -34,6 +34,20 @@ function MapView({ stores, onDataChange }) {
     ].sort(),
     [stores],
   )
+
+  useEffect(() => {
+    if (!navigator.geolocation) return
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const nextPosition = [position.coords.latitude, position.coords.longitude]
+        setCurrentPosition(nextPosition)
+        mapRef.current?.setView(nextPosition, currentLocationZoom)
+      },
+      () => {},
+      { enableHighAccuracy: true, timeout: 10000 },
+    )
+  }, [])
 
   function handleLocate() {
     if (!navigator.geolocation) {
