@@ -14,7 +14,7 @@
 | データベース | SQLite（`backend/noodlemaps.db`） |
 | ORM | Entity Framework Core 9 |
 | 認証 | ASP.NET Core Identity（`ApplicationUser`） |
-| 地図データ | OpenStreetMap タイル / Overpass API（周辺店舗検索） |
+| 地図データ | OpenStreetMap タイル / Google Places API (New)（バックエンドが代理呼び出し）・Overpass API（フォールバックの周辺検索） |
 | 実行環境 | Docker Compose（frontend + backend） |
 
 - フロントエンドは開発サーバー `http://localhost:5173`（Vite）、API のベース URL は既定で `http://localhost:5001`（`frontend/.env` の `VITE_API_BASE_URL` で変更可能）。
@@ -24,8 +24,7 @@
 
 ## 現在の全体像
 
-現状はゲスト前提（シードした `guest` ユーザー）で動く MVP で、ログインなしでも記録・閲覧できる状態。
-アプリはボトムナビゲーションで 5 つのタブを切り替えるシングルページ構成（`frontend/src/App.jsx`）。
+**招待コード制のログインが必要**な構成（身内・少人数での利用を想定）。メールアドレスは平文では保存せず、サーバー秘密鍵による HMAC-SHA256 ハッシュに変換して扱う。最初の 1 人は設定の固定合言葉（`Auth:InviteCode`）で登録し「初代食べる王」称号を得る。以降はその保有者が発行するワンタイム招待コードで登録する。ログイン後はボトムナビゲーションで 5 つのタブを切り替えるシングルページ構成（`frontend/src/App.jsx`）。
 
 | タブ | 画面 | 主な内容 |
 | --- | --- | --- |
@@ -47,11 +46,32 @@
   - `VolumeRating` / `ReorderRating` は旧項目で後方互換のため残置
 - **GourmetEntryParticipant** — 記録と「一緒に行ったメンバー」の多対多中間テーブル。
 - **ApplicationUser** — Identity ユーザー。`DisplayName` とバッジを持つ。
-- **Badge / ApplicationUserBadge** — バッジ（実績）と、ユーザーへの付与を表す多対多。※モデル・DB のみ用意済みで、付与ロジックや UI は未実装。
+- **Badge / ApplicationUserBadge** — バッジ（実績・称号）と、ユーザーへの付与を表す多対多。称号は `titles.json` を基準に `TitleEvaluationService` が達成判定・自動付与し、プロフィールの称号図鑑（`TitlesModal`）で閲覧できる。「初代食べる王」称号の保有者だけがワンタイム招待コードを発行できる。
 
 ---
 
-## API エンドポイント（`backend/Controllers`）
+## API エンドポイント（`backend/Controllers`・`Program.cs`）
+
+> データ系エンドポイントはすべて `[Authorize]`（Bearer トークン）で保護。認証系は送信元 IP 単位のレート制限付き。
+
+### 認証 — `api/auth`
+- `POST /register` — 招待コード制の新規登録（`Program.cs` の独自ミドルウェアが横取り。ワンタイム招待 or ブートストラップ固定合言葉を検証し、メールはハッシュ化して保存）
+- `POST /login` — ログイン（メールをハッシュ化して照合し、Bearer アクセス/リフレッシュトークンを発行）
+- `POST /refresh` — トークン更新（`MapIdentityApi`）
+- `POST /forgotPassword` — リセットコード発行（メール列挙対策で常に 200。6 桁コードを 15 分だけメモリ保持しメール送信）
+- `POST /resetPassword` — 6 桁コードで新パスワードを設定
+
+### Account — `api/account`
+- `GET /me` — ログイン中ユーザーの情報
+- `PUT /me` — 表示名 / アイコン画像の更新
+
+### Invites — `api/invites` / Titles — `api/titles`
+- `POST /api/invites` — ワンタイム招待コードの発行（「初代食べる王」称号保有者のみ、非保有者は 403）
+- `GET /api/invites` — 発行済み招待コード一覧
+- `GET /api/titles` — 称号図鑑（達成状況付き）
+
+### Places — `api/places`
+- `GET /search?lat=&lng=&q=&radiusMeters=` — Google Places (New) をサーバー側で代理検索（API キーはバックエンドのみが保持）
 
 ### GourmetEntries — `api/GourmetEntries`
 - `GET /` — 地図表示用の記録一覧を取得
@@ -76,7 +96,7 @@ Git 履歴とコードから見た、最近の開発の中心テーマ:
 
 1. **店舗マスタ（Store）の導入と店舗管理** — 評価を都度お店に紐付ける構造へ移行。重複排除・類似名サジェスト・距離順取得を実装（最新コミット `feat: Add store management functionality...`）。
 2. **記録フォーム（QuickComposer）の強化**
-   - 現在地から Overpass API で半径約 600m の周辺飲食店を検索し、候補から選んで登録
+   - 現在地から周辺飲食店を検索（Google Places (New) をバックエンド経由で呼び出し、Overpass はフォールバック。半径約 600m）、候補から選んで登録
    - 味・コスパ・雰囲気・接客・また行きたいかの多軸スコア入力
    - シーンタグ / 価格帯 / 写真（Data URL）/ メモ / 一緒に行ったメンバー選択
    - 詳細入力の開閉トグル
@@ -156,15 +176,37 @@ docker compose up -d     # backend(5001) 等。起動済みならスキップ
 
 ## データベースについて
 
-- SQLite の `backend/noodlemaps.db` を使用し、起動時に `EnsureCreated()` でスキーマを用意。
-- スキーマ変更に追従するため、`Program.cs` 起動処理内で `AspNetUsers.DisplayName` カラムの後付けや `Stores` / `GourmetEntries` テーブルの `CREATE TABLE IF NOT EXISTS` を実行しており、EF Migrations に完全には依存していない状態。
-- 起動時にゲストユーザー（`guest`）をシードし、店舗登録者の紐付けに利用している。
+- SQLite の `backend/noodlemaps.db` を使用。**スキーマは EF Core Migrations で一元管理**する（`backend/Migrations/`）。起動時に `Program.cs` が `Database.Migrate()` を実行し、未適用のマイグレーションを適用する。
+- 旧方式（`EnsureCreated()` + 起動時の手書き DDL/ALTER）で作られた既存 DB は、初回起動時に自動でベースライン登録される（`InitialCreate` を「適用済み」として `__EFMigrationsHistory` に記録し、テーブルは作り直さない）。そのためデータを保持したまま Migrations 管理下へ移行できる。
+- 起動時にゲストユーザー（`guest-map`）・設定の `Members` に列挙したメンバー・「初代食べる王」称号をシードする。
+
+### マイグレーションの追加
+
+```bash
+cd backend
+dotnet dotnet-ef migrations add <MigrationName>   # モデル変更後にマイグレーションを生成
+dotnet dotnet-ef database update                  # ローカル DB へ適用（通常は起動時に自動適用される）
+```
+
+`dotnet-ef` はローカルツール（`backend/dotnet-tools.json`）として固定済み。設計時は `GourmetDbContextFactory` が使われるため、`Program.cs` のシード処理は実行されない。
+
+---
+
+## テスト
+
+| 種別 | 場所 | 実行 |
+| --- | --- | --- |
+| バックエンド統合テスト（xUnit + `WebApplicationFactory`） | `backend.Tests/` | `cd backend.Tests && dotnet test` |
+| フロントエンド E2E（Playwright） | `frontend/e2e/` | `cd frontend && npm run test:e2e` |
+
+- 統合テストは実際の `Program.cs` を起動し、テストごとに独立した一時 SQLite DB を使って認証フロー（招待コード登録・ログイン・認可）を検証する。
+- E2E は Vite 開発サーバーを自動起動し、API を `page.route` でモックしてバックエンド無しでも動く（初回のみ `npx playwright install chromium` が必要）。
+- 手動テストケースの網羅設計は別途スプレッドシートと GitHub Issue で管理している（E2E 54 ケース）。
 
 ---
 
 ## 今後の TODO / 未実装メモ
 
-- バッジ（実績）機能：モデル・DB は用意済みだが付与ロジック・UI が未実装
-- 認証まわり：現状はゲスト前提。ログイン／ユーザーごとの記録分離は今後
 - `VolumeRating` / `ReorderRating` など旧評価項目の整理
-- DB スキーマ管理を EF Migrations に一本化するか、現行の起動時 DDL 方式を継続するかの整理
+- テストカバレッジの拡充（記録投稿・地図フィルター・ランキングの E2E 自動化）
+- 本番公開時のシークレット供給（`backend/.env` / 環境変数）と実 SMTP 設定の整備（`backend/.env.example` 参照）

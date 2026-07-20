@@ -117,6 +117,10 @@ builder.Services.AddRateLimiter(options =>
     };
 });
 
+// 未処理例外を JSON (ProblemDetails) で返すための土台。ApiExceptionHandler が /api 配下を担当する。
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GourmetMaps.Services.ApiExceptionHandler>();
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
@@ -135,164 +139,35 @@ const string guestUserName = "guest-map";
 const string guestUserEmail = "guest-map@example.local";
 
 // Configure the HTTP request pipeline.
+// 例外ハンドラは最も外側に置く。/api は ApiExceptionHandler が JSON(ProblemDetails) を返し、
+// それ以外は /Error(Razor) にフォールバックする。開発時は登録せず開発者例外ページを使う。
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
 
+// 基本的なセキュリティレスポンスヘッダー。MIME スニッフィング抑止・クリックジャッキング防止など。
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+    headers["X-Content-Type-Options"] = "nosniff";
+    headers["X-Frame-Options"] = "DENY";
+    headers["Referrer-Policy"] = "no-referrer";
+    await next();
+});
+
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<GourmetDbContext>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    dbContext.Database.EnsureCreated();
-    using (var connection = dbContext.Database.GetDbConnection())
-    {
-        connection.Open();
-
-        var hasDisplayNameColumn = false;
-        using (var command = connection.CreateCommand())
-        {
-            command.CommandText = """
-                PRAGMA table_info("AspNetUsers");
-                """;
-
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                if (string.Equals(reader.GetString(1), "DisplayName", StringComparison.OrdinalIgnoreCase))
-                {
-                    hasDisplayNameColumn = true;
-                    break;
-                }
-            }
-        }
-
-        if (!hasDisplayNameColumn)
-        {
-            using var alterTableCommand = connection.CreateCommand();
-            alterTableCommand.CommandText = """
-                ALTER TABLE "AspNetUsers" ADD COLUMN "DisplayName" TEXT NULL;
-                """;
-            alterTableCommand.ExecuteNonQuery();
-        }
-
-        var hasAvatarUrlColumn = false;
-        using (var command = connection.CreateCommand())
-        {
-            command.CommandText = """
-                PRAGMA table_info("AspNetUsers");
-                """;
-
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                if (string.Equals(reader.GetString(1), "AvatarUrl", StringComparison.OrdinalIgnoreCase))
-                {
-                    hasAvatarUrlColumn = true;
-                    break;
-                }
-            }
-        }
-
-        if (!hasAvatarUrlColumn)
-        {
-            using var alterTableCommand = connection.CreateCommand();
-            alterTableCommand.CommandText = """
-                ALTER TABLE "AspNetUsers" ADD COLUMN "AvatarUrl" TEXT NULL;
-                """;
-            alterTableCommand.ExecuteNonQuery();
-        }
-    }
-
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE TABLE IF NOT EXISTS "Stores" (
-            "StoreID" INTEGER NOT NULL CONSTRAINT "PK_Stores" PRIMARY KEY AUTOINCREMENT,
-            "Name" TEXT NOT NULL,
-            "Genre" TEXT NOT NULL,
-            "Address" TEXT NULL,
-            "Latitude" REAL NULL,
-            "Longitude" REAL NULL,
-            "ExternalPlaceId" TEXT NULL,
-            "CreatedByUserId" TEXT NULL,
-            "CreatedAt" TEXT NOT NULL,
-            CONSTRAINT "FK_Stores_AspNetUsers_CreatedByUserId" FOREIGN KEY ("CreatedByUserId") REFERENCES "AspNetUsers" ("Id")
-        );
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE TABLE IF NOT EXISTS "GourmetEntries" (
-            "GourmetEntryID" INTEGER NOT NULL CONSTRAINT "PK_GourmetEntries" PRIMARY KEY AUTOINCREMENT,
-            "Name" TEXT NOT NULL,
-            "Genre" TEXT NOT NULL,
-            "VisitDate" TEXT NOT NULL,
-            "OverallRating" REAL NOT NULL,
-            "TasteRating" REAL NOT NULL,
-            "AppearanceRating" REAL NOT NULL,
-            "CostPerformanceRating" REAL NOT NULL,
-            "ServiceRating" REAL NOT NULL DEFAULT 0,
-            "VolumeRating" REAL NOT NULL,
-            "RepeatRating" REAL NOT NULL,
-            "ReorderRating" REAL NOT NULL,
-            "Memo" TEXT NOT NULL,
-            "SceneTag" TEXT NULL,
-            "PriceRange" TEXT NULL,
-            "PhotoUrl" TEXT NULL,
-            "Latitude" REAL NULL,
-            "Longitude" REAL NULL,
-            "StoreID" INTEGER NULL,
-            "UserID" TEXT NOT NULL,
-            CONSTRAINT "FK_GourmetEntries_AspNetUsers_UserID" FOREIGN KEY ("UserID") REFERENCES "AspNetUsers" ("Id"),
-            CONSTRAINT "FK_GourmetEntries_Stores_StoreID" FOREIGN KEY ("StoreID") REFERENCES "Stores" ("StoreID")
-        );
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE INDEX IF NOT EXISTS "IX_GourmetEntries_UserID" ON "GourmetEntries" ("UserID");
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE INDEX IF NOT EXISTS "IX_GourmetEntries_StoreID" ON "GourmetEntries" ("StoreID");
-        """);
-
-    // 既存DB向け: 追加カラムが無ければ ALTER で追加する (冪等)
-    using (var connection = dbContext.Database.GetDbConnection())
-    {
-        connection.Open();
-
-        var existingColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        using (var command = connection.CreateCommand())
-        {
-            command.CommandText = "PRAGMA table_info(\"GourmetEntries\");";
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                existingColumns.Add(reader.GetString(1));
-            }
-        }
-
-        var columnsToAdd = new (string Name, string Definition)[]
-        {
-            ("ServiceRating", "REAL NOT NULL DEFAULT 0"),
-            ("SceneTag", "TEXT NULL"),
-            ("PriceRange", "TEXT NULL"),
-            ("PhotoUrl", "TEXT NULL"),
-            ("StoreID", "INTEGER NULL"),
-        };
-
-        foreach (var column in columnsToAdd)
-        {
-            if (existingColumns.Contains(column.Name))
-            {
-                continue;
-            }
-
-            using var alterCommand = connection.CreateCommand();
-            alterCommand.CommandText = $"ALTER TABLE \"GourmetEntries\" ADD COLUMN \"{column.Name}\" {column.Definition};";
-            alterCommand.ExecuteNonQuery();
-        }
-    }
+    // --- スキーマは EF Migrations で一元管理する ---
+    // 旧方式 (EnsureCreated + 起動時の手書き DDL/ALTER) で作られた既存 DB には
+    // __EFMigrationsHistory が無い。その場合はテーブルを作り直さず、InitialCreate を
+    // 「適用済み」としてベースライン登録してから Migrate() する。新規 DB では Migrate() が
+    // 全マイグレーションを通常どおり適用してスキーマを構築する。
+    await BaselineLegacyDatabaseAsync(dbContext);
+    await dbContext.Database.MigrateAsync();
 
     // 既存エントリを店舗マスタへバックフィル (StoreID 未設定のものを店名で束ねる)
     var unlinkedEntries = await dbContext.GourmetEntries
@@ -330,59 +205,6 @@ using (var scope = app.Services.CreateScope())
 
         await dbContext.SaveChangesAsync();
     }
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE TABLE IF NOT EXISTS "Badges" (
-            "BadgeID" INTEGER NOT NULL CONSTRAINT "PK_Badges" PRIMARY KEY AUTOINCREMENT,
-            "Title" TEXT NOT NULL,
-            "Description" TEXT NOT NULL,
-            "IconUrl" TEXT NOT NULL
-        );
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE TABLE IF NOT EXISTS "ApplicationUserBadges" (
-            "ApplicationUserId" TEXT NOT NULL,
-            "BadgeID" INTEGER NOT NULL,
-            CONSTRAINT "PK_ApplicationUserBadges" PRIMARY KEY ("ApplicationUserId", "BadgeID"),
-            CONSTRAINT "FK_ApplicationUserBadges_AspNetUsers_ApplicationUserId" FOREIGN KEY ("ApplicationUserId") REFERENCES "AspNetUsers" ("Id") ON DELETE CASCADE,
-            CONSTRAINT "FK_ApplicationUserBadges_Badges_BadgeID" FOREIGN KEY ("BadgeID") REFERENCES "Badges" ("BadgeID") ON DELETE CASCADE
-        );
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE INDEX IF NOT EXISTS "IX_ApplicationUserBadges_BadgeID" ON "ApplicationUserBadges" ("BadgeID");
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE TABLE IF NOT EXISTS "GourmetEntryParticipants" (
-            "GourmetEntryID" INTEGER NOT NULL,
-            "ApplicationUserId" TEXT NOT NULL,
-            CONSTRAINT "PK_GourmetEntryParticipants" PRIMARY KEY ("GourmetEntryID", "ApplicationUserId"),
-            CONSTRAINT "FK_GourmetEntryParticipants_GourmetEntries_GourmetEntryID" FOREIGN KEY ("GourmetEntryID") REFERENCES "GourmetEntries" ("GourmetEntryID") ON DELETE CASCADE,
-            CONSTRAINT "FK_GourmetEntryParticipants_AspNetUsers_ApplicationUserId" FOREIGN KEY ("ApplicationUserId") REFERENCES "AspNetUsers" ("Id") ON DELETE CASCADE
-        );
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE INDEX IF NOT EXISTS "IX_GourmetEntryParticipants_ApplicationUserId" ON "GourmetEntryParticipants" ("ApplicationUserId");
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE TABLE IF NOT EXISTS "InviteCodes" (
-            "InviteCodeID" INTEGER NOT NULL CONSTRAINT "PK_InviteCodes" PRIMARY KEY AUTOINCREMENT,
-            "Code" TEXT NOT NULL,
-            "CreatedByUserId" TEXT NOT NULL,
-            "CreatedAt" TEXT NOT NULL,
-            "ExpiresAt" TEXT NOT NULL,
-            "UsedAt" TEXT NULL,
-            "UsedByUserId" TEXT NULL
-        );
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE UNIQUE INDEX IF NOT EXISTS "IX_InviteCodes_Code" ON "InviteCodes" ("Code");
-        """);
 
     var guestUser = await userManager.FindByNameAsync(guestUserName);
     if (guestUser is null)
@@ -842,6 +664,77 @@ app.MapRazorPages().WithStaticAssets(); // この行は冗長な可能性が高�
 
 app.Run();
 
+// 旧方式 (EnsureCreated + 起動時 DDL) で作られた既存 DB を EF Migrations 管理下へ移す。
+// アプリのテーブルが既に存在し、かつ __EFMigrationsHistory が無い場合に限り、
+// InitialCreate を「適用済み」として履歴へ記録する (テーブルは作り直さない)。
+// 新規 DB (テーブル無し) や移行済み DB では何もしないので、後続の Migrate() に委ねられる。
+static async Task BaselineLegacyDatabaseAsync(GourmetDbContext dbContext)
+{
+    static async Task<bool> TableExistsAsync(System.Data.Common.DbConnection conn, string tableName)
+    {
+        using var command = conn.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = $name;";
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "$name";
+        parameter.Value = tableName;
+        command.Parameters.Add(parameter);
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt64(result) > 0;
+    }
+
+    var connection = dbContext.Database.GetDbConnection();
+    await connection.OpenAsync();
+    try
+    {
+        var historyExists = await TableExistsAsync(connection, "__EFMigrationsHistory");
+        var legacySchemaExists = await TableExistsAsync(connection, "AspNetUsers");
+
+        // 新規 DB (テーブルなし) や、既に移行済みの DB は何もしない
+        if (historyExists || !legacySchemaExists)
+        {
+            return;
+        }
+
+        // 最初のマイグレーション (InitialCreate) を適用済みとして履歴に記録する
+        var initialMigrationId = dbContext.Database.GetMigrations().First();
+
+        using (var createHistory = connection.CreateCommand())
+        {
+            createHistory.CommandText = """
+                CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+                    "MigrationId" TEXT NOT NULL CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY,
+                    "ProductVersion" TEXT NOT NULL
+                );
+                """;
+            await createHistory.ExecuteNonQueryAsync();
+        }
+
+        using (var insert = connection.CreateCommand())
+        {
+            insert.CommandText = """
+                INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+                VALUES ($id, $version);
+                """;
+
+            var idParam = insert.CreateParameter();
+            idParam.ParameterName = "$id";
+            idParam.Value = initialMigrationId;
+            insert.Parameters.Add(idParam);
+
+            var versionParam = insert.CreateParameter();
+            versionParam.ParameterName = "$version";
+            versionParam.Value = "10.0.5";
+            insert.Parameters.Add(versionParam);
+
+            await insert.ExecuteNonQueryAsync();
+        }
+    }
+    finally
+    {
+        await connection.CloseAsync();
+    }
+}
+
 // .env ファイル (KEY=VALUE 形式、# はコメント) を読み、プロセスの環境変数として設定する。
 // 実際の環境変数がすでに設定されている場合はそちらを優先し、上書きしない。
 static void LoadDotEnvFile(string path)
@@ -884,3 +777,7 @@ record LoginRequestBody(string? Email, string? Password);
 record ForgotPasswordRequestBody(string? Email);
 
 record ResetPasswordRequestBody(string? Email, string? ResetCode, string? NewPassword);
+
+// 統合テスト (WebApplicationFactory<Program>) から参照できるように、
+// トップレベルステートメントが生成する Program クラスを公開する。
+public partial class Program { }
