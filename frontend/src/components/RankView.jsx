@@ -32,7 +32,7 @@ function StoreRankList({ items, emptyMessage, metaLabel }) {
   return (
     <div className="rank-list">
       {items.map((store, index) => {
-        const visual = storeVisual(store.name)
+        const visual = storeVisual(store.name, store.genre)
         return (
           <article key={store.name} className="rank-item">
             <RankBadge rank={index + 1} />

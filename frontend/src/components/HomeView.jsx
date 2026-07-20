@@ -70,7 +70,7 @@ function HomeView({ stores, ranking, onDataChange }) {
               </Marker>
             )}
             {locatedStores.map((store) => (
-              <Marker key={store.name} position={[store.lat, store.lng]} icon={createPinIcon(store.color)}>
+              <Marker key={store.name} position={[store.lat, store.lng]} icon={createPinIcon({ color: store.color, emoji: store.emoji })}>
                 <Popup>
                   <div className="map-popup">
                     <span className="map-popup__thumb" style={{ background: store.gradient }}>
@@ -120,7 +120,7 @@ function HomeView({ stores, ranking, onDataChange }) {
 
         <div className="rank-list">
           {ranking.map((entry, index) => {
-            const visual = storeVisual(entry.name)
+            const visual = storeVisual(entry.name, entry.genre)
             const names = participantNames(entry)
             return (
               <article key={entry.id} className="rank-item">

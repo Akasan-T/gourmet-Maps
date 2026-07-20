@@ -1,23 +1,48 @@
 const HOUR = 60 * 60 * 1000
 
-const palette = [
-  { color: '#eb6b4a', emoji: '🍜', gradient: 'linear-gradient(135deg, #f6a35c, #eb6b4a)' },
-  { color: '#6f9c5c', emoji: '🥪', gradient: 'linear-gradient(135deg, #f0cf7a, #d9a441)' },
-  { color: '#4f7fb0', emoji: '🍢', gradient: 'linear-gradient(135deg, #9fc98a, #6f9c5c)' },
-  { color: '#a15fc4', emoji: '🍛', gradient: 'linear-gradient(135deg, #c98af0, #a15fc4)' },
-  { color: '#c48b3f', emoji: '🍱', gradient: 'linear-gradient(135deg, #f0d29a, #c48b3f)' },
-]
-
-function hashString(value) {
-  let hash = 0
-  for (let index = 0; index < value.length; index += 1) {
-    hash = (hash * 31 + value.charCodeAt(index)) | 0
-  }
-  return Math.abs(hash)
+// ジャンルごとの見た目 (絵文字・ピン色・サムネのグラデーション)。
+// 以前は店名のハッシュで絵文字を配っていたため、実際のジャンルと絵文字がちぐはぐだった
+// (ラーメン店に🍛が付く等)。ここではジャンルに沿った絵文字を割り当てる。
+const genreVisuals = {
+  ラーメン: { color: '#e8613c', emoji: '🍜', gradient: 'linear-gradient(135deg, #f6a35c, #e8613c)' },
+  焼肉: { color: '#c0453b', emoji: '🍖', gradient: 'linear-gradient(135deg, #e88a5a, #c0453b)' },
+  カフェ: { color: '#9c6b3f', emoji: '☕', gradient: 'linear-gradient(135deg, #d4a373, #9c6b3f)' },
+  居酒屋: { color: '#d1483f', emoji: '🏮', gradient: 'linear-gradient(135deg, #f0a05a, #d1483f)' },
+  定食: { color: '#c98a3c', emoji: '🍱', gradient: 'linear-gradient(135deg, #f0d29a, #c98a3c)' },
+  寿司: { color: '#2f8fb0', emoji: '🍣', gradient: 'linear-gradient(135deg, #7fc1d6, #2f8fb0)' },
+  イタリアン: { color: '#5a9c5c', emoji: '🍝', gradient: 'linear-gradient(135deg, #9fce7f, #5a9c5c)' },
+  カレー: { color: '#c77f2e', emoji: '🍛', gradient: 'linear-gradient(135deg, #e8b25a, #c77f2e)' },
 }
 
-export function storeVisual(name) {
-  return palette[hashString(name) % palette.length]
+// ジャンル未設定・その他・未知ジャンル向けのニュートラルな見た目
+const fallbackVisual = { color: '#6b7688', emoji: '🍽️', gradient: 'linear-gradient(135deg, #aab2c0, #6b7688)' }
+
+// 外部由来 (OSM cuisine / 英語表記) や表記ゆれを正規のジャンル名に寄せる
+const genreAliases = {
+  ramen: 'ラーメン', 中華そば: 'ラーメン', つけ麺: 'ラーメン', 中華: 'ラーメン',
+  yakiniku: '焼肉', bbq: '焼肉', ステーキ: '焼肉', steak: '焼肉', 焼き肉: '焼肉',
+  cafe: 'カフェ', coffee: 'カフェ', coffee_shop: 'カフェ', 喫茶: 'カフェ', 喫茶店: 'カフェ',
+  bar: '居酒屋', pub: '居酒屋', izakaya: '居酒屋', 酒場: '居酒屋',
+  sushi: '寿司', 鮨: '寿司', 回転寿司: '寿司',
+  italian: 'イタリアン', pizza: 'イタリアン', pizzeria: 'イタリアン', パスタ: 'イタリアン', ピザ: 'イタリアン',
+  curry: 'カレー',
+  teishoku: '定食', 食堂: '定食',
+}
+
+function normalizeGenre(genre) {
+  const raw = (genre ?? '').trim()
+  if (raw.length === 0) return null
+  if (genreVisuals[raw]) return raw
+  const lower = raw.toLowerCase()
+  if (genreAliases[lower]) return genreAliases[lower]
+  if (genreAliases[raw]) return genreAliases[raw]
+  return null
+}
+
+// 店の見た目を「ジャンル」から決める。ジャンルが無い/未知なら name を使わずニュートラル表示。
+export function storeVisual(name, genre) {
+  const canonical = normalizeGenre(genre)
+  return canonical ? genreVisuals[canonical] : fallbackVisual
 }
 
 export function withinHours(entry, hours) {
@@ -45,7 +70,7 @@ export function groupEntriesByStore(entries) {
   entries.forEach((entry) => {
     const key = entry.name
     if (!map.has(key)) {
-      map.set(key, { name: entry.name, ...storeVisual(entry.name), visits: [] })
+      map.set(key, { name: entry.name, ...storeVisual(entry.name, entry.genre), visits: [] })
     }
     map.get(key).visits.push(entry)
   })

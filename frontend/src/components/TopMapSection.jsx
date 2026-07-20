@@ -1,22 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
-import markerIcon from 'leaflet/dist/images/marker-icon.png'
-import markerShadow from 'leaflet/dist/images/marker-shadow.png'
+import { createPinIcon } from './mapPinIcon'
+import { storeVisual } from '../data/visits'
 
 const defaultApiBaseUrl = 'http://localhost:5001'
 const defaultCenter = [35.6812, 139.7671]
-
-const entryMarkerIcon = L.icon({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
-  shadowUrl: markerShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-})
 
 const userLocationIcon = L.divIcon({
   className: 'user-location-marker',
@@ -176,7 +165,11 @@ function TopMapSection({ refreshKey = 0 }) {
             />
             {entries.map((entry) => (
               typeof entry.latitude === 'number' && typeof entry.longitude === 'number' ? (
-                <Marker key={entry.id} position={[entry.latitude, entry.longitude]} icon={entryMarkerIcon}>
+                <Marker
+                  key={entry.id}
+                  position={[entry.latitude, entry.longitude]}
+                  icon={createPinIcon(storeVisual(entry.name, entry.genre))}
+                >
                   <Popup>
                     <strong>{entry.name}</strong>
                     <br />

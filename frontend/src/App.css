@@ -878,6 +878,31 @@
   border: none;
 }
 
+.map-pin-icon__wrap {
+  position: relative;
+  width: 34px;
+  height: 44px;
+}
+
+.map-pin-icon__svg {
+  display: block;
+}
+
+/* ピンの頭の白い円 (中心 x=17, y=15) にジャンル絵文字を重ねる */
+.map-pin-icon__emoji {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  pointer-events: none;
+}
+
 .map-spot {
   cursor: pointer;
 }

@@ -123,7 +123,7 @@ function MapView({ stores, onDataChange }) {
             </Marker>
           )}
           {locatedStores.map((store) => (
-            <Marker key={store.name} position={[store.lat, store.lng]} icon={createPinIcon(store.color)}>
+            <Marker key={store.name} position={[store.lat, store.lng]} icon={createPinIcon({ color: store.color, emoji: store.emoji })}>
               <Popup>
                 <div className="map-popup">
                   <span className="map-popup__thumb" style={{ background: store.gradient }}>
