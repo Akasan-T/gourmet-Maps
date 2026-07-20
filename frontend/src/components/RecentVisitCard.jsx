@@ -1,6 +1,6 @@
 import { positiveTags } from '../data/visits'
 
-function RecentVisitCard({ visit }) {
+function RecentVisitCard({ visit, onAppend }) {
   return (
     <article className="visit-card">
       <div className="visit-card__header">
@@ -26,7 +26,9 @@ function RecentVisitCard({ visit }) {
         <span className={`visit-card__tag${positiveTags.has(visit.tag) ? ' visit-card__tag--positive' : ''}`}>
           {visit.tag}
         </span>
-        <button type="button" className="text-button">追記する</button>
+        <button type="button" className="text-button" onClick={() => onAppend?.(visit.restaurant)}>
+          追記する
+        </button>
       </div>
     </article>
   )
