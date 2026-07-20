@@ -117,6 +117,43 @@ VITE_API_BASE_URL=http://localhost:5001
 
 ---
 
+## スマホで動作確認する（HTTPS トンネル）
+
+実機のスマホでフローを試す / 数人に仮運用で触ってもらう場合の手順。**追加のサーバーは不要**で、cloudflared のクイックトンネルが公開 URL を貸してくれる（Mac が起動している間だけ有効）。
+
+> **なぜトンネルが必要か**：「現在地取得（geolocation）」はモバイルブラウザでは HTTPS（secure context）でないと動かないため、LAN の `http://192.168.x.x` では確認できない。トンネルで HTTPS 化し、あわせて Vite の `/api` プロキシでフロントと backend を**同一オリジンに束ねる**ことで、CORS もログイン（`Authorization: Bearer`）もそのまま通る。
+
+### 構成
+```
+スマホ ─HTTPS→ cloudflared ─→ Vite(5173) ─/api プロキシ→ backend(5001)
+```
+起動順は **docker → Vite → cloudflared**。この 3 つが動いている間だけ URL が生きる。
+
+### 事前準備（初回のみ）
+```bash
+brew install cloudflared qrencode
+```
+- `frontend/vite.config.js` … `server.host` / `allowedHosts` / `/api` プロキシを設定済み
+- `frontend/.env` … トンネル時は `VITE_API_BASE_URL=`（空＝相対パス）にする。デスクトップから backend を直接叩く運用に戻すときはコメントの値に戻す
+
+### 起動
+```bash
+docker compose up -d     # backend(5001) 等。起動済みならスキップ
+./dev-tunnel.sh          # Vite + トンネルを起動し、公開 URL と QR コードを表示
+```
+表示された `https://xxxx.trycloudflare.com` をスマホで開く（QR を読むのが早い）。
+
+### 停止
+- Vite・トンネル … `dev-tunnel.sh` のターミナルで **Ctrl-C**
+- backend 等も止める … `docker compose down`
+
+### 注意点
+- **URL は起動のたびに変わる**。共有中に張り替わるとリンク切れになる（固定したい場合は Cloudflare アカウント＋named tunnel が必要）。
+- `dotnet run` 単体で backend を動かす場合はポートが `5298` になる（`launchSettings.json`）。その場合は `vite.config.js` の proxy `target` を合わせる。
+- **他人に開放する場合のメール**：新規登録の確認メール・パスワードリセットは開発では Mailpit（`localhost:8025`）止まりで、リモートの相手には届かない。自分だけの確認ならオーナーアカウントでログインするだけでよい。外部に配るなら実 SMTP（Resend 等の無料枠）設定か、手動でのアカウント発行が必要。
+
+---
+
 ## データベースについて
 
 - SQLite の `backend/noodlemaps.db` を使用し、起動時に `EnsureCreated()` でスキーマを用意。

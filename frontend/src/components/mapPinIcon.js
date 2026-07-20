@@ -1,13 +1,26 @@
 import L from 'leaflet'
 
-// ジャンル色のしずく型ピンの頭に、白い円＋ジャンル絵文字を載せる。
-// 引数は { color, emoji } を推奨。後方互換のため色文字列だけの呼び出しも受け付ける。
+// 味の評価（1〜5）に応じた金・銀・銅メダル。3未満はメダルなし。
+const tasteMedals = {
+  5: '🥇',
+  4: '🥈',
+  3: '🥉',
+}
+
+function medalForTasteRating(tasteRating) {
+  const rounded = Math.round(tasteRating ?? 0)
+  return tasteMedals[rounded] ?? ''
+}
+
+// ジャンル色のしずく型ピンの頭に、白い円＋味評価のメダルを載せる。
+// 引数は { color, tasteRating } を推奨。後方互換のため色文字列だけの呼び出しも受け付ける。
 export function createPinIcon(options) {
-  const { color = '#6b7688', emoji = '' } =
+  const { color = '#6b7688', tasteRating } =
     typeof options === 'string' ? { color: options } : (options ?? {})
 
-  const emojiMarkup = emoji
-    ? `<span class="map-pin-icon__emoji">${emoji}</span>`
+  const medal = medalForTasteRating(tasteRating)
+  const medalMarkup = medal
+    ? `<span class="map-pin-icon__emoji">${medal}</span>`
     : ''
 
   const html = `
@@ -17,7 +30,7 @@ export function createPinIcon(options) {
           d="M18 2C10.27 2 4 8.06 4 15.5C4 25 18 43 18 43S32 25 32 15.5C32 8.06 25.73 2 18 2Z"/>
         <circle cx="18" cy="15.5" r="9" fill="#fffaf5"/>
       </svg>
-      ${emojiMarkup}
+      ${medalMarkup}
     </div>
   `
 
