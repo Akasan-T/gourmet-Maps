@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { createCurrentLocationIcon, createPinIcon } from './mapPinIcon'
@@ -13,7 +13,10 @@ function HomeView({ stores, ranking, onDataChange }) {
   const [selectedStore, setSelectedStore] = useState(null)
   const [currentPosition, setCurrentPosition] = useState(null)
   const [locateState, setLocateState] = useState('idle')
+  const [locationError, setLocationError] = useState('')
   const mapRef = useRef(null)
+  const mapSectionRef = useRef(null)
+  const markerRefs = useRef(new Map())
 
   function handleLocate() {
     if (!navigator.geolocation) {
@@ -37,6 +40,23 @@ function HomeView({ stores, ranking, onDataChange }) {
 
   const locatedStores = stores.filter((store) => typeof store.lat === 'number' && typeof store.lng === 'number')
 
+  const locatedStoreByName = useMemo(
+    () => new Map(locatedStores.map((store) => [store.name, store])),
+    [locatedStores],
+  )
+
+  function showStoreLocation(name) {
+    const store = locatedStoreByName.get(name)
+    if (!store) {
+      setLocationError('この記録には位置情報がありません。')
+      return
+    }
+    setLocationError('')
+    mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    mapRef.current?.flyTo([store.lat, store.lng], currentLocationZoom)
+    markerRefs.current.get(store.name)?.openPopup()
+  }
+
   const center = locatedStores.length
     ? [
         locatedStores.reduce((sum, store) => sum + store.lat, 0) / locatedStores.length,
@@ -46,7 +66,7 @@ function HomeView({ stores, ranking, onDataChange }) {
 
   return (
     <>
-      <section className="map-view" aria-labelledby="home-map-title">
+      <section className="map-view" aria-labelledby="home-map-title" ref={mapSectionRef}>
         <div className="map-view__toolbar">
           <p className="eyebrow">Last 24 hours</p>
           <h2 id="home-map-title">直近24時間に行ったお店</h2>
@@ -70,7 +90,15 @@ function HomeView({ stores, ranking, onDataChange }) {
               </Marker>
             )}
             {locatedStores.map((store) => (
-              <Marker key={store.name} position={[store.lat, store.lng]} icon={createPinIcon({ color: store.color, emoji: store.emoji })}>
+              <Marker
+                key={store.name}
+                ref={(instance) => {
+                  if (instance) markerRefs.current.set(store.name, instance)
+                  else markerRefs.current.delete(store.name)
+                }}
+                position={[store.lat, store.lng]}
+                icon={createPinIcon({ color: store.color, emoji: store.emoji })}
+              >
                 <Popup>
                   <div className="map-popup">
                     <span className="map-popup__thumb" style={{ background: store.gradient }}>
@@ -123,7 +151,16 @@ function HomeView({ stores, ranking, onDataChange }) {
             const visual = storeVisual(entry.name, entry.genre)
             const names = participantNames(entry)
             return (
-              <article key={entry.id} className="rank-item">
+              <article
+                key={entry.id}
+                className="rank-item"
+                role="button"
+                tabIndex={0}
+                onClick={() => showStoreLocation(entry.name)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') showStoreLocation(entry.name)
+                }}
+              >
                 <RankBadge rank={index + 1} />
                 <span className="rank-item__thumb" style={{ background: visual.gradient }}>
                   {visual.emoji}
@@ -137,6 +174,7 @@ function HomeView({ stores, ranking, onDataChange }) {
             )
           })}
           {ranking.length === 0 && <p className="map-view__empty">まだ評価がありません。</p>}
+          {locationError && <p className="map-view__empty">{locationError}</p>}
         </div>
       </section>
 

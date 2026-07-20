@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { fetchCompanionRanking, fetchGenreRanking, fetchOverallRanking } from '../api/client'
+import { fetchGenreRanking, fetchOverallRanking } from '../api/client'
 import { RankBadge } from './icons'
 import { storeVisual } from '../data/visits'
+import StoreDetailModal from './StoreDetailModal'
 
 const criteria = [
   { key: 'taste', label: '味' },
@@ -15,7 +16,6 @@ const criteria = [
 const modes = [
   { key: 'overall', label: '総合' },
   { key: 'genre', label: 'ジャンル別' },
-  { key: 'companions', label: '一緒に行った' },
   { key: 'criteria', label: '個別基準' },
 ]
 
@@ -28,13 +28,22 @@ function formatScore(row, criterionKey) {
   return row[criterionKey].toFixed(1)
 }
 
-function StoreRankList({ items, emptyMessage, metaLabel }) {
+function StoreRankList({ items, emptyMessage, metaLabel, onSelect }) {
   return (
     <div className="rank-list">
       {items.map((store, index) => {
         const visual = storeVisual(store.name, store.genre)
         return (
-          <article key={store.name} className="rank-item">
+          <article
+            key={store.name}
+            className="rank-item"
+            role="button"
+            tabIndex={0}
+            onClick={() => onSelect(store.name)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') onSelect(store.name)
+            }}
+          >
             <RankBadge rank={index + 1} />
             <span className="rank-item__thumb" style={{ background: visual.gradient }}>
               {visual.emoji}
@@ -57,15 +66,19 @@ function StoreRankList({ items, emptyMessage, metaLabel }) {
   )
 }
 
-function RankView({ stores, members }) {
+function RankView({ stores, onDataChange }) {
   const [mode, setMode] = useState('overall')
   const [criterion, setCriterion] = useState('taste')
   const [selectedGenre, setSelectedGenre] = useState(null)
-  const [selectedMemberId, setSelectedMemberId] = useState(null)
+  const [selectedStore, setSelectedStore] = useState(null)
+
+  function selectStoreByName(name) {
+    const store = stores.find((item) => item.name === name)
+    if (store) setSelectedStore(store)
+  }
 
   const [overallRanking, setOverallRanking] = useState([])
   const [genreGroups, setGenreGroups] = useState([])
-  const [companionRanking, setCompanionRanking] = useState([])
 
   useEffect(() => {
     if (mode !== 'overall') return
@@ -80,15 +93,6 @@ function RankView({ stores, members }) {
       .then(setGenreGroups)
       .catch(() => setGenreGroups([]))
   }, [mode])
-
-  const effectiveMemberId = selectedMemberId ?? members[0]?.id ?? null
-
-  useEffect(() => {
-    if (mode !== 'companions' || !effectiveMemberId) return
-    fetchCompanionRanking(effectiveMemberId)
-      .then(setCompanionRanking)
-      .catch(() => setCompanionRanking([]))
-  }, [mode, effectiveMemberId])
 
   const criteriaRows = useMemo(() => {
     return stores
@@ -150,7 +154,16 @@ function RankView({ stores, members }) {
 
           <div className="rank-list">
             {criteriaRows.map((row, index) => (
-              <article key={row.name} className="rank-item">
+              <article
+                key={row.name}
+                className="rank-item"
+                role="button"
+                tabIndex={0}
+                onClick={() => selectStoreByName(row.name)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') selectStoreByName(row.name)
+                }}
+              >
                 <RankBadge rank={index + 1} />
                 <span className="rank-item__thumb" style={{ background: row.gradient }}>
                   {row.emoji}
@@ -172,6 +185,7 @@ function RankView({ stores, members }) {
           items={overallRanking}
           emptyMessage="まだ記録がありません。"
           metaLabel={(store) => `${store.genre} ・ ${store.visitCount}件`}
+          onSelect={selectStoreByName}
         />
       )}
 
@@ -193,34 +207,17 @@ function RankView({ stores, members }) {
             items={activeGenreGroup?.stores ?? []}
             emptyMessage="まだ記録がありません。"
             metaLabel={(store) => `${store.visitCount}件`}
+            onSelect={selectStoreByName}
           />
         </>
       )}
 
-      {mode === 'companions' && (
-        <>
-          <div className="chip-row" role="list">
-            {members.map((member) => (
-              <button
-                key={member.id}
-                type="button"
-                className={`chip${effectiveMemberId === member.id ? ' chip--active' : ''}`}
-                onClick={() => setSelectedMemberId(member.id)}
-              >
-                {member.displayName}
-              </button>
-            ))}
-          </div>
-          {members.length === 0 ? (
-            <p className="map-view__empty">メンバーがいません。</p>
-          ) : (
-            <StoreRankList
-              items={companionRanking}
-              emptyMessage="まだ一緒に行ったお店がありません。"
-              metaLabel={(store) => `一緒に${store.visitCount}回`}
-            />
-          )}
-        </>
+      {selectedStore && (
+        <StoreDetailModal
+          store={selectedStore}
+          onClose={() => setSelectedStore(null)}
+          onDeleted={onDataChange}
+        />
       )}
     </section>
   )

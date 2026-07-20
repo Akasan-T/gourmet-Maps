@@ -88,7 +88,7 @@ function AuthView() {
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell app-shell--auth">
       <div className="app-shell__backdrop" aria-hidden="true"></div>
       <main className="mobile-frame auth-screen">
         <div className="auth-brand">

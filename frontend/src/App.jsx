@@ -166,7 +166,7 @@ function App() {
 
         {activeTab === 'map' && <MapView stores={allStores} members={members} onDataChange={reloadData} />}
 
-        {activeTab === 'rank' && <RankView stores={allStores} members={members} />}
+        {activeTab === 'rank' && <RankView stores={allStores} onDataChange={reloadData} />}
 
         {activeTab === 'profile' && (
           <ProfileView
