@@ -26,7 +26,8 @@ builder.Services.AddCors(options =>
                 "http://localhost:5173",
                 "http://127.0.0.1:5173")
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -117,6 +118,10 @@ builder.Services.AddRateLimiter(options =>
     };
 });
 
+// 未処理例外を JSON (ProblemDetails) で返すための土台。ApiExceptionHandler が /api 配下を担当する。
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GourmetMaps.Services.ApiExceptionHandler>();
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
@@ -135,164 +140,37 @@ const string guestUserName = "guest-map";
 const string guestUserEmail = "guest-map@example.local";
 
 // Configure the HTTP request pipeline.
+// 例外ハンドラは最も外側に置く。/api は ApiExceptionHandler が JSON(ProblemDetails) を返し、
+// それ以外は /Error(Razor) にフォールバックする。開発時は登録せず開発者例外ページを使う。
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
 
+// 基本的なセキュリティレスポンスヘッダー。MIME スニッフィング抑止・クリックジャッキング防止など。
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+    headers["X-Content-Type-Options"] = "nosniff";
+    headers["X-Frame-Options"] = "DENY";
+    headers["Referrer-Policy"] = "no-referrer";
+    headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.tile.openstreetmap.org; connect-src 'self' https://overpass-api.de; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+    headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(self)";
+    await next();
+});
+
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<GourmetDbContext>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-    dbContext.Database.EnsureCreated();
-    using (var connection = dbContext.Database.GetDbConnection())
-    {
-        connection.Open();
-
-        var hasDisplayNameColumn = false;
-        using (var command = connection.CreateCommand())
-        {
-            command.CommandText = """
-                PRAGMA table_info("AspNetUsers");
-                """;
-
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                if (string.Equals(reader.GetString(1), "DisplayName", StringComparison.OrdinalIgnoreCase))
-                {
-                    hasDisplayNameColumn = true;
-                    break;
-                }
-            }
-        }
-
-        if (!hasDisplayNameColumn)
-        {
-            using var alterTableCommand = connection.CreateCommand();
-            alterTableCommand.CommandText = """
-                ALTER TABLE "AspNetUsers" ADD COLUMN "DisplayName" TEXT NULL;
-                """;
-            alterTableCommand.ExecuteNonQuery();
-        }
-
-        var hasAvatarUrlColumn = false;
-        using (var command = connection.CreateCommand())
-        {
-            command.CommandText = """
-                PRAGMA table_info("AspNetUsers");
-                """;
-
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                if (string.Equals(reader.GetString(1), "AvatarUrl", StringComparison.OrdinalIgnoreCase))
-                {
-                    hasAvatarUrlColumn = true;
-                    break;
-                }
-            }
-        }
-
-        if (!hasAvatarUrlColumn)
-        {
-            using var alterTableCommand = connection.CreateCommand();
-            alterTableCommand.CommandText = """
-                ALTER TABLE "AspNetUsers" ADD COLUMN "AvatarUrl" TEXT NULL;
-                """;
-            alterTableCommand.ExecuteNonQuery();
-        }
-    }
-
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE TABLE IF NOT EXISTS "Stores" (
-            "StoreID" INTEGER NOT NULL CONSTRAINT "PK_Stores" PRIMARY KEY AUTOINCREMENT,
-            "Name" TEXT NOT NULL,
-            "Genre" TEXT NOT NULL,
-            "Address" TEXT NULL,
-            "Latitude" REAL NULL,
-            "Longitude" REAL NULL,
-            "ExternalPlaceId" TEXT NULL,
-            "CreatedByUserId" TEXT NULL,
-            "CreatedAt" TEXT NOT NULL,
-            CONSTRAINT "FK_Stores_AspNetUsers_CreatedByUserId" FOREIGN KEY ("CreatedByUserId") REFERENCES "AspNetUsers" ("Id")
-        );
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE TABLE IF NOT EXISTS "GourmetEntries" (
-            "GourmetEntryID" INTEGER NOT NULL CONSTRAINT "PK_GourmetEntries" PRIMARY KEY AUTOINCREMENT,
-            "Name" TEXT NOT NULL,
-            "Genre" TEXT NOT NULL,
-            "VisitDate" TEXT NOT NULL,
-            "OverallRating" REAL NOT NULL,
-            "TasteRating" REAL NOT NULL,
-            "AppearanceRating" REAL NOT NULL,
-            "CostPerformanceRating" REAL NOT NULL,
-            "ServiceRating" REAL NOT NULL DEFAULT 0,
-            "VolumeRating" REAL NOT NULL,
-            "RepeatRating" REAL NOT NULL,
-            "ReorderRating" REAL NOT NULL,
-            "Memo" TEXT NOT NULL,
-            "SceneTag" TEXT NULL,
-            "PriceRange" TEXT NULL,
-            "PhotoUrl" TEXT NULL,
-            "Latitude" REAL NULL,
-            "Longitude" REAL NULL,
-            "StoreID" INTEGER NULL,
-            "UserID" TEXT NOT NULL,
-            CONSTRAINT "FK_GourmetEntries_AspNetUsers_UserID" FOREIGN KEY ("UserID") REFERENCES "AspNetUsers" ("Id"),
-            CONSTRAINT "FK_GourmetEntries_Stores_StoreID" FOREIGN KEY ("StoreID") REFERENCES "Stores" ("StoreID")
-        );
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE INDEX IF NOT EXISTS "IX_GourmetEntries_UserID" ON "GourmetEntries" ("UserID");
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE INDEX IF NOT EXISTS "IX_GourmetEntries_StoreID" ON "GourmetEntries" ("StoreID");
-        """);
-
-    // 既存DB向け: 追加カラムが無ければ ALTER で追加する (冪等)
-    using (var connection = dbContext.Database.GetDbConnection())
-    {
-        connection.Open();
-
-        var existingColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        using (var command = connection.CreateCommand())
-        {
-            command.CommandText = "PRAGMA table_info(\"GourmetEntries\");";
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                existingColumns.Add(reader.GetString(1));
-            }
-        }
-
-        var columnsToAdd = new (string Name, string Definition)[]
-        {
-            ("ServiceRating", "REAL NOT NULL DEFAULT 0"),
-            ("SceneTag", "TEXT NULL"),
-            ("PriceRange", "TEXT NULL"),
-            ("PhotoUrl", "TEXT NULL"),
-            ("StoreID", "INTEGER NULL"),
-        };
-
-        foreach (var column in columnsToAdd)
-        {
-            if (existingColumns.Contains(column.Name))
-            {
-                continue;
-            }
-
-            using var alterCommand = connection.CreateCommand();
-            alterCommand.CommandText = $"ALTER TABLE \"GourmetEntries\" ADD COLUMN \"{column.Name}\" {column.Definition};";
-            alterCommand.ExecuteNonQuery();
-        }
-    }
+    // --- スキーマは EF Migrations で一元管理する ---
+    // 旧方式 (EnsureCreated + 起動時の手書き DDL/ALTER) で作られた既存 DB には
+    // __EFMigrationsHistory が無い。その場合はテーブルを作り直さず、InitialCreate を
+    // 「適用済み」としてベースライン登録してから Migrate() する。新規 DB では Migrate() が
+    // 全マイグレーションを通常どおり適用してスキーマを構築する。
+    await BaselineLegacyDatabaseAsync(dbContext);
+    await dbContext.Database.MigrateAsync();
 
     // 既存エントリを店舗マスタへバックフィル (StoreID 未設定のものを店名で束ねる)
     var unlinkedEntries = await dbContext.GourmetEntries
@@ -330,59 +208,6 @@ using (var scope = app.Services.CreateScope())
 
         await dbContext.SaveChangesAsync();
     }
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE TABLE IF NOT EXISTS "Badges" (
-            "BadgeID" INTEGER NOT NULL CONSTRAINT "PK_Badges" PRIMARY KEY AUTOINCREMENT,
-            "Title" TEXT NOT NULL,
-            "Description" TEXT NOT NULL,
-            "IconUrl" TEXT NOT NULL
-        );
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE TABLE IF NOT EXISTS "ApplicationUserBadges" (
-            "ApplicationUserId" TEXT NOT NULL,
-            "BadgeID" INTEGER NOT NULL,
-            CONSTRAINT "PK_ApplicationUserBadges" PRIMARY KEY ("ApplicationUserId", "BadgeID"),
-            CONSTRAINT "FK_ApplicationUserBadges_AspNetUsers_ApplicationUserId" FOREIGN KEY ("ApplicationUserId") REFERENCES "AspNetUsers" ("Id") ON DELETE CASCADE,
-            CONSTRAINT "FK_ApplicationUserBadges_Badges_BadgeID" FOREIGN KEY ("BadgeID") REFERENCES "Badges" ("BadgeID") ON DELETE CASCADE
-        );
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE INDEX IF NOT EXISTS "IX_ApplicationUserBadges_BadgeID" ON "ApplicationUserBadges" ("BadgeID");
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE TABLE IF NOT EXISTS "GourmetEntryParticipants" (
-            "GourmetEntryID" INTEGER NOT NULL,
-            "ApplicationUserId" TEXT NOT NULL,
-            CONSTRAINT "PK_GourmetEntryParticipants" PRIMARY KEY ("GourmetEntryID", "ApplicationUserId"),
-            CONSTRAINT "FK_GourmetEntryParticipants_GourmetEntries_GourmetEntryID" FOREIGN KEY ("GourmetEntryID") REFERENCES "GourmetEntries" ("GourmetEntryID") ON DELETE CASCADE,
-            CONSTRAINT "FK_GourmetEntryParticipants_AspNetUsers_ApplicationUserId" FOREIGN KEY ("ApplicationUserId") REFERENCES "AspNetUsers" ("Id") ON DELETE CASCADE
-        );
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE INDEX IF NOT EXISTS "IX_GourmetEntryParticipants_ApplicationUserId" ON "GourmetEntryParticipants" ("ApplicationUserId");
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE TABLE IF NOT EXISTS "InviteCodes" (
-            "InviteCodeID" INTEGER NOT NULL CONSTRAINT "PK_InviteCodes" PRIMARY KEY AUTOINCREMENT,
-            "Code" TEXT NOT NULL,
-            "CreatedByUserId" TEXT NOT NULL,
-            "CreatedAt" TEXT NOT NULL,
-            "ExpiresAt" TEXT NOT NULL,
-            "UsedAt" TEXT NULL,
-            "UsedByUserId" TEXT NULL
-        );
-        """);
-    dbContext.Database.ExecuteSqlRaw(
-        """
-        CREATE UNIQUE INDEX IF NOT EXISTS "IX_InviteCodes_Code" ON "InviteCodes" ("Code");
-        """);
 
     var guestUser = await userManager.FindByNameAsync(guestUserName);
     if (guestUser is null)
@@ -480,6 +305,19 @@ app.UseCors("FrontendClient");
 // 認証エンドポイントのブルートフォース/スパム対策。独自の認証ミドルウェアより手前に置く。
 app.UseRateLimiter();
 
+// HttpOnly Cookie のアクセストークンを Authorization ヘッダーへ転写する。
+// フロントエンドの localStorage にトークンを保持しないことで XSS によるトークン窃取を防ぐ。
+app.Use(async (context, next) =>
+{
+    if (!context.Request.Headers.ContainsKey("Authorization")
+        && context.Request.Cookies.TryGetValue("access_token", out var accessToken)
+        && !string.IsNullOrWhiteSpace(accessToken))
+    {
+        context.Request.Headers.Authorization = $"Bearer {accessToken}";
+    }
+    await next();
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -495,6 +333,8 @@ static string HashEmail(string email, string key)
 
 // パスワードリセットの短いコードをメモリキャッシュのキーへ変換する
 static string PasswordResetCacheKey(string shortCode) => $"pwreset:{shortCode}";
+static string PasswordResetFailKey(string shortCode) => $"pwreset-fail:{shortCode}";
+const int MaxResetAttempts = 5;
 
 // 招待コード制の新規登録:
 // 既定の Identity register (/api/auth/register) を横取りし、appsettings の
@@ -688,10 +528,29 @@ app.Use(async (context, next) =>
     }
 
     // Bearer スキームでサインインすると、成功時にアクセス/リフレッシュトークンが
-    // レスポンス本文へ書き込まれる (MapIdentityApi の login と同じ挙動)。
+    // レスポンス本文へ書き込まれる。これを捕捉して HttpOnly Cookie に移す。
+    var originalBody = context.Response.Body;
+    using var buffer = new MemoryStream();
+    context.Response.Body = buffer;
+
     signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
     var result = await signInManager.PasswordSignInAsync(user, login.Password, isPersistent: false, lockoutOnFailure: true);
-    if (!result.Succeeded)
+
+    context.Response.Body = originalBody;
+
+    if (result.Succeeded)
+    {
+        buffer.Position = 0;
+        using var doc = await System.Text.Json.JsonDocument.ParseAsync(buffer);
+        var root = doc.RootElement;
+        SetAuthCookies(context,
+            root.GetProperty("accessToken").GetString()!,
+            root.GetProperty("refreshToken").GetString()!,
+            app.Environment.IsDevelopment());
+        context.Response.StatusCode = StatusCodes.Status200OK;
+        await context.Response.WriteAsJsonAsync(new { succeeded = true });
+    }
+    else
     {
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
         await context.Response.WriteAsJsonAsync(new { detail = "メールアドレスまたはパスワードが正しくありません。" });
@@ -745,7 +604,7 @@ app.Use(async (context, next) =>
         // 本来の(長い) Identity トークンはメールに載せず、短い数字コードをキーにして
         // メモリ上に一時保存する(有効期限15分)。メールに書くのは短いコードのみ。
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
-        var shortCode = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+        var shortCode = GenerateResetCode(8);
         cache.Set(PasswordResetCacheKey(shortCode), (user.Id, token), TimeSpan.FromMinutes(15));
         await emailSender.SendPasswordResetCodeAsync(user, forgot.Email, shortCode);
     }
@@ -797,12 +656,31 @@ app.Use(async (context, next) =>
     var cache = context.RequestServices.GetRequiredService<IMemoryCache>();
     var user = await userManager.FindByNameAsync(HashEmail(reset.Email, hashKey));
 
+    var codeKey = reset.ResetCode.Trim().ToUpperInvariant();
+    var failKey = PasswordResetFailKey(codeKey);
+
+    // 失敗回数が上限に達したコードは無効化済み
+    if (cache.TryGetValue(failKey, out int failures) && failures >= MaxResetAttempts)
+    {
+        cache.Remove(PasswordResetCacheKey(codeKey));
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(new { detail = "試行回数の上限に達しました。新しいリセットコードを発行してください。" });
+        return;
+    }
+
     IdentityResult result;
     if (user is null
-        || !cache.TryGetValue(PasswordResetCacheKey(reset.ResetCode.Trim()), out (string UserId, string Token) entry)
+        || !cache.TryGetValue(PasswordResetCacheKey(codeKey), out (string UserId, string Token) entry)
         || entry.UserId != user.Id)
     {
-        // メール列挙攻撃を防ぐため、ユーザーが存在しない場合も汎用エラーメッセージを返す。
+        // 失敗回数を記録し、上限到達でコードを無効化する
+        var newFailures = failures + 1;
+        cache.Set(failKey, newFailures, TimeSpan.FromMinutes(15));
+        if (newFailures >= MaxResetAttempts)
+        {
+            cache.Remove(PasswordResetCacheKey(codeKey));
+        }
+
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
         await context.Response.WriteAsJsonAsync(new { detail = "コードが正しくないか、有効期限が切れています。" });
         return;
@@ -811,7 +689,8 @@ app.Use(async (context, next) =>
     result = await userManager.ResetPasswordAsync(user, entry.Token, reset.NewPassword);
     if (result.Succeeded)
     {
-        cache.Remove(PasswordResetCacheKey(reset.ResetCode.Trim()));
+        cache.Remove(PasswordResetCacheKey(codeKey));
+        cache.Remove(failKey);
     }
 
     if (!result.Succeeded)
@@ -829,6 +708,71 @@ app.Use(async (context, next) =>
     context.Response.StatusCode = StatusCodes.Status200OK;
 });
 
+// リフレッシュトークンを Cookie から読み取り、Identity API のリフレッシュハンドラへ転送する。
+// レスポンスのトークンも Cookie に移して、フロント側では一切トークンを扱わない。
+app.Use(async (context, next) =>
+{
+    if (!HttpMethods.IsPost(context.Request.Method)
+        || !context.Request.Path.Equals("/api/auth/refresh", StringComparison.OrdinalIgnoreCase))
+    {
+        await next();
+        return;
+    }
+
+    var refreshToken = context.Request.Cookies["refresh_token"];
+    if (string.IsNullOrWhiteSpace(refreshToken))
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        await context.Response.WriteAsJsonAsync(new { detail = "セッションが期限切れです。再度ログインしてください。" });
+        return;
+    }
+
+    var json = System.Text.Json.JsonSerializer.Serialize(new { refreshToken });
+    var bytes = Encoding.UTF8.GetBytes(json);
+    context.Request.Body = new MemoryStream(bytes);
+    context.Request.ContentLength = bytes.Length;
+    context.Request.ContentType = "application/json";
+
+    var originalBody = context.Response.Body;
+    using var buffer = new MemoryStream();
+    context.Response.Body = buffer;
+
+    await next();
+
+    context.Response.Body = originalBody;
+    buffer.Position = 0;
+
+    if (context.Response.StatusCode == StatusCodes.Status200OK)
+    {
+        using var doc = await System.Text.Json.JsonDocument.ParseAsync(buffer);
+        var root = doc.RootElement;
+        if (root.TryGetProperty("accessToken", out var at) && root.TryGetProperty("refreshToken", out var rt))
+        {
+            SetAuthCookies(context, at.GetString()!, rt.GetString()!, app.Environment.IsDevelopment());
+            await context.Response.WriteAsJsonAsync(new { succeeded = true });
+            return;
+        }
+    }
+
+    buffer.Position = 0;
+    await buffer.CopyToAsync(originalBody);
+});
+
+// ログアウト: HttpOnly Cookie を削除する。
+app.Use(async (context, next) =>
+{
+    if (!HttpMethods.IsPost(context.Request.Method)
+        || !context.Request.Path.Equals("/api/auth/logout", StringComparison.OrdinalIgnoreCase))
+    {
+        await next();
+        return;
+    }
+
+    ClearAuthCookies(context, app.Environment.IsDevelopment());
+    context.Response.StatusCode = StatusCodes.Status200OK;
+    await context.Response.WriteAsJsonAsync(new { succeeded = true });
+});
+
 // Identity API (register / login / refresh / confirmEmail など) を /api/auth 配下に公開
 app.MapGroup("/api/auth").MapIdentityApi<ApplicationUser>();
 
@@ -841,6 +785,127 @@ app.MapStaticAssets();
 app.MapRazorPages().WithStaticAssets(); // この行は冗長な可能性が高いですが、残しておきます。
 
 app.Run();
+
+// 旧方式 (EnsureCreated + 起動時 DDL) で作られた既存 DB を EF Migrations 管理下へ移す。
+// アプリのテーブルが既に存在し、かつ __EFMigrationsHistory が無い場合に限り、
+// InitialCreate を「適用済み」として履歴へ記録する (テーブルは作り直さない)。
+// 新規 DB (テーブル無し) や移行済み DB では何もしないので、後続の Migrate() に委ねられる。
+static async Task BaselineLegacyDatabaseAsync(GourmetDbContext dbContext)
+{
+    static async Task<bool> TableExistsAsync(System.Data.Common.DbConnection conn, string tableName)
+    {
+        using var command = conn.CreateCommand();
+        command.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = $name;";
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "$name";
+        parameter.Value = tableName;
+        command.Parameters.Add(parameter);
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt64(result) > 0;
+    }
+
+    var connection = dbContext.Database.GetDbConnection();
+    await connection.OpenAsync();
+    try
+    {
+        var historyExists = await TableExistsAsync(connection, "__EFMigrationsHistory");
+        var legacySchemaExists = await TableExistsAsync(connection, "AspNetUsers");
+
+        // 新規 DB (テーブルなし) や、既に移行済みの DB は何もしない
+        if (historyExists || !legacySchemaExists)
+        {
+            return;
+        }
+
+        // 最初のマイグレーション (InitialCreate) を適用済みとして履歴に記録する
+        var initialMigrationId = dbContext.Database.GetMigrations().First();
+
+        using (var createHistory = connection.CreateCommand())
+        {
+            createHistory.CommandText = """
+                CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+                    "MigrationId" TEXT NOT NULL CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY,
+                    "ProductVersion" TEXT NOT NULL
+                );
+                """;
+            await createHistory.ExecuteNonQueryAsync();
+        }
+
+        using (var insert = connection.CreateCommand())
+        {
+            insert.CommandText = """
+                INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+                VALUES ($id, $version);
+                """;
+
+            var idParam = insert.CreateParameter();
+            idParam.ParameterName = "$id";
+            idParam.Value = initialMigrationId;
+            insert.Parameters.Add(idParam);
+
+            var versionParam = insert.CreateParameter();
+            versionParam.ParameterName = "$version";
+            versionParam.Value = "10.0.5";
+            insert.Parameters.Add(versionParam);
+
+            await insert.ExecuteNonQueryAsync();
+        }
+    }
+    finally
+    {
+        await connection.CloseAsync();
+    }
+}
+
+static void SetAuthCookies(HttpContext context, string accessToken, string refreshToken, bool isDevelopment)
+{
+    context.Response.Cookies.Append("access_token", accessToken, new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = !isDevelopment,
+        SameSite = SameSiteMode.Lax,
+        Path = "/",
+        MaxAge = TimeSpan.FromHours(1),
+    });
+    context.Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = !isDevelopment,
+        SameSite = SameSiteMode.Lax,
+        Path = "/api/auth",
+        MaxAge = TimeSpan.FromDays(14),
+    });
+}
+
+static void ClearAuthCookies(HttpContext context, bool isDevelopment)
+{
+    context.Response.Cookies.Delete("access_token", new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = !isDevelopment,
+        SameSite = SameSiteMode.Lax,
+        Path = "/",
+    });
+    context.Response.Cookies.Delete("refresh_token", new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = !isDevelopment,
+        SameSite = SameSiteMode.Lax,
+        Path = "/api/auth",
+    });
+}
+
+// 紛らわしい文字を除外した英数字コードを生成する (パスワードリセット用)
+static string GenerateResetCode(int length)
+{
+    const string alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    Span<char> buffer = stackalloc char[length];
+    for (var i = 0; i < length; i++)
+    {
+        buffer[i] = alphabet[RandomNumberGenerator.GetInt32(alphabet.Length)];
+    }
+    return new string(buffer);
+}
 
 // .env ファイル (KEY=VALUE 形式、# はコメント) を読み、プロセスの環境変数として設定する。
 // 実際の環境変数がすでに設定されている場合はそちらを優先し、上書きしない。
@@ -884,3 +949,7 @@ record LoginRequestBody(string? Email, string? Password);
 record ForgotPasswordRequestBody(string? Email);
 
 record ResetPasswordRequestBody(string? Email, string? ResetCode, string? NewPassword);
+
+// 統合テスト (WebApplicationFactory<Program>) から参照できるように、
+// トップレベルステートメントが生成する Program クラスを公開する。
+public partial class Program { }

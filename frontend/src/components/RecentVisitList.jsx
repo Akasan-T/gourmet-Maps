@@ -1,6 +1,6 @@
 import RecentVisitCard from './RecentVisitCard'
 
-function RecentVisitList({ visits }) {
+function RecentVisitList({ visits, onAppendVisit }) {
   return (
     <section className="recent-section" aria-labelledby="recent-title">
       <div className="recent-section__header">
@@ -13,7 +13,7 @@ function RecentVisitList({ visits }) {
 
       <div className="recent-section__list">
         {visits.map((visit) => (
-          <RecentVisitCard key={`${visit.restaurant}-${visit.time}`} visit={visit} />
+          <RecentVisitCard key={`${visit.restaurant}-${visit.time}`} visit={visit} onAppend={onAppendVisit} />
         ))}
       </div>
     </section>

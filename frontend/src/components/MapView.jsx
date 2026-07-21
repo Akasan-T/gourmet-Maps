@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState } from 'react'
-import { AttributionControl, MapContainer, Marker, Popup, TileLayer, ZoomControl } from 'react-leaflet'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { AttributionControl, MapContainer, Marker, Popup, TileLayer, ZoomControl, useMapEvents } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { createCurrentLocationIcon, createPinIcon } from './mapPinIcon'
 import StoreDetailModal from './StoreDetailModal'
@@ -9,7 +9,16 @@ import { extractVisitType } from '../data/visits'
 
 const fallbackCenter = [35.6812, 139.7671] // 東京駅
 const currentLocationZoom = 16
+const initialZoom = 14
+const popupMinZoom = 15
 const ratingOptions = ['5', '4', '3', '2', '1']
+
+function ZoomWatcher({ onZoomChange }) {
+  useMapEvents({
+    zoomend: (event) => onZoomChange(event.target.getZoom()),
+  })
+  return null
+}
 
 function MapView({ stores, onDataChange }) {
   const [selectedGenre, setSelectedGenre] = useState('all')
@@ -19,6 +28,7 @@ function MapView({ stores, onDataChange }) {
   const [currentPosition, setCurrentPosition] = useState(null)
   const [locateState, setLocateState] = useState('idle')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [zoom, setZoom] = useState(initialZoom)
   const mapRef = useRef(null)
 
   const genreOptions = useMemo(
@@ -34,6 +44,20 @@ function MapView({ stores, onDataChange }) {
     ].sort(),
     [stores],
   )
+
+  useEffect(() => {
+    if (!navigator.geolocation) return
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const nextPosition = [position.coords.latitude, position.coords.longitude]
+        setCurrentPosition(nextPosition)
+        mapRef.current?.setView(nextPosition, currentLocationZoom)
+      },
+      () => {},
+      { enableHighAccuracy: true, timeout: 10000 },
+    )
+  }, [])
 
   function handleLocate() {
     if (!navigator.geolocation) {
@@ -91,12 +115,13 @@ function MapView({ stores, onDataChange }) {
         <MapContainer
           ref={mapRef}
           center={center}
-          zoom={14}
+          zoom={initialZoom}
           scrollWheelZoom={false}
           zoomControl={false}
           attributionControl={false}
           style={{ height: '100%', width: '100%' }}
         >
+          <ZoomWatcher onZoomChange={setZoom} />
           <ZoomControl position="bottomleft" />
           <AttributionControl position="bottomright" prefix={false} />
           <TileLayer
@@ -104,29 +129,38 @@ function MapView({ stores, onDataChange }) {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {currentPosition && (
-            <Marker position={currentPosition} icon={createCurrentLocationIcon()}>
-              <Popup>現在地</Popup>
-            </Marker>
+            <Marker position={currentPosition} icon={createCurrentLocationIcon()} />
           )}
           {locatedStores.map((store) => (
-            <Marker key={store.name} position={[store.lat, store.lng]} icon={createPinIcon(store.color)}>
-              <Popup>
-                <div className="map-popup">
-                  <span className="map-popup__thumb" style={{ background: store.gradient }}>
-                    {store.emoji}
-                  </span>
-                  <div>
-                    <strong>{store.name}</strong>
-                    <p>
-                      味 {Math.round(store.visits[0].tasteRating)}
-                      {store.visits.length > 1 ? ` ・${store.visits.length}件の記録` : ''}
-                    </p>
+            <Marker
+              key={store.name}
+              position={[store.lat, store.lng]}
+              icon={createPinIcon({ color: store.color, tasteRating: store.visits[0].tasteRating })}
+            >
+              {zoom >= popupMinZoom && (
+                <Popup>
+                  <div
+                    className="map-popup"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedStore(store)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') setSelectedStore(store)
+                    }}
+                  >
+                    <span className="map-popup__thumb" style={{ background: store.gradient }}>
+                      {store.emoji}
+                    </span>
+                    <div>
+                      <strong>{store.name}</strong>
+                      <p>
+                        味 {Math.round(store.visits[0].tasteRating)}
+                        {store.visits.length > 1 ? ` ・${store.visits.length}件の記録` : ''}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <button type="button" className="map-popup__button" onClick={() => setSelectedStore(store)}>
-                  詳細を見る
-                </button>
-              </Popup>
+                </Popup>
+              )}
             </Marker>
           ))}
         </MapContainer>

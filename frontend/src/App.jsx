@@ -44,6 +44,7 @@ function App() {
   const [members, setMembers] = useState([])
   const [loadState, setLoadState] = useState('loading')
   const [reloadToken, setReloadToken] = useState(0)
+  const [composerPrefill, setComposerPrefill] = useState(null)
 
   useEffect(() => {
     // ログイン済みのときだけデータを取得する
@@ -159,14 +160,22 @@ function App() {
         {activeTab === 'capture' && (
           <>
             <DailySnapshot stats={dailyStats} />
-            <QuickComposer quickTags={quickTags} visitTypes={visitTypes} onSaved={reloadData} />
-            <RecentVisitList visits={recentVisits} />
+            <QuickComposer
+              quickTags={quickTags}
+              visitTypes={visitTypes}
+              onSaved={reloadData}
+              prefill={composerPrefill}
+            />
+            <RecentVisitList
+              visits={recentVisits}
+              onAppendVisit={(name) => setComposerPrefill({ name, token: Date.now() })}
+            />
           </>
         )}
 
         {activeTab === 'map' && <MapView stores={allStores} members={members} onDataChange={reloadData} />}
 
-        {activeTab === 'rank' && <RankView stores={allStores} members={members} />}
+        {activeTab === 'rank' && <RankView stores={allStores} onDataChange={reloadData} />}
 
         {activeTab === 'profile' && (
           <ProfileView

@@ -39,11 +39,13 @@ namespace GourmetMaps.Controllers
 
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<PlacesController> _logger;
 
-        public PlacesController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public PlacesController(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<PlacesController> logger)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
+            _logger = logger;
         }
 
         // GET: api/places/search?lat=&lng=&q=
@@ -92,9 +94,9 @@ namespace GourmetMaps.Controllers
 
                 return Ok(result);
             }
-            catch
+            catch (Exception ex)
             {
-                // Google側の障害・タイムアウト等でも他の検索元は生かす
+                _logger.LogWarning(ex, "Google Places API 呼び出しに失敗しました");
                 return Ok(Array.Empty<PlaceCandidateDto>());
             }
         }

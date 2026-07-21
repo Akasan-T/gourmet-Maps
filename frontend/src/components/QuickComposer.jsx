@@ -181,7 +181,7 @@ function loadStoredDraft() {
   }
 }
 
-function QuickComposer({ quickTags, visitTypes, onSaved }) {
+function QuickComposer({ quickTags, visitTypes, onSaved, prefill }) {
   const [initialDraft] = useState(loadStoredDraft)
   const [restaurantName, setRestaurantName] = useState(() => initialDraft?.restaurantName ?? '')
   const [menuName, setMenuName] = useState(() => initialDraft?.menuName ?? '')
@@ -207,6 +207,7 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
   const [showDetails, setShowDetails] = useState(() => Boolean(initialDraft?.showDetails))
   const [draftStatus, setDraftStatus] = useState(initialDraft ? 'restored' : 'idle') // idle | restored | saved
   const fileInputRef = useRef(null)
+  const composerRef = useRef(null)
   const draftTimeoutRef = useRef(null)
   const submittedDraftSnapshotRef = useRef(null)
   const positionRef = useRef(null)
@@ -311,6 +312,16 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
     handleSearchNearby()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // 「追記する」から呼ばれた場合、その店名を入力欄にセットしてフォームまでスクロールする
+  useEffect(() => {
+    if (!prefill) return
+    setRestaurantName(prefill.name)
+    setSelectedPlace(null)
+    setIsListOpen(false)
+    composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefill?.token])
 
   function setScore(key, value) {
     setScores((current) => ({ ...current, [key]: value }))
@@ -554,7 +565,7 @@ function QuickComposer({ quickTags, visitTypes, onSaved }) {
   }
 
   return (
-    <section className="composer-card" aria-labelledby="composer-title">
+    <section className="composer-card" aria-labelledby="composer-title" ref={composerRef}>
       <div className="composer-card__header">
         <div>
           <p className="eyebrow">One-hand entry</p>

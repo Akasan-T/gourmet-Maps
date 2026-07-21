@@ -4,6 +4,11 @@
   padding: 18px 14px 92px;
 }
 
+/* ログイン/新規登録画面は下部タブバーが無いため、上下の余白を揃える */
+.app-shell--auth {
+  padding-bottom: 18px;
+}
+
 .app-shell__backdrop {
   position: fixed;
   inset: 0;
@@ -878,6 +883,30 @@
   border: none;
 }
 
+.map-pin-icon__wrap {
+  position: relative;
+  width: 34px;
+  height: 44px;
+}
+
+.map-pin-icon__svg {
+  display: block;
+}
+
+/* ピンの頭の白い円 (中心 x=17, y=15) に評価メダルを重ねる */
+.map-pin-icon__emoji {
+  position: absolute;
+  top: 15px;
+  left: 17px;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  pointer-events: none;
+}
+
 .map-spot {
   cursor: pointer;
 }
@@ -886,7 +915,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 8px;
+  cursor: pointer;
 }
 
 .map-popup__thumb {
@@ -904,17 +933,6 @@
   margin: 2px 0 0;
   font-size: 0.82rem;
   color: var(--muted);
-}
-
-.map-popup__button {
-  width: 100%;
-  border: none;
-  background: var(--accent-strong);
-  color: #fffaf5;
-  font-weight: 700;
-  padding: 8px 0;
-  border-radius: 999px;
-  font-size: 0.85rem;
 }
 
 .modal-overlay {
@@ -1004,6 +1022,7 @@
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   background: var(--panel);
+  cursor: pointer;
 }
 
 .rank-item__medal {
@@ -1057,30 +1076,146 @@
   gap: 10px;
 }
 
-.profile-share__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 .profile-signout {
   display: flex;
   justify-content: center;
 }
 
-.profile-share__list li {
+/* Member grid (tappable member list on the profile screen) */
+.member-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.member-grid__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-2) 4px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.member-grid__item:hover,
+.member-grid__item:focus-visible {
+  background: var(--panel);
+  outline: none;
+}
+
+.member-grid__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  background: var(--panel);
+  justify-content: center;
+  overflow: hidden;
+  color: #fffaf5;
+  font-size: 1.1rem;
+  font-weight: 800;
+  border: 2px solid var(--surface);
+}
+
+.member-grid__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.member-grid__name {
+  max-width: 100%;
   color: var(--heading);
+  font-size: 0.76rem;
   font-weight: 700;
-  font-size: 0.88rem;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Member profile modal */
+.member-profile__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--space-3);
+}
+
+.member-profile__avatar {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--accent-strong);
+  color: #fffaf5;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.member-profile__avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.member-profile__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.member-profile__stats strong {
+  color: var(--heading);
+  font-size: 1rem;
+}
+
+.member-profile__stat-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+}
+
+.member-profile__stat-button:hover,
+.member-profile__stat-button:focus-visible {
+  border-color: var(--accent-strong);
+  color: var(--heading);
+}
+
+.member-profile__section {
+  margin-top: var(--space-4);
+}
+
+.member-profile__section-title {
+  margin: 0 0 var(--space-2);
+  font-size: 0.92rem;
+  color: var(--heading);
+}
+
+.member-profile__visit {
+  margin-top: var(--space-2);
 }
 
 /* Member avatars */
@@ -1160,6 +1295,7 @@
 }
 
 .auth-switch {
+  margin: 0;
   text-align: center;
   color: var(--muted);
   font-size: 0.9rem;
