@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -18,9 +19,9 @@ namespace NoodleMaps.Tests
 
         private static string NewEmail() => $"user-{Guid.NewGuid():N}@example.com";
 
-        // AUTH-04 + AUTH-01: ブートストラップ招待コードで登録 → 同じ資格情報でログインしトークンを得る
+        // AUTH-04 + AUTH-01: ブートストラップ招待コードで登録 → 同じ資格情報でログインし HttpOnly Cookie を得る
         [Fact]
-        public async Task Register_WithBootstrapCode_ThenLogin_ReturnsAccessToken()
+        public async Task Register_WithBootstrapCode_ThenLogin_SetsAuthCookies()
         {
             var client = _factory.CreateClient();
             var email = NewEmail();
@@ -37,8 +38,14 @@ namespace NoodleMaps.Tests
             Assert.Equal(HttpStatusCode.OK, login.StatusCode);
 
             var body = await login.Content.ReadFromJsonAsync<JsonElement>();
-            Assert.True(body.TryGetProperty("accessToken", out var token));
-            Assert.False(string.IsNullOrWhiteSpace(token.GetString()));
+            Assert.True(body.TryGetProperty("succeeded", out var succeeded));
+            Assert.True(succeeded.GetBoolean());
+
+            // HttpOnly Cookie が Set-Cookie ヘッダで返されていること
+            Assert.True(login.Headers.Contains("Set-Cookie"));
+            var cookies = login.Headers.GetValues("Set-Cookie").ToList();
+            Assert.Contains(cookies, c => c.StartsWith("access_token=") && c.Contains("httponly", StringComparison.OrdinalIgnoreCase));
+            Assert.Contains(cookies, c => c.StartsWith("refresh_token=") && c.Contains("httponly", StringComparison.OrdinalIgnoreCase));
         }
 
         // AUTH-05: 誤った招待コードでは登録できない
