@@ -2,35 +2,33 @@ const defaultApiBaseUrl = 'http://localhost:5001'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? defaultApiBaseUrl
 
-const ACCESS_TOKEN_KEY = 'tabemap.accessToken'
-const REFRESH_TOKEN_KEY = 'tabemap.refreshToken'
+// ログイン状態の目安フラグ。HttpOnly Cookie のトークンは JS から読めないため、
+// 起動時の初期判定にのみ使う (実際の認証は Cookie + サーバー側で行う)。
+const AUTH_FLAG_KEY = 'tabemap.authenticated'
 
 // 認証切れを呼び出し側で判別できるようにするためのエラー型
 export class AuthError extends Error {}
 
-export function getAccessToken() {
-  return localStorage.getItem(ACCESS_TOKEN_KEY)
+export function isAuthenticated() {
+  return localStorage.getItem(AUTH_FLAG_KEY) === '1'
 }
 
-function getRefreshToken() {
-  return localStorage.getItem(REFRESH_TOKEN_KEY)
+function setAuthFlag() {
+  localStorage.setItem(AUTH_FLAG_KEY, '1')
 }
 
-function setTokens({ accessToken, refreshToken }) {
-  if (accessToken) localStorage.setItem(ACCESS_TOKEN_KEY, accessToken)
-  if (refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
-}
-
-function clearTokens() {
-  localStorage.removeItem(ACCESS_TOKEN_KEY)
-  localStorage.removeItem(REFRESH_TOKEN_KEY)
+function clearAuthFlag() {
+  localStorage.removeItem(AUTH_FLAG_KEY)
 }
 
 // fetch自体が失敗した場合(サーバーに繋がらない等)、ブラウザの生の英語メッセージ
 // ("Failed to fetch" 等)が露出してしまうため、日本語のメッセージに変換する。
-async function apiFetch(path, options) {
+async function apiFetch(path, options = {}) {
   try {
-    return await fetch(`${apiBaseUrl}${path}`, options)
+    return await fetch(`${apiBaseUrl}${path}`, {
+      ...options,
+      credentials: 'include',
+    })
   } catch {
     throw new Error('サーバーに接続できませんでした。通信環境を確認し、時間をおいて再度お試しください。')
   }
@@ -40,20 +38,12 @@ async function apiFetch(path, options) {
 let refreshPromise = null
 
 async function refreshTokens() {
-  const refreshToken = getRefreshToken()
-  if (!refreshToken) throw new AuthError('no-refresh-token')
-
   if (!refreshPromise) {
     refreshPromise = apiFetch('/api/auth/refresh', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken }),
     })
       .then(async (response) => {
         if (!response.ok) throw new AuthError('refresh-failed')
-        const data = await response.json()
-        setTokens({ accessToken: data.accessToken, refreshToken: data.refreshToken })
-        return data.accessToken
       })
       .finally(() => {
         refreshPromise = null
@@ -63,25 +53,22 @@ async function refreshTokens() {
   return refreshPromise
 }
 
-// 認証付き fetch。アクセストークンを付与し、401 の場合は 1 度だけリフレッシュして再試行する。
+// 認証付き fetch。Cookie が自動送信されるため Authorization ヘッダは不要。
+// 401 の場合は 1 度だけリフレッシュして再試行する。
 async function authFetch(path, options = {}, retry = true) {
-  const token = getAccessToken()
-  const headers = { ...(options.headers || {}) }
-  if (token) headers.Authorization = `Bearer ${token}`
-
-  const response = await apiFetch(path, { ...options, headers })
+  const response = await apiFetch(path, options)
 
   if (response.status === 401) {
     if (retry) {
       try {
         await refreshTokens()
       } catch {
-        clearTokens()
+        clearAuthFlag()
         throw new AuthError('unauthorized')
       }
       return authFetch(path, options, false)
     }
-    clearTokens()
+    clearAuthFlag()
     throw new AuthError('unauthorized')
   }
 
@@ -120,9 +107,7 @@ export async function login(email, password) {
     throw new Error('メールアドレスまたはパスワードが正しくありません。')
   }
 
-  const data = await response.json()
-  setTokens({ accessToken: data.accessToken, refreshToken: data.refreshToken })
-  return data
+  setAuthFlag()
 }
 
 export async function register(email, password, inviteCode) {
@@ -148,8 +133,13 @@ export async function register(email, password, inviteCode) {
   }
 }
 
-export function logout() {
-  clearTokens()
+export async function logout() {
+  try {
+    await apiFetch('/api/auth/logout', { method: 'POST' })
+  } catch {
+    /* サーバーに繋がらなくてもローカルのフラグは消す */
+  }
+  clearAuthFlag()
 }
 
 export async function forgotPassword(email) {
@@ -321,6 +311,10 @@ export async function deleteGourmetEntry(id) {
   if (!response.ok) {
     throw new Error(`delete-failed-${response.status}`)
   }
+}
+
+export function fetchEntryPhoto(entryId) {
+  return getJson(`/api/GourmetEntries/${entryId}/photo`)
 }
 
 export async function createGourmetEntry(payload) {

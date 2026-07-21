@@ -41,7 +41,24 @@ namespace GourmetMaps.Controllers
                 .OrderByDescending(entry => entry.VisitDate)
                 .ToListAsync();
 
-            return Ok(entries.Select(entry => ToDto(entry, currentUserId)));
+            return Ok(entries.Select(entry => ToDto(entry, currentUserId, includePhoto: false)));
+        }
+
+        // GET: api/gourmetentries/5/photo
+        [HttpGet("{id:int}/photo")]
+        public async Task<ActionResult<PhotoDto>> GetPhoto(int id)
+        {
+            var entry = await _context.GourmetEntries.AsNoTracking()
+                .Where(e => e.GourmetEntryID == id)
+                .Select(e => new PhotoDto(e.PhotoUrl))
+                .FirstOrDefaultAsync();
+
+            if (entry is null)
+            {
+                return NotFound();
+            }
+
+            return Ok(entry);
         }
 
         [HttpPost]
@@ -290,7 +307,7 @@ namespace GourmetMaps.Controllers
                 .ToList();
         }
 
-        private static GourmetEntryMapItemDto ToDto(GourmetEntry entry, string? currentUserId)
+        private static GourmetEntryMapItemDto ToDto(GourmetEntry entry, string? currentUserId, bool includePhoto = true)
         {
             var participants = (entry.Participants ?? new List<GourmetEntryParticipant>())
                 .Where(participant => participant.ApplicationUser is not null)
@@ -302,14 +319,15 @@ namespace GourmetMaps.Controllers
 
             var recordedByDisplayName = entry.User?.DisplayName ?? entry.User?.UserName;
 
-            return ToDto(entry, participants, recordedByDisplayName, currentUserId);
+            return ToDto(entry, participants, recordedByDisplayName, currentUserId, includePhoto);
         }
 
         private static GourmetEntryMapItemDto ToDto(
             GourmetEntry entry,
             IReadOnlyList<ParticipantDto> participants,
             string? recordedByDisplayName,
-            string? currentUserId)
+            string? currentUserId,
+            bool includePhoto = true)
         {
             return new GourmetEntryMapItemDto(
                 entry.GourmetEntryID,
@@ -327,7 +345,7 @@ namespace GourmetMaps.Controllers
                 entry.Memo,
                 entry.SceneTag,
                 entry.PriceRange,
-                entry.PhotoUrl,
+                includePhoto ? entry.PhotoUrl : null,
                 entry.Latitude,
                 entry.Longitude,
                 entry.StoreID,
@@ -361,6 +379,8 @@ namespace GourmetMaps.Controllers
             IReadOnlyList<string>? ParticipantUserIds);
 
         public record ParticipantDto(string Id, string DisplayName, string? AvatarUrl);
+
+        public record PhotoDto(string? PhotoUrl);
 
         public record GourmetEntryMapItemDto(
             int Id,

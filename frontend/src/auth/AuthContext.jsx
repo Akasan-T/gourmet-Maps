@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AuthContext } from './useAuth'
 import {
   fetchMe,
-  getAccessToken,
+  isAuthenticated,
   login as apiLogin,
   logout as apiLogout,
   register as apiRegister,
@@ -16,12 +16,12 @@ import {
 //   anonymous     … 未ログイン
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
-  // トークンが無ければ最初から anonymous とし、余計な再レンダーを避ける
-  const [status, setStatus] = useState(() => (getAccessToken() ? 'loading' : 'anonymous'))
+  // フラグがあれば loading として /api/account/me で確認、無ければ即 anonymous
+  const [status, setStatus] = useState(() => (isAuthenticated() ? 'loading' : 'anonymous'))
 
-  // 起動時: 保存済みトークンがあればユーザー情報を取得してログイン状態を復元する
+  // 起動時: 認証フラグがあればユーザー情報を取得してログイン状態を復元する
   useEffect(() => {
-    if (!getAccessToken()) return undefined
+    if (!isAuthenticated()) return undefined
 
     let ignore = false
 
@@ -54,8 +54,8 @@ export function AuthProvider({ children }) {
     await apiRegister(email, password, inviteCode)
   }, [])
 
-  const signOut = useCallback(() => {
-    apiLogout()
+  const signOut = useCallback(async () => {
+    await apiLogout()
     setUser(null)
     setStatus('anonymous')
   }, [])

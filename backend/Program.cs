@@ -26,7 +26,8 @@ builder.Services.AddCors(options =>
                 "http://localhost:5173",
                 "http://127.0.0.1:5173")
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -154,6 +155,8 @@ app.Use(async (context, next) =>
     headers["X-Content-Type-Options"] = "nosniff";
     headers["X-Frame-Options"] = "DENY";
     headers["Referrer-Policy"] = "no-referrer";
+    headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.tile.openstreetmap.org; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+    headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(self)";
     await next();
 });
 
@@ -302,6 +305,19 @@ app.UseCors("FrontendClient");
 // 認証エンドポイントのブルートフォース/スパム対策。独自の認証ミドルウェアより手前に置く。
 app.UseRateLimiter();
 
+// HttpOnly Cookie のアクセストークンを Authorization ヘッダーへ転写する。
+// フロントエンドの localStorage にトークンを保持しないことで XSS によるトークン窃取を防ぐ。
+app.Use(async (context, next) =>
+{
+    if (!context.Request.Headers.ContainsKey("Authorization")
+        && context.Request.Cookies.TryGetValue("access_token", out var accessToken)
+        && !string.IsNullOrWhiteSpace(accessToken))
+    {
+        context.Request.Headers.Authorization = $"Bearer {accessToken}";
+    }
+    await next();
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -317,6 +333,8 @@ static string HashEmail(string email, string key)
 
 // パスワードリセットの短いコードをメモリキャッシュのキーへ変換する
 static string PasswordResetCacheKey(string shortCode) => $"pwreset:{shortCode}";
+static string PasswordResetFailKey(string shortCode) => $"pwreset-fail:{shortCode}";
+const int MaxResetAttempts = 5;
 
 // 招待コード制の新規登録:
 // 既定の Identity register (/api/auth/register) を横取りし、appsettings の
@@ -510,10 +528,29 @@ app.Use(async (context, next) =>
     }
 
     // Bearer スキームでサインインすると、成功時にアクセス/リフレッシュトークンが
-    // レスポンス本文へ書き込まれる (MapIdentityApi の login と同じ挙動)。
+    // レスポンス本文へ書き込まれる。これを捕捉して HttpOnly Cookie に移す。
+    var originalBody = context.Response.Body;
+    using var buffer = new MemoryStream();
+    context.Response.Body = buffer;
+
     signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
     var result = await signInManager.PasswordSignInAsync(user, login.Password, isPersistent: false, lockoutOnFailure: true);
-    if (!result.Succeeded)
+
+    context.Response.Body = originalBody;
+
+    if (result.Succeeded)
+    {
+        buffer.Position = 0;
+        using var doc = await System.Text.Json.JsonDocument.ParseAsync(buffer);
+        var root = doc.RootElement;
+        SetAuthCookies(context,
+            root.GetProperty("accessToken").GetString()!,
+            root.GetProperty("refreshToken").GetString()!,
+            app.Environment.IsDevelopment());
+        context.Response.StatusCode = StatusCodes.Status200OK;
+        await context.Response.WriteAsJsonAsync(new { succeeded = true });
+    }
+    else
     {
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
         await context.Response.WriteAsJsonAsync(new { detail = "メールアドレスまたはパスワードが正しくありません。" });
@@ -567,7 +604,7 @@ app.Use(async (context, next) =>
         // 本来の(長い) Identity トークンはメールに載せず、短い数字コードをキーにして
         // メモリ上に一時保存する(有効期限15分)。メールに書くのは短いコードのみ。
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
-        var shortCode = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+        var shortCode = GenerateResetCode(8);
         cache.Set(PasswordResetCacheKey(shortCode), (user.Id, token), TimeSpan.FromMinutes(15));
         await emailSender.SendPasswordResetCodeAsync(user, forgot.Email, shortCode);
     }
@@ -619,12 +656,31 @@ app.Use(async (context, next) =>
     var cache = context.RequestServices.GetRequiredService<IMemoryCache>();
     var user = await userManager.FindByNameAsync(HashEmail(reset.Email, hashKey));
 
+    var codeKey = reset.ResetCode.Trim().ToUpperInvariant();
+    var failKey = PasswordResetFailKey(codeKey);
+
+    // 失敗回数が上限に達したコードは無効化済み
+    if (cache.TryGetValue(failKey, out int failures) && failures >= MaxResetAttempts)
+    {
+        cache.Remove(PasswordResetCacheKey(codeKey));
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        await context.Response.WriteAsJsonAsync(new { detail = "試行回数の上限に達しました。新しいリセットコードを発行してください。" });
+        return;
+    }
+
     IdentityResult result;
     if (user is null
-        || !cache.TryGetValue(PasswordResetCacheKey(reset.ResetCode.Trim()), out (string UserId, string Token) entry)
+        || !cache.TryGetValue(PasswordResetCacheKey(codeKey), out (string UserId, string Token) entry)
         || entry.UserId != user.Id)
     {
-        // メール列挙攻撃を防ぐため、ユーザーが存在しない場合も汎用エラーメッセージを返す。
+        // 失敗回数を記録し、上限到達でコードを無効化する
+        var newFailures = failures + 1;
+        cache.Set(failKey, newFailures, TimeSpan.FromMinutes(15));
+        if (newFailures >= MaxResetAttempts)
+        {
+            cache.Remove(PasswordResetCacheKey(codeKey));
+        }
+
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
         await context.Response.WriteAsJsonAsync(new { detail = "コードが正しくないか、有効期限が切れています。" });
         return;
@@ -633,7 +689,8 @@ app.Use(async (context, next) =>
     result = await userManager.ResetPasswordAsync(user, entry.Token, reset.NewPassword);
     if (result.Succeeded)
     {
-        cache.Remove(PasswordResetCacheKey(reset.ResetCode.Trim()));
+        cache.Remove(PasswordResetCacheKey(codeKey));
+        cache.Remove(failKey);
     }
 
     if (!result.Succeeded)
@@ -649,6 +706,71 @@ app.Use(async (context, next) =>
     }
 
     context.Response.StatusCode = StatusCodes.Status200OK;
+});
+
+// リフレッシュトークンを Cookie から読み取り、Identity API のリフレッシュハンドラへ転送する。
+// レスポンスのトークンも Cookie に移して、フロント側では一切トークンを扱わない。
+app.Use(async (context, next) =>
+{
+    if (!HttpMethods.IsPost(context.Request.Method)
+        || !context.Request.Path.Equals("/api/auth/refresh", StringComparison.OrdinalIgnoreCase))
+    {
+        await next();
+        return;
+    }
+
+    var refreshToken = context.Request.Cookies["refresh_token"];
+    if (string.IsNullOrWhiteSpace(refreshToken))
+    {
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+        await context.Response.WriteAsJsonAsync(new { detail = "セッションが期限切れです。再度ログインしてください。" });
+        return;
+    }
+
+    var json = System.Text.Json.JsonSerializer.Serialize(new { refreshToken });
+    var bytes = Encoding.UTF8.GetBytes(json);
+    context.Request.Body = new MemoryStream(bytes);
+    context.Request.ContentLength = bytes.Length;
+    context.Request.ContentType = "application/json";
+
+    var originalBody = context.Response.Body;
+    using var buffer = new MemoryStream();
+    context.Response.Body = buffer;
+
+    await next();
+
+    context.Response.Body = originalBody;
+    buffer.Position = 0;
+
+    if (context.Response.StatusCode == StatusCodes.Status200OK)
+    {
+        using var doc = await System.Text.Json.JsonDocument.ParseAsync(buffer);
+        var root = doc.RootElement;
+        if (root.TryGetProperty("accessToken", out var at) && root.TryGetProperty("refreshToken", out var rt))
+        {
+            SetAuthCookies(context, at.GetString()!, rt.GetString()!, app.Environment.IsDevelopment());
+            await context.Response.WriteAsJsonAsync(new { succeeded = true });
+            return;
+        }
+    }
+
+    buffer.Position = 0;
+    await buffer.CopyToAsync(originalBody);
+});
+
+// ログアウト: HttpOnly Cookie を削除する。
+app.Use(async (context, next) =>
+{
+    if (!HttpMethods.IsPost(context.Request.Method)
+        || !context.Request.Path.Equals("/api/auth/logout", StringComparison.OrdinalIgnoreCase))
+    {
+        await next();
+        return;
+    }
+
+    ClearAuthCookies(context, app.Environment.IsDevelopment());
+    context.Response.StatusCode = StatusCodes.Status200OK;
+    await context.Response.WriteAsJsonAsync(new { succeeded = true });
 });
 
 // Identity API (register / login / refresh / confirmEmail など) を /api/auth 配下に公開
@@ -733,6 +855,56 @@ static async Task BaselineLegacyDatabaseAsync(GourmetDbContext dbContext)
     {
         await connection.CloseAsync();
     }
+}
+
+static void SetAuthCookies(HttpContext context, string accessToken, string refreshToken, bool isDevelopment)
+{
+    context.Response.Cookies.Append("access_token", accessToken, new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = !isDevelopment,
+        SameSite = SameSiteMode.Lax,
+        Path = "/",
+        MaxAge = TimeSpan.FromHours(1),
+    });
+    context.Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = !isDevelopment,
+        SameSite = SameSiteMode.Lax,
+        Path = "/api/auth",
+        MaxAge = TimeSpan.FromDays(14),
+    });
+}
+
+static void ClearAuthCookies(HttpContext context, bool isDevelopment)
+{
+    context.Response.Cookies.Delete("access_token", new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = !isDevelopment,
+        SameSite = SameSiteMode.Lax,
+        Path = "/",
+    });
+    context.Response.Cookies.Delete("refresh_token", new CookieOptions
+    {
+        HttpOnly = true,
+        Secure = !isDevelopment,
+        SameSite = SameSiteMode.Lax,
+        Path = "/api/auth",
+    });
+}
+
+// 紛らわしい文字を除外した英数字コードを生成する (パスワードリセット用)
+static string GenerateResetCode(int length)
+{
+    const string alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    Span<char> buffer = stackalloc char[length];
+    for (var i = 0; i < length; i++)
+    {
+        buffer[i] = alphabet[RandomNumberGenerator.GetInt32(alphabet.Length)];
+    }
+    return new string(buffer);
 }
 
 // .env ファイル (KEY=VALUE 形式、# はコメント) を読み、プロセスの環境変数として設定する。

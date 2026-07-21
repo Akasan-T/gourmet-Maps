@@ -13,12 +13,7 @@ export async function mockAuthenticatedApi(page, overrides = {}) {
   } = overrides
 
   await page.route('**/api/auth/login', (route) =>
-    json(route, {
-      tokenType: 'Bearer',
-      accessToken: 'test-access-token',
-      expiresIn: 3600,
-      refreshToken: 'test-refresh-token',
-    }),
+    json(route, { succeeded: true }),
   )
   await page.route('**/api/account/me', (route) => json(route, me))
   await page.route('**/api/GourmetEntries', (route) => json(route, entries))

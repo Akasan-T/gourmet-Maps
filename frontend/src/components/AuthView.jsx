@@ -63,7 +63,7 @@ function AuthView() {
         await forgotPassword(email)
         setStatus({
           type: 'success',
-          message: 'リセットコードをメールで送信しました。届いた6桁のコードを次の画面で入力してください。',
+          message: 'リセットコードをメールで送信しました。届いたコードを次の画面で入力してください。',
         })
         setMode('reset')
       } else if (isReset) {
@@ -175,16 +175,15 @@ function AuthView() {
                   <span className="field__label">リセットコード</span>
                   <input
                     type="text"
-                    inputMode="numeric"
                     autoComplete="one-time-code"
                     required
-                    maxLength={6}
+                    maxLength={8}
                     value={resetCode}
                     onChange={(event) => setResetCode(event.target.value)}
-                    placeholder="6桁のコード"
+                    placeholder="リセットコード"
                   />
                   <span className="field__helper">
-                    届いたメールに記載の6桁のコードを入力してください。
+                    届いたメールに記載のコードを入力してください。
                   </span>
                 </label>
 
