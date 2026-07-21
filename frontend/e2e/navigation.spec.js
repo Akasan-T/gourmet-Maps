@@ -23,7 +23,6 @@ test.describe('タブナビゲーション', () => {
   test('地図タブに切り替えできる (NAV-03)', async ({ page }) => {
     await page.getByText('地図', { exact: true }).click()
 
-    // MapView の存在を確認
     await expect(page.locator('.leaflet-container')).toBeVisible()
   })
 
@@ -35,19 +34,15 @@ test.describe('タブナビゲーション', () => {
   })
 
   test('全タブを順番に切り替えて各画面が表示される (NAV-05)', async ({ page }) => {
-    // 記録
     await page.getByText('記録', { exact: true }).click()
     await expect(page.getByText('来店直後に記録')).toBeVisible()
 
-    // 地図
     await page.getByText('地図', { exact: true }).click()
     await expect(page.locator('.leaflet-container')).toBeVisible()
 
-    // 順位
     await page.getByText('順位', { exact: true }).click()
     await expect(page.getByText('総合の順位')).toBeVisible()
 
-    // ホームに戻る
     await page.getByText('ホーム', { exact: true }).click()
     await expect(page.getByText('直近24時間に行ったお店')).toBeVisible()
   })

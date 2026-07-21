@@ -92,7 +92,6 @@ export async function mockAuthenticatedApi(page, overrides = {}) {
   })
   await page.route('**/api/auth/logout', (route) => json(route, {}))
   await page.route('**/api/auth/refresh', (route) => json(route, {}))
-  // Overpass API (外部) をモックして E2E を安定させる
   await page.route('**/overpass-api.de/**', (route) =>
     json(route, { elements: [] }),
   )
@@ -102,7 +101,6 @@ export async function loginAndNavigate(page, overrides = {}) {
   await mockAuthenticatedApi(page, overrides)
   await page.goto('/')
   await login(page)
-  // アプリ画面が表示されるまで待つ
   await page.getByText('記録', { exact: true }).waitFor({ state: 'visible' })
 }
 

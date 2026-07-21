@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { loginAndNavigate, sampleMe, sampleMembers } from './helpers.js'
+import { loginAndNavigate, sampleMe } from './helpers.js'
 
 test.describe('プロフィール画面', () => {
   test.beforeEach(async ({ page }) => {
@@ -77,7 +77,6 @@ test.describe('プロフィール画面', () => {
 
   test('メンバー一覧が表示される (PROF-09)', async ({ page }) => {
     await expect(page.locator('.field__label', { hasText: 'メンバー' })).toBeVisible()
-    // メンバーグリッド内に名前が表示されている
     await expect(page.locator('.member-grid__name', { hasText: 'テスト太郎' })).toBeVisible()
     await expect(page.locator('.member-grid__name', { hasText: 'テスト花子' })).toBeVisible()
   })
@@ -85,7 +84,6 @@ test.describe('プロフィール画面', () => {
   test('メンバーアイコンをクリックするとプロフィールモーダルが開く (PROF-10)', async ({ page }) => {
     await page.getByRole('button', { name: 'テスト花子 のプロフィールを見る' }).click()
 
-    // モーダル内にメンバー名が表示される
     await expect(page.getByRole('heading', { name: 'テスト花子' })).toBeVisible()
   })
 

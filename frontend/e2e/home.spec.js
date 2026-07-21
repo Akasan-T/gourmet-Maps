@@ -24,7 +24,6 @@ test.describe('ホーム画面', () => {
     const rankItems = page.locator('.rank-item')
     await expect(rankItems).toHaveCount(2)
 
-    // 麺屋テスト(taste:4.5)が1位、カフェモック(taste:3.0)が2位
     const first = rankItems.nth(0)
     const second = rankItems.nth(1)
     await expect(first.getByText('麺屋テスト')).toBeVisible()

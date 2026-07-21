@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { loginAndNavigate, sampleMembers } from './helpers.js'
+import { loginAndNavigate } from './helpers.js'
 
 test.describe('記録フォーム (QuickComposer)', () => {
   test.beforeEach(async ({ page }) => {
@@ -20,21 +20,17 @@ test.describe('記録フォーム (QuickComposer)', () => {
     const ramenChip = page.locator('.chip', { hasText: 'ラーメン' }).first()
     const cafeChip = page.locator('.chip', { hasText: 'カフェ' }).first()
 
-    // デフォルトでラーメンが選択されている
     await expect(ramenChip).toHaveClass(/chip--active/)
 
-    // カフェをクリックすると切り替わる
     await cafeChip.click()
     await expect(cafeChip).toHaveClass(/chip--active/)
     await expect(ramenChip).not.toHaveClass(/chip--active/)
   })
 
   test('評価セレクターで値を変更できる (CAP-03)', async ({ page }) => {
-    // 味の星評価が表示されている
     const tasteRating = page.locator('.star-rating').first()
     await expect(tasteRating).toBeVisible()
 
-    // 5段階の星ボタンが存在する
     const stars = tasteRating.locator('.star-rating__star')
     await expect(stars).toHaveCount(5)
   })
@@ -46,7 +42,6 @@ test.describe('記録フォーム (QuickComposer)', () => {
   })
 
   test('詳細を追加ボタンで追加フィールドが展開する (CAP-05)', async ({ page }) => {
-    // 初期状態では詳細フィールドは非表示
     await expect(page.locator('.field__label', { hasText: 'メニュー' })).toBeHidden()
 
     await page.getByRole('button', { name: '詳細を追加' }).click()
@@ -76,7 +71,6 @@ test.describe('記録フォーム (QuickComposer)', () => {
     await dateChip.click()
     await expect(dateChip).toHaveClass(/chip--active/)
 
-    // 同じチップをもう一度押すと解除される
     await dateChip.click()
     await expect(dateChip).not.toHaveClass(/chip--active/)
   })
@@ -84,20 +78,17 @@ test.describe('記録フォーム (QuickComposer)', () => {
   test('メンバー一覧から「誰と行った?」を選択できる (CAP-08)', async ({ page }) => {
     await page.getByRole('button', { name: '詳細を追加' }).click()
 
-    // メンバーが表示されている
     const memberChip = page.locator('.chip', { hasText: 'テスト花子' })
     await expect(memberChip).toBeVisible()
 
     await memberChip.click()
     await expect(memberChip).toHaveClass(/chip--active/)
 
-    // トグルで解除
     await memberChip.click()
     await expect(memberChip).not.toHaveClass(/chip--active/)
   })
 
   test('投稿成功後にステータスメッセージが表示される (CAP-09)', async ({ page, context }) => {
-    // 位置情報をモックする
     await context.grantPermissions(['geolocation'])
     await context.setGeolocation({ latitude: 35.6812, longitude: 139.7671 })
 

@@ -39,7 +39,6 @@ test.describe('認証', () => {
     await expect(page.getByRole('heading', { name: '新規登録' })).toBeVisible()
     await expect(page.locator('input[type="email"]')).toBeVisible()
     await expect(page.locator('input[type="password"]')).toBeVisible()
-    // ワンタイム合言葉フィールド
     await expect(page.getByPlaceholder('例: ABCD-2345')).toBeVisible()
     await expect(page.getByRole('button', { name: '登録する' })).toBeVisible()
   })
@@ -61,16 +60,13 @@ test.describe('認証', () => {
 
     await page.goto('/')
 
-    // 「パスワードをお忘れですか？」をクリック
     await page.getByRole('button', { name: 'パスワードをお忘れですか？' }).click()
     await expect(page.getByRole('heading', { name: 'パスワードをお忘れですか？' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'コードを送信' })).toBeVisible()
 
-    // メールアドレスを入力してコード送信
     await page.locator('input[type="email"]').fill('tester@example.com')
     await page.getByRole('button', { name: 'コードを送信' }).click()
 
-    // リセットコード入力画面に遷移する
     await expect(page.getByRole('heading', { name: 'パスワードの再設定' })).toBeVisible()
     await expect(page.getByPlaceholder('リセットコード')).toBeVisible()
     await expect(page.getByRole('button', { name: 'パスワードを再設定' })).toBeVisible()
