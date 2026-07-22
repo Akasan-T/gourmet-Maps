@@ -684,6 +684,7 @@
 
 .visit-card__footer {
   flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 .visit-card__delete {
