@@ -30,7 +30,7 @@ function StoreDetailModal({ store, onClose, onDeleted }) {
       {error && <p className="map-view__empty">{error}</p>}
 
       {store.visits.map((visit) => {
-        const tag = deriveTag(visit)
+        const tag = visit.tag || deriveTag(visit)
         return (
           <article key={visit.id} className="visit-card">
             <div className="visit-card__header">
@@ -63,7 +63,6 @@ function StoreDetailModal({ store, onClose, onDeleted }) {
                 {tag}
               </span>
               {visit.visitType && <span className="visit-card__tag">{visit.visitType}</span>}
-              {visit.tag && <span className="visit-card__tag">{visit.tag}</span>}
               {visit.sceneTag && <span className="visit-card__tag">{visit.sceneTag}</span>}
               {visit.priceRange && <span className="visit-card__tag">{visit.priceRange}</span>}
               {visit.canDelete && (

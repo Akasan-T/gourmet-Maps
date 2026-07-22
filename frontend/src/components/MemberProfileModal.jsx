@@ -80,7 +80,7 @@ function MemberProfileModal({ member, onClose }) {
                   </div>
 
                   {store.visits.map((visit) => {
-                    const tag = deriveTag(visit)
+                    const tag = visit.tag || deriveTag(visit)
                     return (
                       <div key={visit.id} className="member-profile__visit">
                         <div className="visit-card__scores" aria-label="Scores">
@@ -97,6 +97,7 @@ function MemberProfileModal({ member, onClose }) {
                           >
                             {tag}
                           </span>
+                          {visit.visitType && <span className="visit-card__tag">{visit.visitType}</span>}
                           {visit.sceneTag && <span className="visit-card__tag">{visit.sceneTag}</span>}
                           {visit.priceRange && <span className="visit-card__tag">{visit.priceRange}</span>}
                         </div>
