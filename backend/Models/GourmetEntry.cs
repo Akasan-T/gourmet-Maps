@@ -30,6 +30,8 @@ namespace GourmetMaps.Models
 
         public string? SceneTag { get; set; }   // シーンタグ (デート向き/家族向き 等)
         public string? PriceRange { get; set; } // 価格帯 (ランチ/ディナー 等)
+        public string? VisitType { get; set; }  // 訪問タイプ (ひとり/同僚と 等)
+        public string? Tag { get; set; }        // クイックタグ (また行く/一口目が強い 等)
         public string? PhotoUrl { get; set; }   // 写真 (任意)
 
         public float? Latitude { get; set; }

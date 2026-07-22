@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import { MapContainer, Marker, TileLayer } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { createCurrentLocationIcon, createPinIcon } from './mapPinIcon'
 import StoreDetailModal from './StoreDetailModal'
@@ -54,7 +54,7 @@ function HomeView({ stores, ranking, onDataChange }) {
     setLocationError('')
     mapSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     mapRef.current?.flyTo([store.lat, store.lng], currentLocationZoom)
-    markerRefs.current.get(store.name)?.openPopup()
+    setSelectedStore(store)
   }
 
   const center = locatedStores.length
@@ -96,25 +96,8 @@ function HomeView({ stores, ranking, onDataChange }) {
                 }}
                 position={[store.lat, store.lng]}
                 icon={createPinIcon({ color: store.color, emoji: store.emoji })}
-              >
-                <Popup>
-                  <div className="map-popup">
-                    <span className="map-popup__thumb" style={{ background: store.gradient }}>
-                      {store.emoji}
-                    </span>
-                    <div>
-                      <strong>{store.name}</strong>
-                      <p>
-                        味 {Math.round(store.visits[0].tasteRating)}
-                        {store.visits.length > 1 ? ` ・${store.visits.length}件の記録` : ''}
-                      </p>
-                    </div>
-                  </div>
-                  <button type="button" className="map-popup__button" onClick={() => setSelectedStore(store)}>
-                    詳細を見る
-                  </button>
-                </Popup>
-              </Marker>
+                eventHandlers={{ click: () => setSelectedStore(store) }}
+              />
             ))}
           </MapContainer>
 

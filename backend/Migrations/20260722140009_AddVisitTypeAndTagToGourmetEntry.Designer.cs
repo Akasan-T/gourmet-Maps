@@ -3,6 +3,7 @@ using System;
 using GourmetMaps.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace NoodleMaps.Migrations
 {
     [DbContext(typeof(GourmetDbContext))]
-    partial class GourmetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260722140009_AddVisitTypeAndTagToGourmetEntry")]
+    partial class AddVisitTypeAndTagToGourmetEntry
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
@@ -99,7 +102,7 @@ namespace NoodleMaps.Migrations
 
                     b.HasIndex("BadgeID");
 
-                    b.ToTable("ApplicationUserBadges", (string)null);
+                    b.ToTable("ApplicationUserBadges");
                 });
 
             modelBuilder.Entity("GourmetMaps.Models.Badge", b =>
@@ -122,7 +125,7 @@ namespace NoodleMaps.Migrations
 
                     b.HasKey("BadgeID");
 
-                    b.ToTable("Badges", (string)null);
+                    b.ToTable("Badges");
                 });
 
             modelBuilder.Entity("GourmetMaps.Models.GourmetEntry", b =>
@@ -204,7 +207,7 @@ namespace NoodleMaps.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("GourmetEntries", (string)null);
+                    b.ToTable("GourmetEntries");
                 });
 
             modelBuilder.Entity("GourmetMaps.Models.GourmetEntryParticipant", b =>
@@ -219,7 +222,7 @@ namespace NoodleMaps.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("GourmetEntryParticipants", (string)null);
+                    b.ToTable("GourmetEntryParticipants");
                 });
 
             modelBuilder.Entity("GourmetMaps.Models.InviteCode", b =>
@@ -250,7 +253,7 @@ namespace NoodleMaps.Migrations
 
                     b.HasKey("InviteCodeID");
 
-                    b.ToTable("InviteCodes", (string)null);
+                    b.ToTable("InviteCodes");
                 });
 
             modelBuilder.Entity("GourmetMaps.Models.Store", b =>
@@ -289,7 +292,7 @@ namespace NoodleMaps.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.ToTable("Stores", (string)null);
+                    b.ToTable("Stores");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

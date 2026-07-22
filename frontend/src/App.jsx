@@ -109,6 +109,7 @@ function App() {
             tag: deriveTag(entry),
             emoji: visual.emoji,
             gradient: visual.gradient,
+            photoUrl: entry.photoUrl,
           }
         }),
     [entries],

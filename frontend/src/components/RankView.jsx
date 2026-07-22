@@ -45,9 +45,13 @@ function StoreRankList({ items, emptyMessage, metaLabel, onSelect }) {
             }}
           >
             <RankBadge rank={index + 1} />
-            <span className="rank-item__thumb" style={{ background: visual.gradient }}>
-              {visual.emoji}
-            </span>
+            {store.photoUrl ? (
+              <img className="rank-item__thumb" src={store.photoUrl} style={{ objectFit: 'cover' }} alt="" />
+            ) : (
+              <span className="rank-item__thumb" style={{ background: visual.gradient }}>
+                {visual.emoji}
+              </span>
+            )}
             <div className="rank-item__body">
               <h3>{store.name}</h3>
               <p className="visit-card__menu">
@@ -100,6 +104,7 @@ function RankView({ stores, onDataChange }) {
         name: store.name,
         emoji: store.emoji,
         gradient: store.gradient,
+        photoUrl: store.visits[0]?.photoUrl ?? null,
         genre: store.visits[0]?.genre ?? '未設定',
         taste: average(store.visits.map((visit) => visit.tasteRating)),
         cost: average(store.visits.map((visit) => visit.costPerformanceRating)),
@@ -165,9 +170,13 @@ function RankView({ stores, onDataChange }) {
                 }}
               >
                 <RankBadge rank={index + 1} />
-                <span className="rank-item__thumb" style={{ background: row.gradient }}>
-                  {row.emoji}
-                </span>
+                {row.photoUrl ? (
+                  <img className="rank-item__thumb" src={row.photoUrl} style={{ objectFit: 'cover' }} alt="" />
+                ) : (
+                  <span className="rank-item__thumb" style={{ background: row.gradient }}>
+                    {row.emoji}
+                  </span>
+                )}
                 <div className="rank-item__body">
                   <h3>{row.name}</h3>
                   <p className="visit-card__menu">{row.genre}</p>

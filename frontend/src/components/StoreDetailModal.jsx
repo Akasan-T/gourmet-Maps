@@ -62,6 +62,8 @@ function StoreDetailModal({ store, onClose, onDeleted }) {
               <span className={`visit-card__tag${positiveTags.has(tag) ? ' visit-card__tag--positive' : ''}`}>
                 {tag}
               </span>
+              {visit.visitType && <span className="visit-card__tag">{visit.visitType}</span>}
+              {visit.tag && <span className="visit-card__tag">{visit.tag}</span>}
               {visit.sceneTag && <span className="visit-card__tag">{visit.sceneTag}</span>}
               {visit.priceRange && <span className="visit-card__tag">{visit.priceRange}</span>}
               {visit.canDelete && (

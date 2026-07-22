@@ -503,8 +503,6 @@ function QuickComposer({ quickTags, visitTypes, onSaved, prefill }) {
 
       const memoLines = [
         menuName.trim() ? `メニュー: ${menuName.trim()}` : '',
-        `訪問タイプ: ${selectedVisitType}`,
-        `タグ: ${selectedTag}`,
         memo.trim(),
       ].filter(Boolean)
 
@@ -521,6 +519,8 @@ function QuickComposer({ quickTags, visitTypes, onSaved, prefill }) {
         memo: memoLines.join('\n'),
         sceneTag: sceneTag || null,
         priceRange: priceRange || null,
+        visitType: selectedVisitType || null,
+        tag: selectedTag || null,
         photoUrl: photoDataUrl || null,
         latitude,
         longitude,

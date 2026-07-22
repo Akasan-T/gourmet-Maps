@@ -41,7 +41,7 @@ namespace GourmetMaps.Controllers
                 .OrderByDescending(entry => entry.VisitDate)
                 .ToListAsync();
 
-            return Ok(entries.Select(entry => ToDto(entry, currentUserId, includePhoto: false)));
+            return Ok(entries.Select(entry => ToDto(entry, currentUserId, includePhoto: true)));
         }
 
         // GET: api/gourmetentries/5/photo
@@ -104,6 +104,8 @@ namespace GourmetMaps.Controllers
                 Memo = string.IsNullOrWhiteSpace(request.Memo) ? string.Empty : request.Memo.Trim(),
                 SceneTag = string.IsNullOrWhiteSpace(request.SceneTag) ? null : request.SceneTag.Trim(),
                 PriceRange = string.IsNullOrWhiteSpace(request.PriceRange) ? null : request.PriceRange.Trim(),
+                VisitType = string.IsNullOrWhiteSpace(request.VisitType) ? null : request.VisitType.Trim(),
+                Tag = string.IsNullOrWhiteSpace(request.Tag) ? null : request.Tag.Trim(),
                 PhotoUrl = string.IsNullOrWhiteSpace(request.PhotoUrl) ? null : request.PhotoUrl.Trim(),
                 Latitude = latitude,
                 Longitude = longitude,
@@ -300,7 +302,10 @@ namespace GourmetMaps.Controllers
                         count,
                         group.Max(entry => entry.VisitDate),
                         latest.Latitude,
-                        latest.Longitude);
+                        latest.Longitude,
+                        group.OrderByDescending(entry => entry.VisitDate)
+                            .Select(entry => entry.PhotoUrl)
+                            .FirstOrDefault(photoUrl => !string.IsNullOrEmpty(photoUrl)));
                 })
                 .OrderByDescending(store => store.BayesianScore)
                 .ThenByDescending(store => store.AverageOverallRating)
@@ -345,6 +350,8 @@ namespace GourmetMaps.Controllers
                 entry.Memo,
                 entry.SceneTag,
                 entry.PriceRange,
+                entry.VisitType,
+                entry.Tag,
                 includePhoto ? entry.PhotoUrl : null,
                 entry.Latitude,
                 entry.Longitude,
@@ -370,6 +377,8 @@ namespace GourmetMaps.Controllers
             [StringLength(2000)] string? Memo,
             [StringLength(50)] string? SceneTag,
             [StringLength(50)] string? PriceRange,
+            [StringLength(50)] string? VisitType,
+            [StringLength(50)] string? Tag,
             // 縮小済み写真の data URL 上限 (1MB)。肥大化した投稿での DB 圧迫を防ぐ安全弁。
             [StringLength(1_000_000)] string? PhotoUrl,
             [Range(-90, 90)] float Latitude,
@@ -398,6 +407,8 @@ namespace GourmetMaps.Controllers
             string Memo,
             string? SceneTag,
             string? PriceRange,
+            string? VisitType,
+            string? Tag,
             string? PhotoUrl,
             float? Latitude,
             float? Longitude,
@@ -414,7 +425,8 @@ namespace GourmetMaps.Controllers
             int VisitCount,
             DateTime LastVisitDate,
             float? Latitude,
-            float? Longitude);
+            float? Longitude,
+            string? PhotoUrl);
 
         public record GenreRankingGroupDto(string Genre, IReadOnlyList<StoreRankingDto> Stores);
     }
