@@ -1,0 +1,116 @@
+.ls-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ls-section__tagline {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+/* ── Sortable list ── */
+
+.ls-rank-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ls-rank-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--panel);
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.ls-rank-item--top {
+  background: linear-gradient(135deg, #f4c151, var(--accent-strong));
+}
+
+.ls-rank-item--top .rank-item__body h3 {
+  color: #fffaf5;
+}
+
+.ls-rank-item--top .visit-card__menu {
+  color: rgba(255, 250, 245, 0.7);
+}
+
+.ls-rank-item--top .rank-item__actions button {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fffaf5;
+}
+
+.ls-rank-item__crown {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fffaf5;
+}
+
+/* ── Drag states ── */
+
+.ls-rank-item--dragging {
+  opacity: 0.92;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+  cursor: grabbing;
+  position: relative;
+  z-index: 10;
+}
+
+.ls-rank-list--active .ls-rank-item:not(.ls-rank-item--dragging) {
+  cursor: default;
+}
+
+/* ── Search ── */
+
+.ls-search {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--input);
+  color: var(--text);
+  font-size: 0.88rem;
+  outline: none;
+}
+
+.ls-search::placeholder {
+  color: var(--muted);
+}
+
+.ls-search:focus {
+  border-color: var(--accent-strong);
+}
+
+/* ── Add button ── */
+
+.ls-add-btn {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--accent-strong);
+  color: #fffaf5;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ls-add-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
