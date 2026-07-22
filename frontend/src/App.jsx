@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import BottomNavigation from './components/BottomNavigation'
-import DailySnapshot from './components/DailySnapshot'
 import HeaderBar from './components/HeaderBar'
 import HomeView from './components/HomeView'
 import MapView from './components/MapView'
@@ -12,13 +11,7 @@ import RecentVisitList from './components/RecentVisitList'
 import AuthView from './components/AuthView'
 import { fetchGourmetEntries, fetchMembers } from './api/client'
 import { useAuth } from './auth/useAuth'
-import { deriveTag, formatRelativeTime, groupEntriesByStore, withinHours } from './data/visits'
-
-const dailyStats = [
-  { label: '今日の記録', value: '3件' },
-  { label: '未整理メモ', value: '1件' },
-  { label: '今週の再訪候補', value: '4店' },
-]
+import { deriveTag, formatRelativeTime, groupEntriesByStore, isToday, withinHours } from './data/visits'
 
 const quickTags = ['また行く', '一口目が強い', '接客よい', '写真映え', '量が多い']
 const visitTypes = ['ひとり', '同僚と', '家族と', 'テイクアウト']
@@ -91,11 +84,12 @@ function App() {
 
   const allStores = useMemo(() => groupEntriesByStore(entries), [entries])
 
+  const todayCount = useMemo(() => entries.filter(isToday).length, [entries])
+
   const recentVisits = useMemo(
     () =>
       [...entries]
         .sort((a, b) => new Date(b.visitDate) - new Date(a.visitDate))
-        .slice(0, 2)
         .map((entry) => {
           const visual = groupEntriesByStore([entry])[0]
           return {
@@ -122,6 +116,7 @@ function App() {
     avatarUrl: user?.avatarUrl ?? '',
     entryCount: entries.length,
     favoriteCount: allStores.length,
+    todayCount,
     titles: user?.titles ?? [],
     canIssueInvites: user?.canIssueInvites ?? false,
   }
@@ -160,7 +155,6 @@ function App() {
 
         {activeTab === 'capture' && (
           <>
-            <DailySnapshot stats={dailyStats} />
             <QuickComposer
               quickTags={quickTags}
               visitTypes={visitTypes}
@@ -176,7 +170,7 @@ function App() {
 
         {activeTab === 'map' && <MapView stores={allStores} members={members} onDataChange={reloadData} />}
 
-        {activeTab === 'rank' && <RankView stores={allStores} onDataChange={reloadData} />}
+        {activeTab === 'rank' && <RankView stores={allStores} entries={entries} onDataChange={reloadData} />}
 
         {activeTab === 'profile' && (
           <ProfileView

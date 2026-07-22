@@ -49,6 +49,17 @@ export function withinHours(entry, hours) {
   return Date.now() - new Date(entry.visitDate).getTime() <= hours * HOUR
 }
 
+// 「今日」= 直近24時間ではなく暦日での一致（日付をまたぐとリセットされる）
+export function isToday(entry) {
+  const visitDate = new Date(entry.visitDate)
+  const now = new Date()
+  return (
+    visitDate.getFullYear() === now.getFullYear() &&
+    visitDate.getMonth() === now.getMonth() &&
+    visitDate.getDate() === now.getDate()
+  )
+}
+
 export function deriveTag(entry) {
   return entry.repeatRating >= 4 ? 'また行く' : '通常評価'
 }

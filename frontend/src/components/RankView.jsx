@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { fetchGenreRanking, fetchOverallRanking } from '../api/client'
+import { fetchGenreRanking, fetchLastSupperRanking, fetchOverallRanking, updateLastSupperRanking } from '../api/client'
 import { RankBadge } from './icons'
 import { storeVisual } from '../data/visits'
 import StoreDetailModal from './StoreDetailModal'
+
+const LAST_SUPPER_MAX = 10
 
 const criteria = [
   { key: 'taste', label: '味' },
@@ -17,6 +19,7 @@ const modes = [
   { key: 'overall', label: '総合' },
   { key: 'genre', label: 'ジャンル別' },
   { key: 'criteria', label: '個別基準' },
+  { key: 'lastsupper', label: '最後の晩餐' },
 ]
 
 function average(values) {
@@ -70,7 +73,159 @@ function StoreRankList({ items, emptyMessage, metaLabel, onSelect }) {
   )
 }
 
-function RankView({ stores, onDataChange }) {
+function LastSupperSection({ entries }) {
+  const [ranking, setRanking] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    fetchLastSupperRanking()
+      .then((result) => {
+        setRanking(result)
+        setLoading(false)
+      })
+      .catch(() => {
+        setRanking([])
+        setLoading(false)
+      })
+  }, [])
+
+  async function persist(orderedIds) {
+    setSaving(true)
+    try {
+      const result = await updateLastSupperRanking(orderedIds)
+      setRanking(result)
+    } catch {
+      // 保存失敗時は次回操作時にリトライされる。表示は現状維持。
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function moveTo(fromIndex, toIndex) {
+    if (toIndex < 0 || toIndex >= ranking.length) return
+    const next = [...ranking]
+    const [moved] = next.splice(fromIndex, 1)
+    next.splice(toIndex, 0, moved)
+    persist(next.map((item) => item.id))
+  }
+
+  function removeItem(id) {
+    persist(ranking.filter((item) => item.id !== id).map((item) => item.id))
+  }
+
+  function addItem(id) {
+    if (ranking.length >= LAST_SUPPER_MAX) return
+    persist([...ranking.map((item) => item.id), id])
+  }
+
+  const rankedIds = useMemo(() => new Set(ranking.map((item) => item.id)), [ranking])
+
+  const candidates = useMemo(() => {
+    const query = search.trim().toLowerCase()
+    return entries
+      .filter((entry) => !rankedIds.has(entry.id))
+      .filter((entry) => {
+        if (!query) return true
+        return (
+          entry.name.toLowerCase().includes(query) ||
+          (entry.menuName ?? '').toLowerCase().includes(query)
+        )
+      })
+      .sort((a, b) => new Date(b.visitDate) - new Date(a.visitDate))
+      .slice(0, 20)
+  }, [entries, rankedIds, search])
+
+  if (loading) {
+    return <p className="map-view__empty">読み込み中…</p>
+  }
+
+  return (
+    <div className="last-supper-section">
+      <p className="visit-card__menu">もしこれが最後の食事だとしたら、選ぶ{LAST_SUPPER_MAX}皿は？</p>
+
+      <div className="rank-list rank-list--lastsupper">
+      {ranking.map((item, index) => {
+        const visual = storeVisual(item.name, item.genre)
+        return (
+          <article key={item.id} className="rank-item">
+            <RankBadge rank={index + 1} />
+            {item.photoUrl ? (
+              <img className="rank-item__thumb" src={item.photoUrl} style={{ objectFit: 'cover' }} alt="" />
+            ) : (
+              <span className="rank-item__thumb" style={{ background: visual.gradient }}>
+                {visual.emoji}
+              </span>
+            )}
+            <div className="rank-item__body">
+              <h3>{item.name}</h3>
+              <p className="visit-card__menu">{item.menuName ?? item.genre}</p>
+            </div>
+            <div className="rank-item__actions">
+              <button type="button" disabled={saving || index === 0} onClick={() => moveTo(index, index - 1)}>
+                ▲
+              </button>
+              <button
+                type="button"
+                disabled={saving || index === ranking.length - 1}
+                onClick={() => moveTo(index, index + 1)}
+              >
+                ▼
+              </button>
+              <button type="button" disabled={saving} onClick={() => removeItem(item.id)}>
+                ✕
+              </button>
+            </div>
+          </article>
+        )
+      })}
+      {ranking.length === 0 && <p className="map-view__empty">まだ選ばれていません。下の候補から追加しましょう。</p>}
+      </div>
+
+      {ranking.length < LAST_SUPPER_MAX && (
+        <>
+          <div className="recent-section__header">
+            <h3>候補から追加 ({ranking.length}/{LAST_SUPPER_MAX})</h3>
+          </div>
+          <input
+            type="text"
+            className="quick-composer__input"
+            placeholder="店名・メニューで検索"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+          <div className="rank-list rank-list--candidates">
+          {candidates.map((entry) => {
+            const visual = storeVisual(entry.name, entry.genre)
+            return (
+              <article key={entry.id} className="rank-item">
+                {entry.photoUrl ? (
+                  <img className="rank-item__thumb" src={entry.photoUrl} style={{ objectFit: 'cover' }} alt="" />
+                ) : (
+                  <span className="rank-item__thumb" style={{ background: visual.gradient }}>
+                    {visual.emoji}
+                  </span>
+                )}
+                <div className="rank-item__body">
+                  <h3>{entry.name}</h3>
+                  <p className="visit-card__menu">{entry.menuName ?? entry.genre}</p>
+                </div>
+                <button type="button" disabled={saving} onClick={() => addItem(entry.id)}>
+                  追加
+                </button>
+              </article>
+            )
+          })}
+          {candidates.length === 0 && <p className="map-view__empty">該当する記録がありません。</p>}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+function RankView({ stores, entries, onDataChange }) {
   const [mode, setMode] = useState('overall')
   const [criterion, setCriterion] = useState('taste')
   const [selectedGenre, setSelectedGenre] = useState(null)
@@ -220,6 +375,8 @@ function RankView({ stores, onDataChange }) {
           />
         </>
       )}
+
+      {mode === 'lastsupper' && <LastSupperSection entries={entries} />}
 
       {selectedStore && (
         <StoreDetailModal

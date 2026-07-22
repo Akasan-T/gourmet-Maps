@@ -74,6 +74,7 @@ export async function mockAuthenticatedApi(page, overrides = {}) {
   })
   await page.route('**/api/GourmetEntries/rankings/overall', (route) => json(route, []))
   await page.route('**/api/GourmetEntries/rankings/genres', (route) => json(route, []))
+  await page.route('**/api/GourmetEntries/rankings/lastsupper', (route) => json(route, []))
   await page.route('**/api/Members', (route) => json(route, members))
   await page.route('**/api/Members/*', (route) =>
     json(route, { ...members[0], entries: [], titles: [] }),

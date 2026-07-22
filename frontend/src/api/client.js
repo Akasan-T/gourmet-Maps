@@ -261,6 +261,24 @@ export function fetchCompanionRanking(memberId) {
   return getJson(`/api/GourmetEntries/rankings/companions/${memberId}`)
 }
 
+export function fetchLastSupperRanking() {
+  return getJson('/api/GourmetEntries/rankings/lastsupper')
+}
+
+export async function updateLastSupperRanking(entryIds) {
+  const response = await authFetch('/api/GourmetEntries/rankings/lastsupper', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ entryIds }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`update-last-supper-ranking-failed-${response.status}`)
+  }
+
+  return response.json()
+}
+
 // 自店DBの登録済み店舗を距離の近い順に取得する
 export function fetchStores({ lat, lng, q } = {}) {
   const params = new URLSearchParams()

@@ -38,7 +38,7 @@ function StoreDetailModal({ store, onClose, onDeleted }) {
                 {store.emoji}
               </span>
               <div className="visit-card__title">
-                <h3>{visit.genre}</h3>
+                <h3>{visit.menuName || '食べたもの未入力'}</h3>
                 <p className="visit-card__menu">{visit.recordedByDisplayName ?? '記録者不明'}</p>
               </div>
               <span className="visit-card__time">{formatRelativeTime(new Date(visit.visitDate))}</span>

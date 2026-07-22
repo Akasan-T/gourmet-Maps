@@ -12,6 +12,7 @@ namespace GourmetMaps.Models
         [Required]
         public string Name { get; set; } // 店名 (Store.Name のスナップショット)
         public string Genre { get; set; }
+        public string? MenuName { get; set; } // 食べたもの
         public DateTime VisitDate { get; set; } = DateTime.Now;
 
         // 総合スコア = また行きたいか(RepeatRating) を基準に採用
@@ -33,6 +34,9 @@ namespace GourmetMaps.Models
         public string? VisitType { get; set; }  // 訪問タイプ (ひとり/同僚と 等)
         public string? Tag { get; set; }        // クイックタグ (また行く/一口目が強い 等)
         public string? PhotoUrl { get; set; }   // 写真 (任意)
+
+        // 「最後の晩餐ランキング」での順位 (1〜10)。未選出なら null
+        public int? LastSupperRank { get; set; }
 
         public float? Latitude { get; set; }
         public float? Longitude { get; set; }

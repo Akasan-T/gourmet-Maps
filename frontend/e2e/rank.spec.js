@@ -103,4 +103,55 @@ test.describe('順位画面', () => {
     await expect(page.getByText('総合の順位')).toBeVisible()
     await expect(page.getByText('麺屋テスト')).toBeVisible()
   })
+
+  test('最後の晩餐モードで候補を追加・並べ替え・削除できる (RANK-07)', async ({ page }) => {
+    let ranking = []
+    const entryById = Object.fromEntries(sampleEntries.map((entry) => [entry.id, entry]))
+
+    await page.route('**/api/GourmetEntries/rankings/lastsupper', async (route) => {
+      if (route.request().method() === 'PUT') {
+        const { entryIds } = JSON.parse(route.request().postData() || '{}')
+        ranking = entryIds.map((id, index) => ({
+          id,
+          name: entryById[id].name,
+          genre: entryById[id].genre,
+          menuName: null,
+          photoUrl: null,
+          visitDate: entryById[id].visitDate,
+          rank: index + 1,
+        }))
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(ranking) })
+      }
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(ranking) })
+    })
+
+    await page.locator('.chip', { hasText: '最後の晩餐' }).click()
+    await expect(page.getByText('もしこれが最後の食事だとしたら')).toBeVisible()
+    await expect(page.getByText('まだ選ばれていません。')).toBeVisible()
+
+    // カフェモックを追加 → 1位に入る
+    const cafeCandidate = page.locator('.rank-item', { hasText: 'カフェモック' })
+    await cafeCandidate.getByRole('button', { name: '追加' }).click()
+    await expect(page.getByText('候補から追加 (1/10)')).toBeVisible()
+
+    // 麺屋テストを追加 → 2位に入る
+    const ramenCandidate = page.locator('.rank-item', { hasText: '麺屋テスト' })
+    await ramenCandidate.getByRole('button', { name: '追加' }).click()
+    await expect(page.getByText('候補から追加 (2/10)')).toBeVisible()
+
+    const rankedItems = page.locator('.rank-list--lastsupper > .rank-item')
+    await expect(rankedItems).toHaveCount(2)
+    await expect(rankedItems.nth(0)).toContainText('カフェモック')
+    await expect(rankedItems.nth(1)).toContainText('麺屋テスト')
+
+    // 2位を1位に繰り上げる
+    await rankedItems.nth(1).getByRole('button', { name: '▲' }).click()
+    await expect(rankedItems.nth(0)).toContainText('麺屋テスト')
+    await expect(rankedItems.nth(1)).toContainText('カフェモック')
+
+    // カフェモックを削除
+    await rankedItems.nth(1).getByRole('button', { name: '✕' }).click()
+    await expect(page.locator('.rank-list--lastsupper > .rank-item')).toHaveCount(1)
+    await expect(page.getByText('候補から追加 (1/10)')).toBeVisible()
+  })
 })
