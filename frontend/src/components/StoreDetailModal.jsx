@@ -30,7 +30,7 @@ function StoreDetailModal({ store, onClose, onDeleted }) {
       {error && <p className="map-view__empty">{error}</p>}
 
       {store.visits.map((visit) => {
-        const tag = deriveTag(visit)
+        const tag = visit.tag || deriveTag(visit)
         return (
           <article key={visit.id} className="visit-card">
             <div className="visit-card__header">
@@ -38,7 +38,7 @@ function StoreDetailModal({ store, onClose, onDeleted }) {
                 {store.emoji}
               </span>
               <div className="visit-card__title">
-                <h3>{visit.genre}</h3>
+                <h3>{visit.menuName || '食べたもの未入力'}</h3>
                 <p className="visit-card__menu">{visit.recordedByDisplayName ?? '記録者不明'}</p>
               </div>
               <span className="visit-card__time">{formatRelativeTime(new Date(visit.visitDate))}</span>
@@ -62,6 +62,7 @@ function StoreDetailModal({ store, onClose, onDeleted }) {
               <span className={`visit-card__tag${positiveTags.has(tag) ? ' visit-card__tag--positive' : ''}`}>
                 {tag}
               </span>
+              {visit.visitType && <span className="visit-card__tag">{visit.visitType}</span>}
               {visit.sceneTag && <span className="visit-card__tag">{visit.sceneTag}</span>}
               {visit.priceRange && <span className="visit-card__tag">{visit.priceRange}</span>}
               {visit.canDelete && (

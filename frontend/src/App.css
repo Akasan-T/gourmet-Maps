@@ -306,7 +306,7 @@
 
 .snapshot-card__grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
 }
 
@@ -314,14 +314,6 @@
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   background: var(--panel);
-}
-
-.snapshot-metric:nth-child(2) {
-  background: var(--panel-warm);
-}
-
-.snapshot-metric:nth-child(3) {
-  background: var(--panel-cool);
 }
 
 .snapshot-metric__value {
@@ -684,6 +676,7 @@
 
 .visit-card__footer {
   flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 .visit-card__delete {
@@ -1069,10 +1062,32 @@
   font-size: 1.05rem;
 }
 
+.rank-item__actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.rank-item__actions button {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm, 8px);
+  border: none;
+  background: var(--surface, #eee);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.rank-item__actions button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 /* Profile view */
 .profile-stats {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 

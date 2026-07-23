@@ -3,6 +3,7 @@ using System;
 using GourmetMaps.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace NoodleMaps.Migrations
 {
     [DbContext(typeof(GourmetDbContext))]
-    partial class GourmetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260722140009_AddVisitTypeAndTagToGourmetEntry")]
+    partial class AddVisitTypeAndTagToGourmetEntry
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
@@ -141,9 +144,6 @@ namespace NoodleMaps.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("LastSupperRank")
-                        .HasColumnType("INTEGER");
-
                     b.Property<float?>("Latitude")
                         .HasColumnType("REAL");
 
@@ -152,9 +152,6 @@ namespace NoodleMaps.Migrations
 
                     b.Property<string>("Memo")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("MenuName")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")

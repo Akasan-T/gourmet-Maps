@@ -196,6 +196,10 @@ function ProfileView({ user, members, onSignOut, onUpdateDisplayName, onUpdateAv
 
         <div className="profile-stats">
           <article className="snapshot-metric">
+            <p className="snapshot-metric__value">{user.todayCount}件</p>
+            <p className="snapshot-metric__label">今日の記録</p>
+          </article>
+          <article className="snapshot-metric">
             <p className="snapshot-metric__value">{user.entryCount}件</p>
             <p className="snapshot-metric__label">総記録数</p>
           </article>

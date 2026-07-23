@@ -41,7 +41,7 @@ namespace GourmetMaps.Controllers
                 .OrderByDescending(entry => entry.VisitDate)
                 .ToListAsync();
 
-            return Ok(entries.Select(entry => ToDto(entry, currentUserId, includePhoto: false)));
+            return Ok(entries.Select(entry => ToDto(entry, currentUserId, includePhoto: true)));
         }
 
         // GET: api/gourmetentries/5/photo
@@ -92,6 +92,7 @@ namespace GourmetMaps.Controllers
             {
                 Name = storeName,
                 Genre = genre,
+                MenuName = string.IsNullOrWhiteSpace(request.MenuName) ? null : request.MenuName.Trim(),
                 VisitDate = request.VisitDate ?? DateTime.UtcNow,
                 OverallRating = overallRating,
                 TasteRating = request.TasteRating,
@@ -104,6 +105,8 @@ namespace GourmetMaps.Controllers
                 Memo = string.IsNullOrWhiteSpace(request.Memo) ? string.Empty : request.Memo.Trim(),
                 SceneTag = string.IsNullOrWhiteSpace(request.SceneTag) ? null : request.SceneTag.Trim(),
                 PriceRange = string.IsNullOrWhiteSpace(request.PriceRange) ? null : request.PriceRange.Trim(),
+                VisitType = string.IsNullOrWhiteSpace(request.VisitType) ? null : request.VisitType.Trim(),
+                Tag = string.IsNullOrWhiteSpace(request.Tag) ? null : request.Tag.Trim(),
                 PhotoUrl = string.IsNullOrWhiteSpace(request.PhotoUrl) ? null : request.PhotoUrl.Trim(),
                 Latitude = latitude,
                 Longitude = longitude,
@@ -215,6 +218,75 @@ namespace GourmetMaps.Controllers
             return Ok(AggregateByStore(entries));
         }
 
+        // 「最後の晩餐ランキング」に選出できる最大件数
+        private const int LastSupperMaxCount = 10;
+
+        // GET: api/gourmetentries/rankings/lastsupper
+        [HttpGet("rankings/lastsupper")]
+        public async Task<ActionResult<IEnumerable<LastSupperRankingDto>>> GetLastSupperRanking()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var entries = await _context.GourmetEntries
+                .AsNoTracking()
+                .Where(entry => entry.UserID == userId && entry.LastSupperRank != null)
+                .OrderBy(entry => entry.LastSupperRank)
+                .ToListAsync();
+
+            return Ok(entries.Select(ToLastSupperDto));
+        }
+
+        // PUT: api/gourmetentries/rankings/lastsupper
+        // body: 選出順 (1位から順) の GourmetEntryID 一覧。最大 LastSupperMaxCount 件。
+        [HttpPut("rankings/lastsupper")]
+        public async Task<ActionResult<IEnumerable<LastSupperRankingDto>>> UpdateLastSupperRanking(
+            UpdateLastSupperRankingRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var orderedIds = (request.EntryIds ?? new List<int>()).Distinct().Take(LastSupperMaxCount).ToList();
+
+            // 現在ランク付け済みの自分の記録と、新たに指定された記録をまとめて取得する
+            var affected = await _context.GourmetEntries
+                .Where(entry => entry.UserID == userId
+                    && (entry.LastSupperRank != null || orderedIds.Contains(entry.GourmetEntryID)))
+                .ToListAsync();
+
+            // 他人の記録IDが混入していないか検証する
+            var ownedIds = affected.Select(entry => entry.GourmetEntryID).ToHashSet();
+            if (orderedIds.Any(id => !ownedIds.Contains(id)))
+            {
+                return Forbid();
+            }
+
+            foreach (var entry in affected)
+            {
+                var rankIndex = orderedIds.IndexOf(entry.GourmetEntryID);
+                entry.LastSupperRank = rankIndex >= 0 ? rankIndex + 1 : null;
+            }
+
+            await _context.SaveChangesAsync();
+
+            var ranked = affected
+                .Where(entry => entry.LastSupperRank != null)
+                .OrderBy(entry => entry.LastSupperRank);
+
+            return Ok(ranked.Select(ToLastSupperDto));
+        }
+
+        private static LastSupperRankingDto ToLastSupperDto(GourmetEntry entry) => new(
+            entry.GourmetEntryID,
+            entry.Name,
+            entry.Genre,
+            entry.MenuName,
+            entry.PhotoUrl,
+            entry.VisitDate,
+            entry.LastSupperRank!.Value);
+
         // 評価者数が少ない店舗が上位に来すぎないよう平均方向へ補正する重み (最小信頼票数)
         private const float BayesianConfidence = 3f;
 
@@ -300,7 +372,10 @@ namespace GourmetMaps.Controllers
                         count,
                         group.Max(entry => entry.VisitDate),
                         latest.Latitude,
-                        latest.Longitude);
+                        latest.Longitude,
+                        group.OrderByDescending(entry => entry.VisitDate)
+                            .Select(entry => entry.PhotoUrl)
+                            .FirstOrDefault(photoUrl => !string.IsNullOrEmpty(photoUrl)));
                 })
                 .OrderByDescending(store => store.BayesianScore)
                 .ThenByDescending(store => store.AverageOverallRating)
@@ -333,6 +408,7 @@ namespace GourmetMaps.Controllers
                 entry.GourmetEntryID,
                 entry.Name,
                 entry.Genre,
+                entry.MenuName,
                 entry.VisitDate,
                 entry.OverallRating,
                 entry.TasteRating,
@@ -345,6 +421,8 @@ namespace GourmetMaps.Controllers
                 entry.Memo,
                 entry.SceneTag,
                 entry.PriceRange,
+                entry.VisitType,
+                entry.Tag,
                 includePhoto ? entry.PhotoUrl : null,
                 entry.Latitude,
                 entry.Longitude,
@@ -360,6 +438,7 @@ namespace GourmetMaps.Controllers
         public record CreateGourmetEntryRequest(
             [Required][StringLength(200, MinimumLength = 1)] string Name,
             [StringLength(50)] string? Genre,
+            [StringLength(100)] string? MenuName,
             DateTime? VisitDate,
             [Range(0, 5)] float OverallRating,
             [Range(0, 5)] float TasteRating,
@@ -370,6 +449,8 @@ namespace GourmetMaps.Controllers
             [StringLength(2000)] string? Memo,
             [StringLength(50)] string? SceneTag,
             [StringLength(50)] string? PriceRange,
+            [StringLength(50)] string? VisitType,
+            [StringLength(50)] string? Tag,
             // 縮小済み写真の data URL 上限 (1MB)。肥大化した投稿での DB 圧迫を防ぐ安全弁。
             [StringLength(1_000_000)] string? PhotoUrl,
             [Range(-90, 90)] float Latitude,
@@ -386,6 +467,7 @@ namespace GourmetMaps.Controllers
             int Id,
             string Name,
             string Genre,
+            string? MenuName,
             DateTime VisitDate,
             float OverallRating,
             float TasteRating,
@@ -398,6 +480,8 @@ namespace GourmetMaps.Controllers
             string Memo,
             string? SceneTag,
             string? PriceRange,
+            string? VisitType,
+            string? Tag,
             string? PhotoUrl,
             float? Latitude,
             float? Longitude,
@@ -414,8 +498,20 @@ namespace GourmetMaps.Controllers
             int VisitCount,
             DateTime LastVisitDate,
             float? Latitude,
-            float? Longitude);
+            float? Longitude,
+            string? PhotoUrl);
 
         public record GenreRankingGroupDto(string Genre, IReadOnlyList<StoreRankingDto> Stores);
+
+        public record UpdateLastSupperRankingRequest(IReadOnlyList<int>? EntryIds);
+
+        public record LastSupperRankingDto(
+            int Id,
+            string Name,
+            string Genre,
+            string? MenuName,
+            string? PhotoUrl,
+            DateTime VisitDate,
+            int Rank);
     }
 }

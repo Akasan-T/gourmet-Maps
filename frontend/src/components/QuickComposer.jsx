@@ -501,26 +501,22 @@ function QuickComposer({ quickTags, visitTypes, onSaved, prefill }) {
         longitude = currentPosition.coords.longitude
       }
 
-      const memoLines = [
-        menuName.trim() ? `メニュー: ${menuName.trim()}` : '',
-        `訪問タイプ: ${selectedVisitType}`,
-        `タグ: ${selectedTag}`,
-        memo.trim(),
-      ].filter(Boolean)
-
       setStatusMessage('保存しています。')
 
       await createGourmetEntry({
         name: restaurantName.trim(),
         genre: selectedPlace?.genre && genreOptions.includes(selectedPlace.genre) ? selectedPlace.genre : genre,
+        menuName: menuName.trim() || null,
         tasteRating: Number(scores.taste),
         costRating: Number(scores.cost),
         atmosphereRating: Number(scores.atmosphere),
         serviceRating: Number(scores.service),
         repeatRating: Number(scores.repeat),
-        memo: memoLines.join('\n'),
+        memo: memo.trim(),
         sceneTag: sceneTag || null,
         priceRange: priceRange || null,
+        visitType: selectedVisitType || null,
+        tag: selectedTag || null,
         photoUrl: photoDataUrl || null,
         latitude,
         longitude,
@@ -657,6 +653,11 @@ function QuickComposer({ quickTags, visitTypes, onSaved, prefill }) {
           </div>
         </div>
 
+        <label className="field">
+          <span className="field__label">食べたもの</span>
+          <input value={menuName} onChange={(event) => setMenuName(event.target.value)} placeholder="例: 味噌ラーメン" />
+        </label>
+
         {ratingAxes.map((axis) => (
           <RatingSelector
             key={axis.key}
@@ -679,11 +680,6 @@ function QuickComposer({ quickTags, visitTypes, onSaved, prefill }) {
 
         {showDetails && (
           <>
-            <label className="field">
-              <span className="field__label">メニュー</span>
-              <input value={menuName} onChange={(event) => setMenuName(event.target.value)} />
-            </label>
-
             <div className="field">
               <span className="field__label">シーンタグ</span>
               <div className="chip-row" role="list">

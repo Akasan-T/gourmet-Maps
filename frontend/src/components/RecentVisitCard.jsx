@@ -4,9 +4,13 @@ function RecentVisitCard({ visit, onAppend }) {
   return (
     <article className="visit-card">
       <div className="visit-card__header">
-        <span className="visit-card__thumb" style={{ background: visit.gradient }} aria-hidden="true">
-          {visit.emoji}
-        </span>
+        {visit.photoUrl ? (
+          <img className="visit-card__thumb" src={visit.photoUrl} style={{ objectFit: 'cover' }} alt="" />
+        ) : (
+          <span className="visit-card__thumb" style={{ background: visit.gradient }} aria-hidden="true">
+            {visit.emoji}
+          </span>
+        )}
         <div className="visit-card__title">
           <h3>{visit.restaurant}</h3>
           <p className="visit-card__menu">{visit.menu}</p>

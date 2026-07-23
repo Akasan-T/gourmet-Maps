@@ -1,24 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { AttributionControl, MapContainer, Marker, Popup, TileLayer, ZoomControl, useMapEvents } from 'react-leaflet'
+import { AttributionControl, MapContainer, Marker, TileLayer, ZoomControl } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { createCurrentLocationIcon, createPinIcon } from './mapPinIcon'
 import StoreDetailModal from './StoreDetailModal'
 import Modal from './Modal'
 import { LocateIcon } from './icons'
-import { extractVisitType } from '../data/visits'
 
 const fallbackCenter = [35.6812, 139.7671] // 東京駅
 const currentLocationZoom = 16
 const initialZoom = 14
-const popupMinZoom = 15
 const ratingOptions = ['5', '4', '3', '2', '1']
-
-function ZoomWatcher({ onZoomChange }) {
-  useMapEvents({
-    zoomend: (event) => onZoomChange(event.target.getZoom()),
-  })
-  return null
-}
 
 function MapView({ stores, onDataChange }) {
   const [selectedGenre, setSelectedGenre] = useState('all')
@@ -28,7 +19,6 @@ function MapView({ stores, onDataChange }) {
   const [currentPosition, setCurrentPosition] = useState(null)
   const [locateState, setLocateState] = useState('idle')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [zoom, setZoom] = useState(initialZoom)
   const mapRef = useRef(null)
 
   const genreOptions = useMemo(
@@ -39,7 +29,7 @@ function MapView({ stores, onDataChange }) {
   const visitTypeOptions = useMemo(
     () => [
       ...new Set(
-        stores.flatMap((store) => store.visits.map((visit) => extractVisitType(visit.memo)).filter(Boolean)),
+        stores.flatMap((store) => store.visits.map((visit) => visit.visitType).filter(Boolean)),
       ),
     ].sort(),
     [stores],
@@ -89,7 +79,7 @@ function MapView({ stores, onDataChange }) {
         ...store,
         visits: store.visits.filter((visit) => {
           if (selectedGenre !== 'all' && visit.genre !== selectedGenre) return false
-          if (selectedVisitType !== 'all' && extractVisitType(visit.memo) !== selectedVisitType) return false
+          if (selectedVisitType !== 'all' && visit.visitType !== selectedVisitType) return false
           if (minTaste !== null && visit.tasteRating < minTaste) return false
           return true
         }),
@@ -121,7 +111,6 @@ function MapView({ stores, onDataChange }) {
           attributionControl={false}
           style={{ height: '100%', width: '100%' }}
         >
-          <ZoomWatcher onZoomChange={setZoom} />
           <ZoomControl position="bottomleft" />
           <AttributionControl position="bottomright" prefix={false} />
           <TileLayer
@@ -136,32 +125,8 @@ function MapView({ stores, onDataChange }) {
               key={store.name}
               position={[store.lat, store.lng]}
               icon={createPinIcon({ color: store.color, tasteRating: store.visits[0].tasteRating })}
-            >
-              {zoom >= popupMinZoom && (
-                <Popup>
-                  <div
-                    className="map-popup"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => setSelectedStore(store)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') setSelectedStore(store)
-                    }}
-                  >
-                    <span className="map-popup__thumb" style={{ background: store.gradient }}>
-                      {store.emoji}
-                    </span>
-                    <div>
-                      <strong>{store.name}</strong>
-                      <p>
-                        味 {Math.round(store.visits[0].tasteRating)}
-                        {store.visits.length > 1 ? ` ・${store.visits.length}件の記録` : ''}
-                      </p>
-                    </div>
-                  </div>
-                </Popup>
-              )}
-            </Marker>
+              eventHandlers={{ click: () => setSelectedStore(store) }}
+            />
           ))}
         </MapContainer>
       </div>
