@@ -1,3 +1,27 @@
+/* ── Toggle button ── */
+
+.ls-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.ls-toggle-btn--active {
+  border-color: var(--accent-strong);
+  background: linear-gradient(135deg, #f4c151, var(--accent-strong));
+  color: #fffaf5;
+}
+
 .ls-section {
   display: flex;
   flex-direction: column;
@@ -16,6 +40,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  position: relative;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -28,7 +53,35 @@
   border-radius: var(--radius-md);
   background: var(--panel);
   cursor: grab;
-  touch-action: pan-y;
+  touch-action: none;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* ── Drag handle ── */
+
+.ls-rank-item__handle {
+  flex-shrink: 0;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--muted);
+  opacity: 0.45;
+  cursor: grab;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.ls-rank-item:hover .ls-rank-item__handle,
+.ls-rank-item:active .ls-rank-item__handle {
+  opacity: 0.85;
+  color: var(--text);
+}
+
+.ls-rank-item--top .ls-rank-item__handle {
+  color: rgba(255, 250, 245, 0.5);
+}
+
+.ls-rank-item--top:hover .ls-rank-item__handle,
+.ls-rank-item--top:active .ls-rank-item__handle {
+  color: rgba(255, 250, 245, 0.9);
 }
 
 .ls-rank-item--top {
@@ -60,19 +113,74 @@
   color: #fffaf5;
 }
 
+/* ── Hold feedback (before drag activates) ── */
+
+.ls-rank-item--holding {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  animation: ls-hold-pulse 0.35s ease-out forwards;
+}
+
+@keyframes ls-hold-pulse {
+  0%   { transform: scale(1); }
+  60%  { transform: scale(1.015); }
+  100% { transform: scale(1.02); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14); }
+}
+
+.ls-rank-item--holding .ls-rank-item__handle {
+  opacity: 1;
+  color: var(--accent-strong);
+}
+
 /* ── Drag states ── */
 
 .ls-rank-item--dragging {
-  opacity: 0.92;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+  opacity: 0.95;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.22);
   cursor: grabbing;
   position: relative;
   z-index: 10;
+  border-radius: var(--radius-md);
+}
+
+.ls-rank-item--dragging .ls-rank-item__handle {
+  opacity: 1;
+  color: var(--accent-strong);
 }
 
 .ls-rank-list--active .ls-rank-item:not(.ls-rank-item--dragging) {
   cursor: default;
+  opacity: 0.7;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
+
+/* ── Drop indicator ── */
+
+.ls-drop-indicator {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--accent-strong);
+  pointer-events: none;
+  z-index: 20;
+  transition: top 0.15s ease;
+}
+
+.ls-drop-indicator::before,
+.ls-drop-indicator::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent-strong);
+  transform: translateY(-50%);
+}
+
+.ls-drop-indicator::before { left: -3px; }
+.ls-drop-indicator::after  { right: -3px; }
 
 /* ── Search ── */
 

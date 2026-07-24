@@ -20,7 +20,6 @@ const modes = [
   { key: 'overall', label: '総合' },
   { key: 'genre', label: 'ジャンル別' },
   { key: 'criteria', label: '個別基準' },
-  { key: 'lastsupper', label: '最後の晩餐' },
 ]
 
 function average(values) {
@@ -92,6 +91,10 @@ function LastSupperSection({ entries }) {
     itemHeight: 0,
     gap: 0,
     timer: null,
+    indicatorEl: null,
+    items: [],
+    rafId: null,
+    lastEvent: null,
   })
 
   useEffect(() => {
@@ -143,6 +146,30 @@ function LastSupperSection({ entries }) {
       .slice(0, 20)
   }, [entries, rankedIds, search])
 
+  function showIndicator(list, targetIndex, dragIndex) {
+    const d = dragRef.current
+    if (!d.indicatorEl) {
+      d.indicatorEl = document.createElement('div')
+      d.indicatorEl.className = 'ls-drop-indicator'
+    }
+    const items = [...list.querySelectorAll('[data-ls-item]')]
+    const listRect = list.getBoundingClientRect()
+
+    let top
+    if (targetIndex <= dragIndex) {
+      top = items[targetIndex].getBoundingClientRect().top - listRect.top - d.gap / 2
+    } else {
+      top = items[targetIndex].getBoundingClientRect().bottom - listRect.top + d.gap / 2
+    }
+    d.indicatorEl.style.top = `${top}px`
+    if (!d.indicatorEl.parentElement) list.appendChild(d.indicatorEl)
+  }
+
+  function hideIndicator() {
+    const d = dragRef.current
+    if (d.indicatorEl?.parentElement) d.indicatorEl.remove()
+  }
+
   function handlePointerDown(e, index) {
     if (e.target.closest('button') || saving) return
 
@@ -151,36 +178,81 @@ function LastSupperSection({ entries }) {
     const d = dragRef.current
     d.index = index
 
+    const list = listRef.current
+    const items = list ? [...list.querySelectorAll('[data-ls-item]')] : []
+    const holdTarget = items[index]
+
+    if (holdTarget) holdTarget.classList.add('ls-rank-item--holding')
+
     function activate() {
       d.active = true
-      const list = listRef.current
       if (!list) return
 
-      const items = [...list.querySelectorAll('[data-ls-item]')]
-      const listRect = list.getBoundingClientRect()
+      if (holdTarget) holdTarget.classList.remove('ls-rank-item--holding')
 
-      d.itemTops = items.map((el) => el.getBoundingClientRect().top - listRect.top)
-      d.itemHeight = items[0]?.offsetHeight ?? 0
-      d.gap = items.length > 1
-        ? items[1].getBoundingClientRect().top - items[0].getBoundingClientRect().bottom
+      const listRect = list.getBoundingClientRect()
+      const freshItems = [...list.querySelectorAll('[data-ls-item]')]
+      d.items = freshItems
+
+      d.itemTops = freshItems.map((el) => el.getBoundingClientRect().top - listRect.top)
+      d.itemHeight = freshItems[0]?.offsetHeight ?? 0
+      d.gap = freshItems.length > 1
+        ? freshItems[1].getBoundingClientRect().top - freshItems[0].getBoundingClientRect().bottom
         : 10
-      d.offsetY = startY - items[index].getBoundingClientRect().top
+      d.offsetY = startY - freshItems[index].getBoundingClientRect().top
       d.target = index
 
-      items[index].classList.add('ls-rank-item--dragging')
+      for (const el of freshItems) el.style.transition = 'transform 0.2s ease'
+      freshItems[d.index].style.transition = ''
+      freshItems[index].classList.add('ls-rank-item--dragging')
       list.classList.add('ls-rank-list--active')
       document.body.style.overflow = 'hidden'
 
       if (navigator.vibrate) navigator.vibrate(30)
     }
 
-    d.timer = setTimeout(activate, 350)
+    d.timer = setTimeout(activate, 300)
+
+    function applyMove() {
+      d.rafId = null
+      const ev = d.lastEvent
+      if (!d.active || !list || !ev) return
+
+      const listTop = d.listTop
+
+      const dy = ev.clientY - (listTop + d.itemTops[d.index]) - d.offsetY
+      d.items[d.index].style.transform = `translateY(${dy}px) scale(1.03)`
+      d.items[d.index].style.zIndex = '10'
+
+      const draggedCenter = ev.clientY - d.offsetY + d.itemHeight / 2
+      let target = 0
+      for (let i = 0; i < d.itemTops.length; i++) {
+        if (draggedCenter > listTop + d.itemTops[i] + d.itemHeight / 2) target = i
+      }
+      d.target = Math.max(0, Math.min(target, d.items.length - 1))
+
+      if (d.target !== d.index) {
+        showIndicator(list, d.target, d.index)
+      } else {
+        hideIndicator()
+      }
+
+      const shift = d.itemHeight + d.gap
+      for (let i = 0; i < d.items.length; i++) {
+        if (i === d.index) continue
+        let s = 0
+        if (d.index < d.target && i > d.index && i <= d.target) s = -shift
+        else if (d.index > d.target && i < d.index && i >= d.target) s = shift
+        d.items[i].style.transform = s ? `translateY(${s}px)` : ''
+      }
+    }
 
     function onMove(ev) {
       if (!d.active && d.timer) {
         if (Math.abs(ev.clientX - startX) > 8 || Math.abs(ev.clientY - startY) > 8) {
           clearTimeout(d.timer)
           d.timer = null
+          if (holdTarget) holdTarget.classList.remove('ls-rank-item--holding')
           teardown()
         }
         return
@@ -188,47 +260,36 @@ function LastSupperSection({ entries }) {
       if (!d.active) return
       ev.preventDefault()
 
-      const list = listRef.current
       if (!list) return
-      const items = [...list.querySelectorAll('[data-ls-item]')]
-      const listTop = list.getBoundingClientRect().top
-
-      const dy = ev.clientY - (listTop + d.itemTops[d.index]) - d.offsetY
-      items[d.index].style.transform = `translateY(${dy}px) scale(1.03)`
-      items[d.index].style.zIndex = '10'
-
-      const draggedCenter = ev.clientY - d.offsetY + d.itemHeight / 2
-      let target = 0
-      for (let i = 0; i < d.itemTops.length; i++) {
-        if (draggedCenter > listTop + d.itemTops[i] + d.itemHeight / 2) target = i
-      }
-      d.target = Math.max(0, Math.min(target, items.length - 1))
-
-      const shift = d.itemHeight + d.gap
-      for (let i = 0; i < items.length; i++) {
-        if (i === d.index) continue
-        let s = 0
-        if (d.index < d.target && i > d.index && i <= d.target) s = -shift
-        else if (d.index > d.target && i < d.index && i >= d.target) s = shift
-        items[i].style.transition = 'transform 0.2s ease'
-        items[i].style.transform = s ? `translateY(${s}px)` : ''
-      }
+      d.listTop = list.getBoundingClientRect().top
+      d.lastEvent = ev
+      if (d.rafId == null) d.rafId = requestAnimationFrame(applyMove)
     }
 
     function onEnd() {
       clearTimeout(d.timer)
       d.timer = null
+      if (d.rafId != null) {
+        cancelAnimationFrame(d.rafId)
+        d.rafId = null
+      }
+
+      if (holdTarget) holdTarget.classList.remove('ls-rank-item--holding')
+      hideIndicator()
 
       if (d.active) {
-        const list = listRef.current
         if (list) {
-          for (const el of list.querySelectorAll('[data-ls-item]')) {
+          const settledItems = [...list.querySelectorAll('[data-ls-item]')]
+          for (const el of settledItems) {
+            el.style.transition = 'none'
             el.style.transform = ''
-            el.style.transition = ''
             el.style.zIndex = ''
             el.classList.remove('ls-rank-item--dragging')
           }
           list.classList.remove('ls-rank-list--active')
+          requestAnimationFrame(() => {
+            for (const el of settledItems) el.style.transition = ''
+          })
         }
         document.body.style.overflow = ''
 
@@ -237,6 +298,7 @@ function LastSupperSection({ entries }) {
           const next = [...r]
           const [moved] = next.splice(d.index, 1)
           next.splice(d.target, 0, moved)
+          setRanking(next)
           persist(next.map((item) => item.id))
         }
         d.active = false
@@ -275,6 +337,7 @@ function LastSupperSection({ entries }) {
                 className={`ls-rank-item${isTop ? ' ls-rank-item--top' : ''}`}
                 onPointerDown={(e) => handlePointerDown(e, index)}
               >
+                <span className="ls-rank-item__handle" aria-hidden="true">⠿</span>
                 {isTop ? (
                   <span className="ls-rank-item__crown"><CrownIcon size={16} /></span>
                 ) : (
@@ -346,6 +409,7 @@ function LastSupperSection({ entries }) {
 
 function RankView({ stores, entries, onDataChange }) {
   const [mode, setMode] = useState('overall')
+  const [lastSupperOpen, setLastSupperOpen] = useState(false)
   const [criterion, setCriterion] = useState('taste')
   const [selectedGenre, setSelectedGenre] = useState(null)
   const [selectedStore, setSelectedStore] = useState(null)
@@ -392,31 +456,43 @@ function RankView({ stores, entries, onDataChange }) {
 
   const effectiveGenre = selectedGenre ?? genreGroups[0]?.genre ?? null
   const activeGenreGroup = genreGroups.find((group) => group.genre === effectiveGenre)
-  const activeModeLabel = mode === 'lastsupper' ? 'あなたの最後の晩餐' : `${modes.find((item) => item.key === mode)?.label}の順位`
+  const activeModeLabel = lastSupperOpen ? 'あなたの最後の晩餐' : `${modes.find((item) => item.key === mode)?.label}の順位`
 
   return (
     <section className="recent-section" aria-labelledby="rank-title">
       <div className="recent-section__header">
         <div>
-          <p className="eyebrow">{mode === 'lastsupper' ? 'The Last Supper' : 'Rankings'}</p>
+          <p className="eyebrow">{lastSupperOpen ? 'The Last Supper' : 'Rankings'}</p>
           <h2 id="rank-title">{activeModeLabel}</h2>
         </div>
+        <button
+          type="button"
+          className={`ls-toggle-btn${lastSupperOpen ? ' ls-toggle-btn--active' : ''}`}
+          onClick={() => setLastSupperOpen((open) => !open)}
+        >
+          <CrownIcon size={14} />
+          最後の晩餐
+        </button>
       </div>
 
-      <div className="chip-row" role="list">
-        {modes.map((item) => (
-          <button
-            key={item.key}
-            type="button"
-            className={`chip${mode === item.key ? ' chip--active' : ''}`}
-            onClick={() => setMode(item.key)}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
+      {!lastSupperOpen && (
+        <div className="chip-row" role="list">
+          {modes.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              className={`chip${mode === item.key ? ' chip--active' : ''}`}
+              onClick={() => setMode(item.key)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {mode === 'criteria' && (
+      {lastSupperOpen && <LastSupperSection entries={entries} />}
+
+      {!lastSupperOpen && mode === 'criteria' && (
         <>
           <div className="chip-row" role="list">
             {criteria.map((item) => (
@@ -463,7 +539,7 @@ function RankView({ stores, entries, onDataChange }) {
         </>
       )}
 
-      {mode === 'overall' && (
+      {!lastSupperOpen && mode === 'overall' && (
         <StoreRankList
           items={overallRanking}
           emptyMessage="まだ記録がありません。"
@@ -472,7 +548,7 @@ function RankView({ stores, entries, onDataChange }) {
         />
       )}
 
-      {mode === 'genre' && (
+      {!lastSupperOpen && mode === 'genre' && (
         <>
           <div className="chip-row" role="list">
             {genreGroups.map((group) => (
@@ -494,8 +570,6 @@ function RankView({ stores, entries, onDataChange }) {
           />
         </>
       )}
-
-      {mode === 'lastsupper' && <LastSupperSection entries={entries} />}
 
       {selectedStore && (
         <StoreDetailModal
