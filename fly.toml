@@ -7,7 +7,7 @@ app = 'gourmet-maps'
 primary_region = 'nrt'
 
 [build]
-  dockerfile = 'Dockerfile'
+  dockerfile = 'backend/Dockerfile'
 
 [env]
   ASPNETCORE_ENVIRONMENT = 'Production'

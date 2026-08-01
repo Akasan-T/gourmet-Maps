@@ -1,18 +1,24 @@
-# ASP.NET Core + SQLite API
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
-WORKDIR /app
+# ASP.NET Core + SQLite API + frontend assets
+FROM node:20-alpine AS frontend-build
+WORKDIR /src/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS backend-build
 WORKDIR /src
-COPY *.csproj ./
-RUN dotnet restore
-COPY . ./
-WORKDIR /src
-RUN dotnet publish -c Release -o /app/publish
+COPY backend/*.csproj ./backend/
+RUN dotnet restore ./backend/NoodleMaps.csproj
+COPY backend/ ./backend/
+COPY --from=frontend-build /src/frontend/dist ./frontend/dist
+RUN mkdir -p /app/publish/wwwroot && cp -R /src/frontend/dist/* /app/publish/wwwroot/ || true
+WORKDIR /src/backend
+RUN dotnet publish NoodleMaps.csproj -c Release -o /app/publish
 
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
-COPY --from=build /app/publish .
-EXPOSE 5000
-ENV ASPNETCORE_URLS=http://+:5000
+COPY --from=backend-build /app/publish .
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
 CMD ["dotnet", "NoodleMaps.dll"]

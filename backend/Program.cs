@@ -781,13 +781,17 @@ app.Use(async (context, next) =>
 // Identity API (register / login / refresh / confirmEmail など) を /api/auth 配下に公開
 app.MapGroup("/api/auth").MapIdentityApi<ApplicationUser>();
 
+// ヘルスチェック。Fly.io の `/health` 監視に 200 を返す。
+app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+
 // Identity のエンドポイントと Razor Pages エンドポイントのマッピング
 app.MapControllers();
 app.MapRazorPages();
 
-// 静的ファイルのパイプライン処理 (通常は UseRouting の後、Map... の前)
-app.MapStaticAssets();
-app.MapRazorPages().WithStaticAssets(); // この行は冗長な可能性が高いですが、残しておきます。
+// フロントエンドの静的アセットを配信し、未ヒット時は SPA の index.html を返す。
+app.UseDefaultFiles();
+app.UseStaticFiles();
+app.MapFallbackToFile("index.html");
 
 app.Run();
 

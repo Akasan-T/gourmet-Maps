@@ -108,5 +108,27 @@ namespace NoodleMaps.Tests
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
+
+        // Fly.io のヘルスチェック用: /health は未認証でも 200 を返す
+        [Fact]
+        public async Task GetHealth_AnonymousRequest_ReturnsOk()
+        {
+            var client = _factory.CreateClient();
+
+            var response = await client.GetAsync("/health");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetRoot_AnonymousRequest_ReturnsHtml()
+        {
+            var client = _factory.CreateClient();
+
+            var response = await client.GetAsync("/");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("text/html", response.Content.Headers.ContentType?.ToString() ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+        }
     }
 }
