@@ -1,29 +1,47 @@
-app = "gourmet-maps"
-primary_region = "nrt"
+# fly.toml app configuration file generated for gourmet-maps on 2026-08-01T15:19:27+09:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'gourmet-maps'
+primary_region = 'nrt'
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = 'Dockerfile'
 
 [env]
-  ASPNETCORE_URLS = "http://+:8080"
-  ASPNETCORE_ENVIRONMENT = "Production"
-  DEMO_SEED_DATA = "true"
+  ASPNETCORE_ENVIRONMENT = 'Production'
+  ASPNETCORE_URLS = 'http://+:8080'
+  DEMO_SEED_DATA = 'true'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
 
 [[services]]
+  protocol = 'tcp'
   internal_port = 8080
-  protocol = "tcp"
 
   [[services.ports]]
-    handlers = ["http"]
     port = 80
+    handlers = ['http']
 
   [[services.ports]]
-    handlers = ["https", "http"]
     port = 443
+    handlers = ['https', 'http']
 
   [[services.http_checks]]
-    interval = "10s"
-    timeout = "2s"
-    grace_period = "20s"
-    method = "GET"
-    path = "/"
+    interval = '10s'
+    timeout = '2s'
+    grace_period = '20s'
+    method = 'GET'
+    path = '/'
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
