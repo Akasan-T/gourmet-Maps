@@ -1,23 +1,61 @@
-# グルメマップ（タベマップ / TABE MAP）
+# 🍽️ グルメマップ / TABE MAP
 
-外食したお店で食べたものを多面的に評価し、地図・ランキングとして蓄積していくグルメ記録アプリ。
-スマホでの利用を想定したモバイルファーストの UI で、「お店を探して → 記録して → 地図と順位で振り返る」までを 1 つのアプリで完結させることを目指している。
+> 外食の記録を「地図・ランキング・プロフィール」として残せる、モバイルファーストなグルメ記録アプリです。
 
-## 画面イメージ
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat-square&logo=vite&logoColor=white)
+![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-9-512BD4?style=flat-square&logo=dotnet&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
 
-以下は主な画面のイメージです。
-
-![ホーム画面](image/0009F71D-D500-40DA-ACC3-D987045690C5.png)
-
-![記録・検索画面](image/40754C78-870A-43B2-AD19-056288142DC3.png)
-
-![地図画面](image/63ABBFC7-6301-4420-827C-0C8EFB77249B.png)
-
-![ランキング画面](image/DE5DC42B-74A0-4B9D-9A92-E2CA6663422C.png)
+**🌐 Live Demo:** [gourmet-maps.fly.dev](https://gourmet-maps.fly.dev/)
 
 ---
 
-## 技術スタック
+## 📌 概要
+
+「お店を探して → 記録して → 地図と順位で振り返る」を 1 つのアプリで完結できるように設計しています。  
+招待コード制のログイン、地図上での店舗表示、総合ランキング、プロフィール機能を備え、日常の食事記録を少しだけ楽しくできます。
+
+---
+
+## 📸 スクリーンショット
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="image/40754C78-870A-43B2-AD19-056288142DC3.png" width="280" alt="記録・検索画面" />
+      <br><sub><b>記録・検索</b><br>お店の検索と評価の入力</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="image/63ABBFC7-6301-4420-827C-0C8EFB77249B.png" width="280" alt="地図画面" />
+      <br><sub><b>地図</b><br>登録済みのお店を地図上で確認</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="image/DE5DC42B-74A0-4B9D-9A92-E2CA6663422C.png" width="280" alt="ランキング画面" />
+      <br><sub><b>ランキング</b><br>総合・ジャンル別・同行者別で振り返り</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="image/0009F71D-D500-40DA-ACC3-D987045690C5.png" width="280" alt="プロフィール画面" />
+      <br><sub><b>プロフィール</b><br>称号や記録数をまとめて確認</sub>
+    </td>
+  </tr>
+</table>
+
+---
+
+## ✨ 主な機能
+
+- **店舗検索・記録** — 周辺の飲食店を検索し、評価とメモを記録
+- **地図表示** — 記録済み店舗を地図上にピン表示
+- **ランキング** — 総合 / ジャンル別 / 同行者別で振り返り
+- **プロフィール** — 称号・記録数・活動履歴を確認
+- **招待コード制ログイン** — 友人や家族向けの少人数利用に対応
+
+---
+
+## 🛠️ 技術スタック
 
 | レイヤー | 技術 |
 | --- | --- |
