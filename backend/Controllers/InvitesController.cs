@@ -11,7 +11,6 @@ namespace GourmetMaps.Controllers
     // 称号「初代食べる王」保有者だけがワンタイム招待コードを発行できる。
     [ApiController]
     [Route("api/invites")]
-    [Authorize]
     public class InvitesController : ControllerBase
     {
         // 招待コードを発行できる特別称号の名前。Program.cs のシード名と一致させること。

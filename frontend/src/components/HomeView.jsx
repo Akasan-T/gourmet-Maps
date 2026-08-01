@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css'
 import { createCurrentLocationIcon, createPinIcon } from './mapPinIcon'
 import StoreDetailModal from './StoreDetailModal'
 import { LocateIcon, RankBadge } from './icons'
-import { participantNames, storeVisual } from '../data/visits'
+import { averageEntryRating, participantNames, storeVisual } from '../data/visits'
 
 const fallbackCenter = [35.6812, 139.7671] // 東京駅
 const currentLocationZoom = 16
@@ -150,7 +150,7 @@ function HomeView({ stores, ranking, onDataChange }) {
                   <h3>{entry.name}</h3>
                   <p className="visit-card__menu">{names.length > 0 ? names.join('・') : entry.genre}</p>
                 </div>
-                <span className="rank-item__score">{Math.round(entry.tasteRating)}</span>
+                <span className="rank-item__score">{averageEntryRating(entry).toFixed(1)}</span>
               </article>
             )
           })}

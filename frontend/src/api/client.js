@@ -1,4 +1,6 @@
-const defaultApiBaseUrl = 'http://localhost:5001'
+const defaultApiBaseUrl = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+  ? `${window.location.protocol}//${window.location.host}`
+  : 'http://localhost:5001'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? defaultApiBaseUrl
 

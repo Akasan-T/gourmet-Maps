@@ -247,6 +247,8 @@ using (var scope = app.Services.CreateScope())
         });
     }
 
+    await SeedDemoDataAsync(dbContext, userManager);
+
     // 特別称号「初代食べる王」をシードし、設定のオーナーへ付与する (冪等)。
     var ownerBadgeTitle = GourmetMaps.Controllers.InvitesController.OwnerBadgeTitle;
 
@@ -790,6 +792,145 @@ app.Run();
 // アプリのテーブルが既に存在し、かつ __EFMigrationsHistory が無い場合に限り、
 // InitialCreate を「適用済み」として履歴へ記録する (テーブルは作り直さない)。
 // 新規 DB (テーブル無し) や移行済み DB では何もしないので、後続の Migrate() に委ねられる。
+static async Task SeedDemoDataAsync(GourmetDbContext dbContext, UserManager<ApplicationUser> userManager)
+{
+    var demoEnabled = Environment.GetEnvironmentVariable("DEMO_SEED_DATA") ?? "true";
+    if (!string.Equals(demoEnabled, "true", StringComparison.OrdinalIgnoreCase))
+    {
+        return;
+    }
+
+    var existingEntries = await dbContext.GourmetEntries.AsNoTracking().CountAsync();
+    if (existingEntries > 0)
+    {
+        return;
+    }
+
+    var demoUser = await userManager.FindByNameAsync("guest-map");
+    if (demoUser is null)
+    {
+        return;
+    }
+
+    var stores = new[]
+    {
+        new Store { Name = "東京スカイツリー・ソラマチ", Genre = "カフェ", Address = "東京都墨田区押上1-1-2", Latitude = 35.7101f, Longitude = 139.8123f, CreatedAt = DateTime.UtcNow, CreatedByUserId = demoUser.Id },
+        new Store { Name = "浅草寺 たこ焼き横丁", Genre = "軽食", Address = "東京都台東区浅草2-3-1", Latitude = 35.7148f, Longitude = 139.7967f, CreatedAt = DateTime.UtcNow, CreatedByUserId = demoUser.Id },
+        new Store { Name = "新宿駅南口 うどん屋", Genre = "うどん", Address = "東京都新宿区新宿3-38-1", Latitude = 35.6909f, Longitude = 139.7003f, CreatedAt = DateTime.UtcNow, CreatedByUserId = demoUser.Id },
+        new Store { Name = "渋谷スクランブル交差点の定食屋", Genre = "定食", Address = "東京都渋谷区道玄坂2-29-1", Latitude = 35.6595f, Longitude = 139.7004f, CreatedAt = DateTime.UtcNow, CreatedByUserId = demoUser.Id },
+    };
+
+    dbContext.Stores.AddRange(stores);
+    await dbContext.SaveChangesAsync();
+
+    var seedEntries = new[]
+    {
+        new GourmetEntry
+        {
+            Name = stores[0].Name,
+            Genre = "カフェ",
+            MenuName = "モーニングセット",
+            VisitDate = DateTime.UtcNow.AddHours(-3),
+            OverallRating = 4.8f,
+            TasteRating = 4.7f,
+            CostPerformanceRating = 4.3f,
+            AppearanceRating = 4.9f,
+            ServiceRating = 4.6f,
+            RepeatRating = 4.8f,
+            VolumeRating = 4.8f,
+            ReorderRating = 4.8f,
+            Memo = "景色が良くて、朝の散歩のあとに立ち寄りやすい。",
+            SceneTag = "朝カフェ",
+            PriceRange = "1000円台",
+            VisitType = "ひとり",
+            Tag = "また行く",
+            PhotoUrl = "https://images.unsplash.com/photo-1499638673689-79a0b5115d87?auto=format&fit=crop&w=800&q=80",
+            Latitude = stores[0].Latitude,
+            Longitude = stores[0].Longitude,
+            StoreID = stores[0].StoreID,
+            UserID = demoUser.Id,
+        },
+        new GourmetEntry
+        {
+            Name = stores[1].Name,
+            Genre = "軽食",
+            MenuName = "たこ焼きセット",
+            VisitDate = DateTime.UtcNow.AddHours(-8),
+            OverallRating = 4.5f,
+            TasteRating = 4.4f,
+            CostPerformanceRating = 4.8f,
+            AppearanceRating = 4.2f,
+            ServiceRating = 4.3f,
+            RepeatRating = 4.5f,
+            VolumeRating = 4.5f,
+            ReorderRating = 4.5f,
+            Memo = "お祭り気分が味わえて、短時間で満足しやすい。",
+            SceneTag = "散歩",
+            PriceRange = "500円台",
+            VisitType = "友達と",
+            Tag = "一口目が強い",
+            PhotoUrl = "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=800&q=80",
+            Latitude = stores[1].Latitude,
+            Longitude = stores[1].Longitude,
+            StoreID = stores[1].StoreID,
+            UserID = demoUser.Id,
+        },
+        new GourmetEntry
+        {
+            Name = stores[2].Name,
+            Genre = "うどん",
+            MenuName = "温かいうどん",
+            VisitDate = DateTime.UtcNow.AddHours(-14),
+            OverallRating = 4.6f,
+            TasteRating = 4.7f,
+            CostPerformanceRating = 4.5f,
+            AppearanceRating = 4.3f,
+            ServiceRating = 4.4f,
+            RepeatRating = 4.6f,
+            VolumeRating = 4.6f,
+            ReorderRating = 4.6f,
+            Memo = "駅の近くで手軽に入れる。",
+            SceneTag = "帰り道",
+            PriceRange = "1000円台",
+            VisitType = "ひとり",
+            Tag = "量が多い",
+            PhotoUrl = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80",
+            Latitude = stores[2].Latitude,
+            Longitude = stores[2].Longitude,
+            StoreID = stores[2].StoreID,
+            UserID = demoUser.Id,
+        },
+        new GourmetEntry
+        {
+            Name = stores[3].Name,
+            Genre = "定食",
+            MenuName = "日替わり定食",
+            VisitDate = DateTime.UtcNow.AddHours(-20),
+            OverallRating = 4.7f,
+            TasteRating = 4.8f,
+            CostPerformanceRating = 4.4f,
+            AppearanceRating = 4.5f,
+            ServiceRating = 4.7f,
+            RepeatRating = 4.7f,
+            VolumeRating = 4.7f,
+            ReorderRating = 4.7f,
+            Memo = "渋谷の喧騒の中でも落ち着いて食べられる。",
+            SceneTag = "デート",
+            PriceRange = "1500円台",
+            VisitType = "家族と",
+            Tag = "接客よい",
+            PhotoUrl = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80",
+            Latitude = stores[3].Latitude,
+            Longitude = stores[3].Longitude,
+            StoreID = stores[3].StoreID,
+            UserID = demoUser.Id,
+        },
+    };
+
+    dbContext.GourmetEntries.AddRange(seedEntries);
+    await dbContext.SaveChangesAsync();
+}
+
 static async Task BaselineLegacyDatabaseAsync(GourmetDbContext dbContext)
 {
     static async Task<bool> TableExistsAsync(System.Data.Common.DbConnection conn, string tableName)

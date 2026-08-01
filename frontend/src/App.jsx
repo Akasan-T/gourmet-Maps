@@ -8,10 +8,9 @@ import ProfileView from './components/ProfileView'
 import QuickComposer from './components/QuickComposer'
 import RankView from './components/RankView'
 import RecentVisitList from './components/RecentVisitList'
-import AuthView from './components/AuthView'
 import { fetchGourmetEntries, fetchMembers } from './api/client'
 import { useAuth } from './auth/useAuth'
-import { deriveTag, formatRelativeTime, groupEntriesByStore, isToday, withinHours } from './data/visits'
+import { averageEntryRating, deriveTag, formatRelativeTime, groupEntriesByStore, isToday, withinHours } from './data/visits'
 
 const quickTags = ['また行く', '一口目が強い', '接客よい', '写真映え', '量が多い']
 const visitTypes = ['ひとり', '同僚と', '家族と', 'テイクアウト']
@@ -40,9 +39,6 @@ function App() {
   const [composerPrefill, setComposerPrefill] = useState(null)
 
   useEffect(() => {
-    // ログイン済みのときだけデータを取得する
-    if (authStatus !== 'authenticated') return undefined
-
     let ignore = false
 
     Promise.all([fetchGourmetEntries(), fetchMembers()])
@@ -59,7 +55,7 @@ function App() {
     return () => {
       ignore = true
     }
-  }, [reloadToken, authStatus])
+  }, [reloadToken])
 
   const reloadData = () => setReloadToken((token) => token + 1)
 
@@ -78,7 +74,7 @@ function App() {
   const entries24h = useMemo(() => entries.filter((entry) => withinHours(entry, 24)), [entries])
   const storesToday = useMemo(() => groupEntriesByStore(entries24h), [entries24h])
   const ranking24h = useMemo(
-    () => [...entries24h].sort((a, b) => b.tasteRating - a.tasteRating),
+    () => [...entries24h].sort((a, b) => averageEntryRating(b) - averageEntryRating(a)),
     [entries24h],
   )
 
@@ -131,10 +127,6 @@ function App() {
         </main>
       </div>
     )
-  }
-
-  if (authStatus !== 'authenticated') {
-    return <AuthView />
   }
 
   return (

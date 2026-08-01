@@ -49,6 +49,17 @@ export function withinHours(entry, hours) {
   return Date.now() - new Date(entry.visitDate).getTime() <= hours * HOUR
 }
 
+export function averageEntryRating(entry) {
+  const scores = [
+    entry.tasteRating,
+    entry.costPerformanceRating,
+    entry.appearanceRating,
+    entry.serviceRating ?? entry.repeatRating,
+    entry.repeatRating,
+  ]
+  return scores.reduce((sum, score) => sum + score, 0) / scores.length
+}
+
 // 「今日」= 直近24時間ではなく暦日での一致（日付をまたぐとリセットされる）
 export function isToday(entry) {
   const visitDate = new Date(entry.visitDate)

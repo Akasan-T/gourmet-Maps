@@ -19,6 +19,7 @@
 
 - フロントエンドは開発サーバー `http://localhost:5173`（Vite）、API のベース URL は既定で `http://localhost:5001`（`frontend/.env` の `VITE_API_BASE_URL` で変更可能）。
 - Docker Compose 起動時は backend が `5001`、frontend が `3000` で公開される。
+- Fly.io へデプロイする場合は、フロントエンドが同一オリジンの `/` へ向くように `VITE_API_BASE_URL` を空にするか、同じホスト名の `/api` を使う構成にする。
 
 ---
 

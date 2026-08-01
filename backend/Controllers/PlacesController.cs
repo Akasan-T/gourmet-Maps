@@ -12,7 +12,6 @@ namespace GourmetMaps.Controllers
     // フロント側 (QuickComposer.jsx) でマージして候補一覧を作る。
     [ApiController]
     [Route("api/places")]
-    [Authorize]
     public class PlacesController : ControllerBase
     {
         private static readonly JsonSerializerOptions JsonOptions = new()

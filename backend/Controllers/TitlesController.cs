@@ -14,7 +14,6 @@ namespace GourmetMaps.Controllers
     // 再評価してから返すため、既存データに対しても取りこぼしなく反映される。
     [ApiController]
     [Route("api/titles")]
-    [Authorize]
     public class TitlesController : ControllerBase
     {
         private static readonly JsonSerializerOptions JsonOptions = new()

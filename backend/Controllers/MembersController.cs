@@ -12,7 +12,6 @@ namespace GourmetMaps.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class MembersController : ControllerBase
     {
         private const string GuestUserName = "guest-map";

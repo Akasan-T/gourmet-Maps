@@ -13,7 +13,6 @@ namespace GourmetMaps.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class StoresController : ControllerBase
     {
         // 同じ店舗とみなす距離のしきい値 (メートル)

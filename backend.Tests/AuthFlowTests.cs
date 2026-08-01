@@ -98,15 +98,15 @@ namespace NoodleMaps.Tests
             Assert.Equal(HttpStatusCode.Unauthorized, login.StatusCode);
         }
 
-        // AUTH-11: 未認証では保護 API にアクセスできない
+        // デモ公開向け: 読み取り用エンドポイントは未認証でも閲覧できる
         [Fact]
-        public async Task GetGourmetEntries_WithoutAuth_ReturnsUnauthorized()
+        public async Task GetGourmetEntries_AnonymousDemoMode_ReturnsOk()
         {
             var client = _factory.CreateClient();
 
             var response = await client.GetAsync("/api/GourmetEntries");
 
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
     }
 }
