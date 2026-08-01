@@ -298,7 +298,10 @@ using (var scope = app.Services.CreateScope())
 // ★ ローカリゼーションをパイプラインに適用する (UseRouting の前)
 app.UseRequestLocalization(localizationOptions);
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
 
 // ★ ルーティングと認証の順番は重要です
 app.UseRouting();

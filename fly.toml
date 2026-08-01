@@ -1,4 +1,4 @@
-# fly.toml app configuration file generated for gourmet-maps on 2026-08-01T15:19:27+09:00
+# fly.toml app configuration file generated for gourmet-maps on 2026-08-01T15:29:48+09:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
@@ -32,7 +32,7 @@ primary_region = 'nrt'
 
   [[services.ports]]
     port = 443
-    handlers = ['https', 'http']
+    handlers = ['tls', 'http']
 
   [[services.http_checks]]
     interval = '10s'
